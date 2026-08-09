@@ -1,0 +1,860 @@
+{
+  "dataset": "D:\\OneDrive\\02_Study\\2024_NJUST\\Trajectory  Prediction\\HGV_Project\\HGVTP_PLGAformer-main\\data_generation\\data\\processed\\hgv_multiregime_dataset_v2_1.npz",
+  "dataset_sha256": "526d50d05b14ed17f9093249cbb5a382f526468e36723457c08c790d449112e7",
+  "dataset_protocol": "hgv_multiregime_state_v2_1",
+  "generated_at_utc": "2026-07-30T16:33:29.427594+00:00",
+  "strict_solver": {
+    "method": "DOP853",
+    "rtol": 1e-10,
+    "atol": 1e-12,
+    "max_step_s": 1.0
+  },
+  "samples_per_stratum": 20,
+  "sample_count": 120,
+  "maximum_allowed_ecef_error_m": 30.0,
+  "maximum_observed_ecef_error_m": 22.038368672458937,
+  "passed": true,
+  "records": [
+    {
+      "trajectory_id": 0,
+      "joint_stratum": "quasi_equilibrium__longitudinal",
+      "max_ecef_error_m": 0.8496475734343791,
+      "median_ecef_error_m": 0.21307950927982242,
+      "terminal_ecef_error_m": 0.1927753894569745
+    },
+    {
+      "trajectory_id": 16,
+      "joint_stratum": "quasi_equilibrium__longitudinal",
+      "max_ecef_error_m": 2.7162589913900756,
+      "median_ecef_error_m": 1.199986370480456,
+      "terminal_ecef_error_m": 2.6886626524917365
+    },
+    {
+      "trajectory_id": 31,
+      "joint_stratum": "quasi_equilibrium__longitudinal",
+      "max_ecef_error_m": 1.3907905286784485,
+      "median_ecef_error_m": 0.6869384061772615,
+      "terminal_ecef_error_m": 0.8775356227199784
+    },
+    {
+      "trajectory_id": 47,
+      "joint_stratum": "quasi_equilibrium__longitudinal",
+      "max_ecef_error_m": 2.183912822972556,
+      "median_ecef_error_m": 0.33113440137617933,
+      "terminal_ecef_error_m": 1.7290284709113377
+    },
+    {
+      "trajectory_id": 63,
+      "joint_stratum": "quasi_equilibrium__longitudinal",
+      "max_ecef_error_m": 3.209304948398611,
+      "median_ecef_error_m": 1.3734608253565717,
+      "terminal_ecef_error_m": 2.7016466682234737
+    },
+    {
+      "trajectory_id": 79,
+      "joint_stratum": "quasi_equilibrium__longitudinal",
+      "max_ecef_error_m": 0.6146360931646274,
+      "median_ecef_error_m": 0.2791667592341487,
+      "terminal_ecef_error_m": 0.2327882261379123
+    },
+    {
+      "trajectory_id": 94,
+      "joint_stratum": "quasi_equilibrium__longitudinal",
+      "max_ecef_error_m": 21.64338877537161,
+      "median_ecef_error_m": 3.1180415673623454,
+      "terminal_ecef_error_m": 21.64338877537161
+    },
+    {
+      "trajectory_id": 110,
+      "joint_stratum": "quasi_equilibrium__longitudinal",
+      "max_ecef_error_m": 2.7591890832708237,
+      "median_ecef_error_m": 0.9371971627701456,
+      "terminal_ecef_error_m": 2.608146389603088
+    },
+    {
+      "trajectory_id": 126,
+      "joint_stratum": "quasi_equilibrium__longitudinal",
+      "max_ecef_error_m": 0.557039090422607,
+      "median_ecef_error_m": 0.26688366895838456,
+      "terminal_ecef_error_m": 0.24869977282722935
+    },
+    {
+      "trajectory_id": 142,
+      "joint_stratum": "quasi_equilibrium__longitudinal",
+      "max_ecef_error_m": 1.7106410326344486,
+      "median_ecef_error_m": 0.3763959509766418,
+      "terminal_ecef_error_m": 1.1599486920828623
+    },
+    {
+      "trajectory_id": 157,
+      "joint_stratum": "quasi_equilibrium__longitudinal",
+      "max_ecef_error_m": 12.45634249059922,
+      "median_ecef_error_m": 1.5194758207958419,
+      "terminal_ecef_error_m": 12.45634249059922
+    },
+    {
+      "trajectory_id": 173,
+      "joint_stratum": "quasi_equilibrium__longitudinal",
+      "max_ecef_error_m": 4.3561801932662085,
+      "median_ecef_error_m": 1.1242040220744718,
+      "terminal_ecef_error_m": 3.9907455453828824
+    },
+    {
+      "trajectory_id": 189,
+      "joint_stratum": "quasi_equilibrium__longitudinal",
+      "max_ecef_error_m": 1.1832294799944942,
+      "median_ecef_error_m": 0.3425269445653545,
+      "terminal_ecef_error_m": 0.6843730646374665
+    },
+    {
+      "trajectory_id": 205,
+      "joint_stratum": "quasi_equilibrium__longitudinal",
+      "max_ecef_error_m": 6.425030697872233,
+      "median_ecef_error_m": 1.1740394093691808,
+      "terminal_ecef_error_m": 6.362072381032425
+    },
+    {
+      "trajectory_id": 1270,
+      "joint_stratum": "quasi_equilibrium__longitudinal",
+      "max_ecef_error_m": 4.850021371048699,
+      "median_ecef_error_m": 1.3194961450021674,
+      "terminal_ecef_error_m": 4.73309402566152
+    },
+    {
+      "trajectory_id": 1286,
+      "joint_stratum": "quasi_equilibrium__longitudinal",
+      "max_ecef_error_m": 5.09614593391072,
+      "median_ecef_error_m": 1.1345371650235114,
+      "terminal_ecef_error_m": 5.09614593391072
+    },
+    {
+      "trajectory_id": 1452,
+      "joint_stratum": "quasi_equilibrium__longitudinal",
+      "max_ecef_error_m": 0.5425834469007483,
+      "median_ecef_error_m": 0.21926888235800357,
+      "terminal_ecef_error_m": 0.5130480400853794
+    },
+    {
+      "trajectory_id": 1468,
+      "joint_stratum": "quasi_equilibrium__longitudinal",
+      "max_ecef_error_m": 0.8707210664179131,
+      "median_ecef_error_m": 0.39976163764884787,
+      "terminal_ecef_error_m": 0.7583222242843315
+    },
+    {
+      "trajectory_id": 1483,
+      "joint_stratum": "quasi_equilibrium__longitudinal",
+      "max_ecef_error_m": 2.4699412872870123,
+      "median_ecef_error_m": 0.416131209166901,
+      "terminal_ecef_error_m": 2.4022875754424224
+    },
+    {
+      "trajectory_id": 1499,
+      "joint_stratum": "quasi_equilibrium__longitudinal",
+      "max_ecef_error_m": 3.9659035370098294,
+      "median_ecef_error_m": 0.5472299523119399,
+      "terminal_ecef_error_m": 3.9032516458822926
+    },
+    {
+      "trajectory_id": 210,
+      "joint_stratum": "quasi_equilibrium__turning",
+      "max_ecef_error_m": 1.6566794255405057,
+      "median_ecef_error_m": 0.5396174608613573,
+      "terminal_ecef_error_m": 1.4218596195403892
+    },
+    {
+      "trajectory_id": 226,
+      "joint_stratum": "quasi_equilibrium__turning",
+      "max_ecef_error_m": 0.7028160941104932,
+      "median_ecef_error_m": 0.2872059361098226,
+      "terminal_ecef_error_m": 0.6858588630142703
+    },
+    {
+      "trajectory_id": 241,
+      "joint_stratum": "quasi_equilibrium__turning",
+      "max_ecef_error_m": 0.7461533792498687,
+      "median_ecef_error_m": 0.28733583939153795,
+      "terminal_ecef_error_m": 0.29814988716528534
+    },
+    {
+      "trajectory_id": 257,
+      "joint_stratum": "quasi_equilibrium__turning",
+      "max_ecef_error_m": 4.139747174622156,
+      "median_ecef_error_m": 1.16977102388972,
+      "terminal_ecef_error_m": 4.0996135377518055
+    },
+    {
+      "trajectory_id": 273,
+      "joint_stratum": "quasi_equilibrium__turning",
+      "max_ecef_error_m": 22.038368672458937,
+      "median_ecef_error_m": 1.1071972754426875,
+      "terminal_ecef_error_m": 22.038368672458937
+    },
+    {
+      "trajectory_id": 289,
+      "joint_stratum": "quasi_equilibrium__turning",
+      "max_ecef_error_m": 0.7592595890373375,
+      "median_ecef_error_m": 0.17452291964299638,
+      "terminal_ecef_error_m": 0.5440213314583933
+    },
+    {
+      "trajectory_id": 304,
+      "joint_stratum": "quasi_equilibrium__turning",
+      "max_ecef_error_m": 0.9241247170822375,
+      "median_ecef_error_m": 0.3263008337746205,
+      "terminal_ecef_error_m": 0.6806336755063459
+    },
+    {
+      "trajectory_id": 320,
+      "joint_stratum": "quasi_equilibrium__turning",
+      "max_ecef_error_m": 0.4040871158805983,
+      "median_ecef_error_m": 0.19612218518564056,
+      "terminal_ecef_error_m": 0.2587206808318214
+    },
+    {
+      "trajectory_id": 336,
+      "joint_stratum": "quasi_equilibrium__turning",
+      "max_ecef_error_m": 3.222098867414955,
+      "median_ecef_error_m": 1.3650572952744995,
+      "terminal_ecef_error_m": 2.904223097372588
+    },
+    {
+      "trajectory_id": 352,
+      "joint_stratum": "quasi_equilibrium__turning",
+      "max_ecef_error_m": 0.6460491824754618,
+      "median_ecef_error_m": 0.2782170090899613,
+      "terminal_ecef_error_m": 0.3904634775689218
+    },
+    {
+      "trajectory_id": 367,
+      "joint_stratum": "quasi_equilibrium__turning",
+      "max_ecef_error_m": 1.5600493654152665,
+      "median_ecef_error_m": 0.3659468420296951,
+      "terminal_ecef_error_m": 1.4631770081179236
+    },
+    {
+      "trajectory_id": 383,
+      "joint_stratum": "quasi_equilibrium__turning",
+      "max_ecef_error_m": 1.9847300453149832,
+      "median_ecef_error_m": 0.6862608273170079,
+      "terminal_ecef_error_m": 1.9315147382616284
+    },
+    {
+      "trajectory_id": 399,
+      "joint_stratum": "quasi_equilibrium__turning",
+      "max_ecef_error_m": 8.44671952036676,
+      "median_ecef_error_m": 1.4234558815896623,
+      "terminal_ecef_error_m": 8.227410570453863
+    },
+    {
+      "trajectory_id": 415,
+      "joint_stratum": "quasi_equilibrium__turning",
+      "max_ecef_error_m": 3.273567885243293,
+      "median_ecef_error_m": 1.0799961157610989,
+      "terminal_ecef_error_m": 3.057637794558376
+    },
+    {
+      "trajectory_id": 1300,
+      "joint_stratum": "quasi_equilibrium__turning",
+      "max_ecef_error_m": 1.1164621021623744,
+      "median_ecef_error_m": 0.297545832875984,
+      "terminal_ecef_error_m": 0.9601070207088482
+    },
+    {
+      "trajectory_id": 1316,
+      "joint_stratum": "quasi_equilibrium__turning",
+      "max_ecef_error_m": 1.2770890922521871,
+      "median_ecef_error_m": 0.41194986731708794,
+      "terminal_ecef_error_m": 1.0079436698716986
+    },
+    {
+      "trajectory_id": 1512,
+      "joint_stratum": "quasi_equilibrium__turning",
+      "max_ecef_error_m": 9.51064860277032,
+      "median_ecef_error_m": 0.7417607223162441,
+      "terminal_ecef_error_m": 9.51064860277032
+    },
+    {
+      "trajectory_id": 1528,
+      "joint_stratum": "quasi_equilibrium__turning",
+      "max_ecef_error_m": 4.8053811163522475,
+      "median_ecef_error_m": 0.9566166958645217,
+      "terminal_ecef_error_m": 4.550641680410996
+    },
+    {
+      "trajectory_id": 1543,
+      "joint_stratum": "quasi_equilibrium__turning",
+      "max_ecef_error_m": 0.7885866065104339,
+      "median_ecef_error_m": 0.217702550544355,
+      "terminal_ecef_error_m": 0.6865500697942907
+    },
+    {
+      "trajectory_id": 1559,
+      "joint_stratum": "quasi_equilibrium__turning",
+      "max_ecef_error_m": 1.5537590128354377,
+      "median_ecef_error_m": 0.5180140105100002,
+      "terminal_ecef_error_m": 1.5271292351003638
+    },
+    {
+      "trajectory_id": 420,
+      "joint_stratum": "quasi_equilibrium__weaving",
+      "max_ecef_error_m": 7.118649348121159,
+      "median_ecef_error_m": 2.127321060999202,
+      "terminal_ecef_error_m": 7.058370609932342
+    },
+    {
+      "trajectory_id": 436,
+      "joint_stratum": "quasi_equilibrium__weaving",
+      "max_ecef_error_m": 1.144098500683746,
+      "median_ecef_error_m": 0.43850573708887886,
+      "terminal_ecef_error_m": 1.1093269750131591
+    },
+    {
+      "trajectory_id": 451,
+      "joint_stratum": "quasi_equilibrium__weaving",
+      "max_ecef_error_m": 1.3773424976352318,
+      "median_ecef_error_m": 0.3941229644303975,
+      "terminal_ecef_error_m": 1.2112832590456817
+    },
+    {
+      "trajectory_id": 467,
+      "joint_stratum": "quasi_equilibrium__weaving",
+      "max_ecef_error_m": 1.9838672796933443,
+      "median_ecef_error_m": 0.3221895956991716,
+      "terminal_ecef_error_m": 1.5414492131070054
+    },
+    {
+      "trajectory_id": 483,
+      "joint_stratum": "quasi_equilibrium__weaving",
+      "max_ecef_error_m": 0.9426932463627417,
+      "median_ecef_error_m": 0.2858225052504766,
+      "terminal_ecef_error_m": 0.5548128432590163
+    },
+    {
+      "trajectory_id": 499,
+      "joint_stratum": "quasi_equilibrium__weaving",
+      "max_ecef_error_m": 1.5607027093488608,
+      "median_ecef_error_m": 0.945895053271874,
+      "terminal_ecef_error_m": 1.1468612962832694
+    },
+    {
+      "trajectory_id": 514,
+      "joint_stratum": "quasi_equilibrium__weaving",
+      "max_ecef_error_m": 3.336342960745037,
+      "median_ecef_error_m": 0.775038457537915,
+      "terminal_ecef_error_m": 3.305496363297141
+    },
+    {
+      "trajectory_id": 530,
+      "joint_stratum": "quasi_equilibrium__weaving",
+      "max_ecef_error_m": 4.141559033619704,
+      "median_ecef_error_m": 1.2530206407331295,
+      "terminal_ecef_error_m": 4.032647666242499
+    },
+    {
+      "trajectory_id": 546,
+      "joint_stratum": "quasi_equilibrium__weaving",
+      "max_ecef_error_m": 6.149018279949401,
+      "median_ecef_error_m": 1.1746746365371532,
+      "terminal_ecef_error_m": 6.149018279949401
+    },
+    {
+      "trajectory_id": 562,
+      "joint_stratum": "quasi_equilibrium__weaving",
+      "max_ecef_error_m": 3.137645315572314,
+      "median_ecef_error_m": 0.8005715101679332,
+      "terminal_ecef_error_m": 2.8853831188746732
+    },
+    {
+      "trajectory_id": 577,
+      "joint_stratum": "quasi_equilibrium__weaving",
+      "max_ecef_error_m": 1.5402298176340614,
+      "median_ecef_error_m": 0.31491823588169177,
+      "terminal_ecef_error_m": 1.4924482310445524
+    },
+    {
+      "trajectory_id": 593,
+      "joint_stratum": "quasi_equilibrium__weaving",
+      "max_ecef_error_m": 4.6859148870550635,
+      "median_ecef_error_m": 0.6883035250454326,
+      "terminal_ecef_error_m": 4.5043768368343
+    },
+    {
+      "trajectory_id": 609,
+      "joint_stratum": "quasi_equilibrium__weaving",
+      "max_ecef_error_m": 3.0196604863819627,
+      "median_ecef_error_m": 0.36879317498187125,
+      "terminal_ecef_error_m": 2.504952036403767
+    },
+    {
+      "trajectory_id": 625,
+      "joint_stratum": "quasi_equilibrium__weaving",
+      "max_ecef_error_m": 1.0822996170806738,
+      "median_ecef_error_m": 0.24405903196113765,
+      "terminal_ecef_error_m": 1.0822996170806738
+    },
+    {
+      "trajectory_id": 1330,
+      "joint_stratum": "quasi_equilibrium__weaving",
+      "max_ecef_error_m": 2.6793567621575867,
+      "median_ecef_error_m": 1.4446440858304357,
+      "terminal_ecef_error_m": 1.150773209447602
+    },
+    {
+      "trajectory_id": 1346,
+      "joint_stratum": "quasi_equilibrium__weaving",
+      "max_ecef_error_m": 0.8257099500481218,
+      "median_ecef_error_m": 0.3184376870774747,
+      "terminal_ecef_error_m": 0.6979543140247718
+    },
+    {
+      "trajectory_id": 1572,
+      "joint_stratum": "quasi_equilibrium__weaving",
+      "max_ecef_error_m": 6.334778838007217,
+      "median_ecef_error_m": 1.6064622865447697,
+      "terminal_ecef_error_m": 5.855107488442851
+    },
+    {
+      "trajectory_id": 1588,
+      "joint_stratum": "quasi_equilibrium__weaving",
+      "max_ecef_error_m": 1.0348271025521694,
+      "median_ecef_error_m": 0.3623208818480891,
+      "terminal_ecef_error_m": 0.7595198709138395
+    },
+    {
+      "trajectory_id": 1603,
+      "joint_stratum": "quasi_equilibrium__weaving",
+      "max_ecef_error_m": 0.9142456652892521,
+      "median_ecef_error_m": 0.3438599297678985,
+      "terminal_ecef_error_m": 0.6892531685184607
+    },
+    {
+      "trajectory_id": 1619,
+      "joint_stratum": "quasi_equilibrium__weaving",
+      "max_ecef_error_m": 5.9891022551035205,
+      "median_ecef_error_m": 2.766677974909788,
+      "terminal_ecef_error_m": 5.090119656651514
+    },
+    {
+      "trajectory_id": 630,
+      "joint_stratum": "skip_glide__longitudinal",
+      "max_ecef_error_m": 0.5352162770351501,
+      "median_ecef_error_m": 0.22599386480399652,
+      "terminal_ecef_error_m": 0.4930081659095737
+    },
+    {
+      "trajectory_id": 646,
+      "joint_stratum": "skip_glide__longitudinal",
+      "max_ecef_error_m": 1.0244627813942757,
+      "median_ecef_error_m": 0.38224090141926814,
+      "terminal_ecef_error_m": 0.7178939677894628
+    },
+    {
+      "trajectory_id": 661,
+      "joint_stratum": "skip_glide__longitudinal",
+      "max_ecef_error_m": 0.9280370984467198,
+      "median_ecef_error_m": 0.4353862761067858,
+      "terminal_ecef_error_m": 0.8271703753474198
+    },
+    {
+      "trajectory_id": 677,
+      "joint_stratum": "skip_glide__longitudinal",
+      "max_ecef_error_m": 0.5061289629770267,
+      "median_ecef_error_m": 0.25827457939379117,
+      "terminal_ecef_error_m": 0.25180119713731075
+    },
+    {
+      "trajectory_id": 693,
+      "joint_stratum": "skip_glide__longitudinal",
+      "max_ecef_error_m": 0.3902192466044726,
+      "median_ecef_error_m": 0.20420054498187362,
+      "terminal_ecef_error_m": 0.2603423441748719
+    },
+    {
+      "trajectory_id": 709,
+      "joint_stratum": "skip_glide__longitudinal",
+      "max_ecef_error_m": 0.8681761798091259,
+      "median_ecef_error_m": 0.34620639908649387,
+      "terminal_ecef_error_m": 0.35595544838543525
+    },
+    {
+      "trajectory_id": 724,
+      "joint_stratum": "skip_glide__longitudinal",
+      "max_ecef_error_m": 0.43656490069903986,
+      "median_ecef_error_m": 0.18969578818374289,
+      "terminal_ecef_error_m": 0.266929765167079
+    },
+    {
+      "trajectory_id": 740,
+      "joint_stratum": "skip_glide__longitudinal",
+      "max_ecef_error_m": 0.4536920777287015,
+      "median_ecef_error_m": 0.22940218929260903,
+      "terminal_ecef_error_m": 0.28318771643999013
+    },
+    {
+      "trajectory_id": 756,
+      "joint_stratum": "skip_glide__longitudinal",
+      "max_ecef_error_m": 0.5175070326444833,
+      "median_ecef_error_m": 0.2132856933953754,
+      "terminal_ecef_error_m": 0.1988803482489618
+    },
+    {
+      "trajectory_id": 772,
+      "joint_stratum": "skip_glide__longitudinal",
+      "max_ecef_error_m": 0.9152670878509818,
+      "median_ecef_error_m": 0.30855118936640513,
+      "terminal_ecef_error_m": 0.6913971828607547
+    },
+    {
+      "trajectory_id": 787,
+      "joint_stratum": "skip_glide__longitudinal",
+      "max_ecef_error_m": 0.6358375350562373,
+      "median_ecef_error_m": 0.23531162641005615,
+      "terminal_ecef_error_m": 0.60173619681219
+    },
+    {
+      "trajectory_id": 803,
+      "joint_stratum": "skip_glide__longitudinal",
+      "max_ecef_error_m": 1.0184982217761758,
+      "median_ecef_error_m": 0.5087983463040564,
+      "terminal_ecef_error_m": 0.6941844178811658
+    },
+    {
+      "trajectory_id": 819,
+      "joint_stratum": "skip_glide__longitudinal",
+      "max_ecef_error_m": 0.576832839872967,
+      "median_ecef_error_m": 0.23306607399750517,
+      "terminal_ecef_error_m": 0.576832839872967
+    },
+    {
+      "trajectory_id": 835,
+      "joint_stratum": "skip_glide__longitudinal",
+      "max_ecef_error_m": 1.2318206815344657,
+      "median_ecef_error_m": 0.6031737681664059,
+      "terminal_ecef_error_m": 0.7846899893709381
+    },
+    {
+      "trajectory_id": 1360,
+      "joint_stratum": "skip_glide__longitudinal",
+      "max_ecef_error_m": 0.7240458614319855,
+      "median_ecef_error_m": 0.2846488475891096,
+      "terminal_ecef_error_m": 0.49127899635080874
+    },
+    {
+      "trajectory_id": 1376,
+      "joint_stratum": "skip_glide__longitudinal",
+      "max_ecef_error_m": 0.6615073551423827,
+      "median_ecef_error_m": 0.32155316002827206,
+      "terminal_ecef_error_m": 0.369793468538455
+    },
+    {
+      "trajectory_id": 1632,
+      "joint_stratum": "skip_glide__longitudinal",
+      "max_ecef_error_m": 0.6252059242618025,
+      "median_ecef_error_m": 0.2855720809772061,
+      "terminal_ecef_error_m": 0.5943319944225742
+    },
+    {
+      "trajectory_id": 1648,
+      "joint_stratum": "skip_glide__longitudinal",
+      "max_ecef_error_m": 0.40229714782555626,
+      "median_ecef_error_m": 0.20831662078648672,
+      "terminal_ecef_error_m": 0.2788968657387932
+    },
+    {
+      "trajectory_id": 1663,
+      "joint_stratum": "skip_glide__longitudinal",
+      "max_ecef_error_m": 0.9003890734172428,
+      "median_ecef_error_m": 0.4912705818491033,
+      "terminal_ecef_error_m": 0.7007725617711655
+    },
+    {
+      "trajectory_id": 1679,
+      "joint_stratum": "skip_glide__longitudinal",
+      "max_ecef_error_m": 0.6622691723474042,
+      "median_ecef_error_m": 0.3293201959826999,
+      "terminal_ecef_error_m": 0.6354786733736126
+    },
+    {
+      "trajectory_id": 840,
+      "joint_stratum": "skip_glide__turning",
+      "max_ecef_error_m": 0.4530148330023422,
+      "median_ecef_error_m": 0.241203981012274,
+      "terminal_ecef_error_m": 0.2870974094020919
+    },
+    {
+      "trajectory_id": 856,
+      "joint_stratum": "skip_glide__turning",
+      "max_ecef_error_m": 0.9739892136973423,
+      "median_ecef_error_m": 0.3605772479456628,
+      "terminal_ecef_error_m": 0.8894141211828731
+    },
+    {
+      "trajectory_id": 871,
+      "joint_stratum": "skip_glide__turning",
+      "max_ecef_error_m": 0.7167511091781814,
+      "median_ecef_error_m": 0.2689919305096455,
+      "terminal_ecef_error_m": 0.5135365742040163
+    },
+    {
+      "trajectory_id": 887,
+      "joint_stratum": "skip_glide__turning",
+      "max_ecef_error_m": 1.2738805033063556,
+      "median_ecef_error_m": 0.5366859983933991,
+      "terminal_ecef_error_m": 1.0017211933618133
+    },
+    {
+      "trajectory_id": 903,
+      "joint_stratum": "skip_glide__turning",
+      "max_ecef_error_m": 0.7030663761117644,
+      "median_ecef_error_m": 0.34332953019384577,
+      "terminal_ecef_error_m": 0.5330034452348705
+    },
+    {
+      "trajectory_id": 919,
+      "joint_stratum": "skip_glide__turning",
+      "max_ecef_error_m": 0.6809848855256493,
+      "median_ecef_error_m": 0.2228869641934964,
+      "terminal_ecef_error_m": 0.5194306985191063
+    },
+    {
+      "trajectory_id": 934,
+      "joint_stratum": "skip_glide__turning",
+      "max_ecef_error_m": 0.7187983785184104,
+      "median_ecef_error_m": 0.22440837789267296,
+      "terminal_ecef_error_m": 0.5332712054814501
+    },
+    {
+      "trajectory_id": 950,
+      "joint_stratum": "skip_glide__turning",
+      "max_ecef_error_m": 1.3603787416671043,
+      "median_ecef_error_m": 0.7439217897951548,
+      "terminal_ecef_error_m": 0.9708609227460008
+    },
+    {
+      "trajectory_id": 966,
+      "joint_stratum": "skip_glide__turning",
+      "max_ecef_error_m": 0.7755381806842863,
+      "median_ecef_error_m": 0.3385698383548236,
+      "terminal_ecef_error_m": 0.6420871433935126
+    },
+    {
+      "trajectory_id": 982,
+      "joint_stratum": "skip_glide__turning",
+      "max_ecef_error_m": 0.8161483151554393,
+      "median_ecef_error_m": 0.38265872018261116,
+      "terminal_ecef_error_m": 0.7125079327609208
+    },
+    {
+      "trajectory_id": 997,
+      "joint_stratum": "skip_glide__turning",
+      "max_ecef_error_m": 1.4137815216002005,
+      "median_ecef_error_m": 0.74171992676202,
+      "terminal_ecef_error_m": 1.335917180856021
+    },
+    {
+      "trajectory_id": 1013,
+      "joint_stratum": "skip_glide__turning",
+      "max_ecef_error_m": 0.48314571700717407,
+      "median_ecef_error_m": 0.2287399798774204,
+      "terminal_ecef_error_m": 0.33218260895676843
+    },
+    {
+      "trajectory_id": 1029,
+      "joint_stratum": "skip_glide__turning",
+      "max_ecef_error_m": 0.6828312768313678,
+      "median_ecef_error_m": 0.30723082668725177,
+      "terminal_ecef_error_m": 0.6828312768313678
+    },
+    {
+      "trajectory_id": 1045,
+      "joint_stratum": "skip_glide__turning",
+      "max_ecef_error_m": 0.8348855513532288,
+      "median_ecef_error_m": 0.33993375920294844,
+      "terminal_ecef_error_m": 0.4814091621938027
+    },
+    {
+      "trajectory_id": 1390,
+      "joint_stratum": "skip_glide__turning",
+      "max_ecef_error_m": 0.5162235743229707,
+      "median_ecef_error_m": 0.2480686912601882,
+      "terminal_ecef_error_m": 0.38989217246350966
+    },
+    {
+      "trajectory_id": 1406,
+      "joint_stratum": "skip_glide__turning",
+      "max_ecef_error_m": 0.7459055663120242,
+      "median_ecef_error_m": 0.3557932849697636,
+      "terminal_ecef_error_m": 0.6485340956534489
+    },
+    {
+      "trajectory_id": 1692,
+      "joint_stratum": "skip_glide__turning",
+      "max_ecef_error_m": 0.8221547550852768,
+      "median_ecef_error_m": 0.3091605308101931,
+      "terminal_ecef_error_m": 0.6695889095447682
+    },
+    {
+      "trajectory_id": 1708,
+      "joint_stratum": "skip_glide__turning",
+      "max_ecef_error_m": 0.7079517785024401,
+      "median_ecef_error_m": 0.2470178910551558,
+      "terminal_ecef_error_m": 0.593728505313331
+    },
+    {
+      "trajectory_id": 1723,
+      "joint_stratum": "skip_glide__turning",
+      "max_ecef_error_m": 1.3159993096604525,
+      "median_ecef_error_m": 0.7151073590166075,
+      "terminal_ecef_error_m": 1.2335823041239866
+    },
+    {
+      "trajectory_id": 1739,
+      "joint_stratum": "skip_glide__turning",
+      "max_ecef_error_m": 0.7395182281831794,
+      "median_ecef_error_m": 0.25595941908092057,
+      "terminal_ecef_error_m": 0.6339763068606157
+    },
+    {
+      "trajectory_id": 1050,
+      "joint_stratum": "skip_glide__weaving",
+      "max_ecef_error_m": 1.6666487598239232,
+      "median_ecef_error_m": 0.5930202418724861,
+      "terminal_ecef_error_m": 1.6428456951011419
+    },
+    {
+      "trajectory_id": 1066,
+      "joint_stratum": "skip_glide__weaving",
+      "max_ecef_error_m": 1.899315735216207,
+      "median_ecef_error_m": 0.5291157572988263,
+      "terminal_ecef_error_m": 1.899315735216207
+    },
+    {
+      "trajectory_id": 1081,
+      "joint_stratum": "skip_glide__weaving",
+      "max_ecef_error_m": 1.7359053698749172,
+      "median_ecef_error_m": 0.812188198491633,
+      "terminal_ecef_error_m": 1.5604305133171816
+    },
+    {
+      "trajectory_id": 1097,
+      "joint_stratum": "skip_glide__weaving",
+      "max_ecef_error_m": 0.5127159785668327,
+      "median_ecef_error_m": 0.18724550124712447,
+      "terminal_ecef_error_m": 0.41366909830217663
+    },
+    {
+      "trajectory_id": 1113,
+      "joint_stratum": "skip_glide__weaving",
+      "max_ecef_error_m": 0.7016954998921088,
+      "median_ecef_error_m": 0.30822330064425346,
+      "terminal_ecef_error_m": 0.36205566675261525
+    },
+    {
+      "trajectory_id": 1129,
+      "joint_stratum": "skip_glide__weaving",
+      "max_ecef_error_m": 1.7365459731473463,
+      "median_ecef_error_m": 0.5422326514196101,
+      "terminal_ecef_error_m": 1.2969330449775889
+    },
+    {
+      "trajectory_id": 1144,
+      "joint_stratum": "skip_glide__weaving",
+      "max_ecef_error_m": 0.5892512344448225,
+      "median_ecef_error_m": 0.31157255947770746,
+      "terminal_ecef_error_m": 0.21580217738173454
+    },
+    {
+      "trajectory_id": 1160,
+      "joint_stratum": "skip_glide__weaving",
+      "max_ecef_error_m": 0.5991430881025192,
+      "median_ecef_error_m": 0.23458798935929412,
+      "terminal_ecef_error_m": 0.47330837548192034
+    },
+    {
+      "trajectory_id": 1176,
+      "joint_stratum": "skip_glide__weaving",
+      "max_ecef_error_m": 1.6358376720677053,
+      "median_ecef_error_m": 0.4298759407736762,
+      "terminal_ecef_error_m": 1.5779852405947077
+    },
+    {
+      "trajectory_id": 1192,
+      "joint_stratum": "skip_glide__weaving",
+      "max_ecef_error_m": 0.7836028775779995,
+      "median_ecef_error_m": 0.25426975248983175,
+      "terminal_ecef_error_m": 0.46276073048950084
+    },
+    {
+      "trajectory_id": 1207,
+      "joint_stratum": "skip_glide__weaving",
+      "max_ecef_error_m": 2.57504305993431,
+      "median_ecef_error_m": 0.8790302001991458,
+      "terminal_ecef_error_m": 2.57504305993431
+    },
+    {
+      "trajectory_id": 1223,
+      "joint_stratum": "skip_glide__weaving",
+      "max_ecef_error_m": 1.8958738768335386,
+      "median_ecef_error_m": 0.8121079224233199,
+      "terminal_ecef_error_m": 1.7923306237757608
+    },
+    {
+      "trajectory_id": 1239,
+      "joint_stratum": "skip_glide__weaving",
+      "max_ecef_error_m": 2.3738593800748062,
+      "median_ecef_error_m": 0.9700825336618195,
+      "terminal_ecef_error_m": 2.330825580160594
+    },
+    {
+      "trajectory_id": 1255,
+      "joint_stratum": "skip_glide__weaving",
+      "max_ecef_error_m": 1.4721564729795347,
+      "median_ecef_error_m": 0.5283785970238036,
+      "terminal_ecef_error_m": 1.17946084962339
+    },
+    {
+      "trajectory_id": 1420,
+      "joint_stratum": "skip_glide__weaving",
+      "max_ecef_error_m": 0.8865961029857922,
+      "median_ecef_error_m": 0.4444727538988676,
+      "terminal_ecef_error_m": 0.7787308281753291
+    },
+    {
+      "trajectory_id": 1436,
+      "joint_stratum": "skip_glide__weaving",
+      "max_ecef_error_m": 1.5336571071046183,
+      "median_ecef_error_m": 0.6215151368409433,
+      "terminal_ecef_error_m": 1.4520759784214536
+    },
+    {
+      "trajectory_id": 1752,
+      "joint_stratum": "skip_glide__weaving",
+      "max_ecef_error_m": 3.552984188871214,
+      "median_ecef_error_m": 1.0977221975911167,
+      "terminal_ecef_error_m": 3.3374659265015905
+    },
+    {
+      "trajectory_id": 1768,
+      "joint_stratum": "skip_glide__weaving",
+      "max_ecef_error_m": 1.066673529970851,
+      "median_ecef_error_m": 0.3186169470130763,
+      "terminal_ecef_error_m": 1.0367772167541296
+    },
+    {
+      "trajectory_id": 1783,
+      "joint_stratum": "skip_glide__weaving",
+      "max_ecef_error_m": 1.6280750640214618,
+      "median_ecef_error_m": 0.45214624708762463,
+      "terminal_ecef_error_m": 0.9765327090046356
+    },
+    {
+      "trajectory_id": 1799,
+      "joint_stratum": "skip_glide__weaving",
+      "max_ecef_error_m": 1.0733505178020353,
+      "median_ecef_error_m": 0.6203746534384402,
+      "terminal_ecef_error_m": 0.9843700320845769
+    }
+  ],
+  "scope": "Numerical convergence against a tighter integration only; not flight-data or high-fidelity-model validation."
+}

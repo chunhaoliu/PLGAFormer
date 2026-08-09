@@ -1,0 +1,515 @@
+{
+  "dataset": "D:\\OneDrive\\02_Study\\2024_NJUST\\Trajectory  Prediction\\HGV_Project\\HGVTP_PLGAformer-main\\data_generation\\data\\processed\\hgv_multiregime_dataset_v2_1.npz",
+  "generated_at_utc": "2026-07-30T16:50:47.942769+00:00",
+  "dataset_protocol": "hgv_multiregime_state_v2_1",
+  "passed": true,
+  "checks": {
+    "protocol_identity": {
+      "passed": true,
+      "detail": "hgv_multiregime_state_v2_1"
+    },
+    "array_shape": {
+      "passed": true,
+      "detail": {
+        "states": [
+          1800,
+          1000,
+          6
+        ],
+        "alpha": [
+          1800,
+          1000
+        ],
+        "bank": [
+          1800,
+          1000
+        ]
+      }
+    },
+    "formal_count": {
+      "passed": true,
+      "detail": 1800
+    },
+    "joint_stratum_balance": {
+      "passed": true,
+      "detail": {
+        "quasi_equilibrium__longitudinal": 300,
+        "quasi_equilibrium__turning": 300,
+        "quasi_equilibrium__weaving": 300,
+        "skip_glide__longitudinal": 300,
+        "skip_glide__turning": 300,
+        "skip_glide__weaving": 300
+      }
+    },
+    "taxonomy": {
+      "passed": true,
+      "detail": {
+        "maneuver": {
+          "longitudinal": 600,
+          "turning": 600,
+          "weaving": 600
+        },
+        "vertical": {
+          "quasi_equilibrium": 900,
+          "skip_glide": 900
+        }
+      }
+    },
+    "trajectory_split_disjoint": {
+      "passed": true,
+      "detail": {
+        "is_disjoint": true,
+        "train_count": 1260,
+        "val_count": 180,
+        "test_count": 360,
+        "train_val_overlap": [],
+        "train_test_overlap": [],
+        "val_test_overlap": []
+      }
+    },
+    "split_stratification": {
+      "passed": true,
+      "detail": {
+        "train": {
+          "quasi_equilibrium__longitudinal": 210,
+          "quasi_equilibrium__turning": 210,
+          "quasi_equilibrium__weaving": 210,
+          "skip_glide__longitudinal": 210,
+          "skip_glide__turning": 210,
+          "skip_glide__weaving": 210
+        },
+        "val": {
+          "quasi_equilibrium__longitudinal": 30,
+          "quasi_equilibrium__turning": 30,
+          "quasi_equilibrium__weaving": 30,
+          "skip_glide__longitudinal": 30,
+          "skip_glide__turning": 30,
+          "skip_glide__weaving": 30
+        },
+        "test": {
+          "quasi_equilibrium__longitudinal": 60,
+          "quasi_equilibrium__turning": 60,
+          "quasi_equilibrium__weaving": 60,
+          "skip_glide__longitudinal": 60,
+          "skip_glide__turning": 60,
+          "skip_glide__weaving": 60
+        }
+      }
+    },
+    "finite_values": {
+      "passed": true,
+      "detail": "states, controls, and load diagnostics"
+    },
+    "physical_envelope": {
+      "passed": true,
+      "detail": {
+        "altitude_km": {
+          "min": 34.638,
+          "p05": 44.026,
+          "median": 55.4085,
+          "p95": 66.82,
+          "max": 79.961
+        },
+        "speed_km_s": {
+          "min": 4.10502880859375,
+          "p05": 5.159547827148438,
+          "median": 6.10826171875,
+          "p95": 6.78324560546875,
+          "max": 6.99949169921875
+        },
+        "dynamic_pressure_kpa": {
+          "min": 0.34900790405273435,
+          "p05": 2.4806850708007815,
+          "median": 9.4135830078125,
+          "p95": 33.14974628906239,
+          "max": 99.95303125
+        },
+        "load_factor_g": {
+          "min": 0.018689680844545364,
+          "p05": 0.12702339962124826,
+          "median": 0.320329412817955,
+          "p95": 0.5805171370506286,
+          "max": 1.1635935306549072
+        }
+      }
+    },
+    "vertical_regime_separation": {
+      "passed": true,
+      "detail": {
+        "quasi_equilibrium_extrema": {
+          "min": 0.0,
+          "p05": 0.0,
+          "median": 0.0,
+          "p95": 0.0,
+          "max": 0.0
+        },
+        "skip_glide_extrema": {
+          "min": 2.0,
+          "p05": 3.0,
+          "median": 5.0,
+          "p95": 7.0,
+          "max": 8.0
+        }
+      }
+    },
+    "maneuver_control_semantics": {
+      "passed": true,
+      "detail": {
+        "longitudinal_abs_max_deg": 0.0,
+        "turning_abs_max_deg": {
+          "min": 20.01458870225299,
+          "p05": 20.711571343370803,
+          "median": 27.466697332046664,
+          "p95": 34.21606931323362,
+          "max": 34.98244624943194
+        },
+        "weaving_abs_max_deg": {
+          "min": 20.034898269750023,
+          "p05": 20.680965094945247,
+          "median": 27.27281387471939,
+          "p95": 34.26922952931747,
+          "max": 34.98574864589564
+        },
+        "weaving_has_both_signs_fraction": 1.0,
+        "achieved_max_rate_deg_s": 2.99387169624981,
+        "command_achieved_are_distinct": true
+      }
+    },
+    "smooth_bank_actuation": {
+      "passed": true,
+      "detail": {
+        "longitudinal_abs_max_deg": 0.0,
+        "turning_abs_max_deg": {
+          "min": 20.01458870225299,
+          "p05": 20.711571343370803,
+          "median": 27.466697332046664,
+          "p95": 34.21606931323362,
+          "max": 34.98244624943194
+        },
+        "weaving_abs_max_deg": {
+          "min": 20.034898269750023,
+          "p05": 20.680965094945247,
+          "median": 27.27281387471939,
+          "p95": 34.26922952931747,
+          "max": 34.98574864589564
+        },
+        "weaving_has_both_signs_fraction": 1.0,
+        "achieved_max_rate_deg_s": 2.99387169624981,
+        "command_achieved_are_distinct": true
+      }
+    },
+    "control_parameter_diversity": {
+      "passed": true,
+      "detail": {
+        "alpha_ld_deg": 0.8642699706526314,
+        "alpha_max_deg": 1.4615290137280417,
+        "velocity_threshold_low_mps": 113.93255646202529,
+        "velocity_threshold_high_mps": 143.99004424148876,
+        "qeg_gamma_reference_deg": 0.051773553179961324,
+        "bank_amplitude_deg": 13.398625792088318,
+        "bank_initial_sign": 0.999994444428992,
+        "bank_segment_count": 1.070648672649872,
+        "bank_start_s": 58.93336553109397,
+        "bank_duration_1_s": 184.80860426870632,
+        "bank_duration_2_s": 85.72742024853439,
+        "bank_duration_3_s": 68.21181231511913,
+        "bank_gap_1_s": 32.67561471195092,
+        "bank_gap_2_s": 25.998391701505383,
+        "bank_rate_limit_deg_s": 1.1187592042925565
+      }
+    },
+    "skip_attack_law_branch_coverage": {
+      "passed": true,
+      "detail": {
+        "low": 0.10093555555555556,
+        "transition": 0.49799333333333334,
+        "high": 0.4010711111111111
+      }
+    },
+    "initial_condition_geographic_diversity": {
+      "passed": true,
+      "detail": {
+        "initial_longitude_deg": {
+          "min": -19.98953386083009,
+          "p05": -17.91739696146978,
+          "median": 0.2806447890330077,
+          "p95": 17.909794790168824,
+          "max": 19.988594709819214
+        },
+        "initial_latitude_deg": {
+          "min": -24.964153586194428,
+          "p05": -22.252118717742523,
+          "median": -0.3611753473694629,
+          "p95": 22.55233319403072,
+          "max": 24.945541320706145
+        },
+        "initial_heading_deg": {
+          "min": 75.00097538902186,
+          "p05": 76.44627756834241,
+          "median": 89.85949868306184,
+          "p95": 103.42949312980056,
+          "max": 104.96589637227073
+        }
+      }
+    },
+    "continuous_covariate_split_balance": {
+      "passed": true,
+      "detail": {
+        "maximum_standardized_mean_difference": 0.23498182254935174,
+        "limit": 0.25,
+        "quasi_equilibrium__longitudinal:train_vs_val": 0.23498182254935174,
+        "quasi_equilibrium__longitudinal:train_vs_test": 0.18043172696528992,
+        "quasi_equilibrium__turning:train_vs_val": 0.19578248168176524,
+        "quasi_equilibrium__turning:train_vs_test": 0.1058507703108981,
+        "quasi_equilibrium__weaving:train_vs_val": 0.22970405040927944,
+        "quasi_equilibrium__weaving:train_vs_test": 0.17216074799675693,
+        "skip_glide__longitudinal:train_vs_val": 0.15094065021691563,
+        "skip_glide__longitudinal:train_vs_test": 0.12240671433921818,
+        "skip_glide__turning:train_vs_val": 0.17038435450797926,
+        "skip_glide__turning:train_vs_test": 0.1181329854712937,
+        "skip_glide__weaving:train_vs_val": 0.07372565529643645,
+        "skip_glide__weaving:train_vs_test": 0.05239550924598393
+      }
+    },
+    "manifest_hash": {
+      "passed": true,
+      "detail": {
+        "computed": "526d50d05b14ed17f9093249cbb5a382f526468e36723457c08c790d449112e7",
+        "manifest": "526d50d05b14ed17f9093249cbb5a382f526468e36723457c08c790d449112e7"
+      }
+    }
+  },
+  "class_summaries": {
+    "quasi_equilibrium__longitudinal": {
+      "count": 300,
+      "initial_altitude_km": {
+        "min": 55.066,
+        "p05": 55.623125,
+        "median": 61.185,
+        "p95": 68.71565000000001,
+        "max": 69.9825
+      },
+      "terminal_altitude_km": {
+        "min": 35.4635,
+        "p05": 37.807449999999996,
+        "median": 47.556,
+        "p95": 57.8353,
+        "max": 60.9135
+      },
+      "initial_speed_km_s": {
+        "min": 6.0000205078125,
+        "p05": 6.08591796875,
+        "median": 6.583616943359376,
+        "p95": 6.964378930664062,
+        "max": 6.99949169921875
+      },
+      "terminal_speed_km_s": {
+        "min": 4.213283203125,
+        "p05": 4.646294165039063,
+        "median": 5.71210498046875,
+        "p95": 6.393444335937501,
+        "max": 6.5701103515625
+      },
+      "vertical_extrema": {
+        "min": 0.0,
+        "p05": 0.0,
+        "median": 0.0,
+        "p95": 0.0,
+        "max": 0.0
+      }
+    },
+    "quasi_equilibrium__turning": {
+      "count": 300,
+      "initial_altitude_km": {
+        "min": 55.0015,
+        "p05": 55.70825000000001,
+        "median": 60.974000000000004,
+        "p95": 67.6884,
+        "max": 69.8695
+      },
+      "terminal_altitude_km": {
+        "min": 35.251,
+        "p05": 37.7118,
+        "median": 47.447500000000005,
+        "p95": 56.536025,
+        "max": 61.391
+      },
+      "initial_speed_km_s": {
+        "min": 6.00320751953125,
+        "p05": 6.058570141601563,
+        "median": 6.5949636230468744,
+        "p95": 6.955230541992188,
+        "max": 6.99867138671875
+      },
+      "terminal_speed_km_s": {
+        "min": 4.10502880859375,
+        "p05": 4.539621826171875,
+        "median": 5.691998291015625,
+        "p95": 6.393995043945313,
+        "max": 6.535146484375
+      },
+      "vertical_extrema": {
+        "min": 0.0,
+        "p05": 0.0,
+        "median": 0.0,
+        "p95": 0.0,
+        "max": 0.0
+      }
+    },
+    "quasi_equilibrium__weaving": {
+      "count": 300,
+      "initial_altitude_km": {
+        "min": 55.092,
+        "p05": 55.722375,
+        "median": 61.281000000000006,
+        "p95": 67.99317500000001,
+        "max": 69.9625
+      },
+      "terminal_altitude_km": {
+        "min": 34.638,
+        "p05": 37.1746,
+        "median": 46.668,
+        "p95": 56.786775000000006,
+        "max": 62.253
+      },
+      "initial_speed_km_s": {
+        "min": 6.0010517578125,
+        "p05": 6.094741943359375,
+        "median": 6.592830810546875,
+        "p95": 6.968534082031249,
+        "max": 6.9972958984375
+      },
+      "terminal_speed_km_s": {
+        "min": 4.1897431640625,
+        "p05": 4.641909594726562,
+        "median": 5.70555859375,
+        "p95": 6.3840284912109375,
+        "max": 6.53059619140625
+      },
+      "vertical_extrema": {
+        "min": 0.0,
+        "p05": 0.0,
+        "median": 0.0,
+        "p95": 0.0,
+        "max": 0.0
+      }
+    },
+    "skip_glide__longitudinal": {
+      "count": 300,
+      "initial_altitude_km": {
+        "min": 55.0195,
+        "p05": 55.7979,
+        "median": 62.647,
+        "p95": 69.186675,
+        "max": 69.932
+      },
+      "terminal_altitude_km": {
+        "min": 40.476,
+        "p05": 42.8242,
+        "median": 48.02475,
+        "p95": 63.866575,
+        "max": 66.2105
+      },
+      "initial_speed_km_s": {
+        "min": 6.00095556640625,
+        "p05": 6.053561962890625,
+        "median": 6.514180664062501,
+        "p95": 6.939481176757813,
+        "max": 6.99123828125
+      },
+      "terminal_speed_km_s": {
+        "min": 4.6545859375,
+        "p05": 4.879277221679688,
+        "median": 5.458796875,
+        "p95": 6.184043579101563,
+        "max": 6.4335869140625
+      },
+      "vertical_extrema": {
+        "min": 2.0,
+        "p05": 3.0,
+        "median": 5.0,
+        "p95": 7.0,
+        "max": 7.0
+      }
+    },
+    "skip_glide__turning": {
+      "count": 300,
+      "initial_altitude_km": {
+        "min": 55.0045,
+        "p05": 55.83885,
+        "median": 62.5555,
+        "p95": 69.30067500000001,
+        "max": 69.9915
+      },
+      "terminal_altitude_km": {
+        "min": 39.9195,
+        "p05": 42.56305,
+        "median": 47.43675,
+        "p95": 63.650975,
+        "max": 66.408
+      },
+      "initial_speed_km_s": {
+        "min": 6.001052734375,
+        "p05": 6.053224877929687,
+        "median": 6.4799997558593745,
+        "p95": 6.9444899658203125,
+        "max": 6.9918955078125
+      },
+      "terminal_speed_km_s": {
+        "min": 4.6368681640625,
+        "p05": 4.776807446289062,
+        "median": 5.340587646484375,
+        "p95": 6.12530732421875,
+        "max": 6.41090966796875
+      },
+      "vertical_extrema": {
+        "min": 2.0,
+        "p05": 3.0,
+        "median": 5.0,
+        "p95": 7.0,
+        "max": 7.0
+      }
+    },
+    "skip_glide__weaving": {
+      "count": 300,
+      "initial_altitude_km": {
+        "min": 55.002,
+        "p05": 55.935950000000005,
+        "median": 62.715999999999994,
+        "p95": 69.194575,
+        "max": 69.975
+      },
+      "terminal_altitude_km": {
+        "min": 38.842,
+        "p05": 41.400725,
+        "median": 47.446250000000006,
+        "p95": 62.758525,
+        "max": 66.6405
+      },
+      "initial_speed_km_s": {
+        "min": 6.00205908203125,
+        "p05": 6.051724780273437,
+        "median": 6.482465576171875,
+        "p95": 6.92963818359375,
+        "max": 6.99354638671875
+      },
+      "terminal_speed_km_s": {
+        "min": 4.62884619140625,
+        "p05": 4.80005419921875,
+        "median": 5.364884033203126,
+        "p95": 6.16021943359375,
+        "max": 6.40083349609375
+      },
+      "vertical_extrema": {
+        "min": 2.0,
+        "p05": 3.0,
+        "median": 5.0,
+        "p95": 7.0,
+        "max": 8.0
+      }
+    }
+  },
+  "paper_dataset_evidence_allowed": true,
+  "data_gate_passed_for_training": true,
+  "note": "The formal data gate passed. Manuscript readiness and experiment authorization are tracked separately from this data-only audit."
+}

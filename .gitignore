@@ -1,0 +1,77 @@
+# Python bytecode and tool caches
+__pycache__/
+*.py[cod]
+*.pyo
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+build/
+dist/
+
+# Local environments and editor state
+.venv/
+venv/
+env/
+.idea/
+.vscode/
+.cursor/
+.local_*_pycache/
+.ipynb_checkpoints/
+*.swp
+*.swo
+*~
+
+# OS and sync-conflict files
+.DS_Store
+Thumbs.db
+*-DESKTOP-CJ14JLA*
+
+# Generated datasets, scalers, and dataset figures.
+# Keep only the frozen v2.1 text metadata.
+data_generation/data/processed/*
+!data_generation/data/processed/FORMAL_DATA_MANIFEST.md
+!data_generation/data/processed/hgv_multiregime_dataset_v2_1.manifest.json
+!data_generation/data/processed/hgv_multiregime_dataset_v2_1.audit.json
+!data_generation/data/processed/hgv_multiregime_dataset_v2_1.convergence.json
+!data_generation/data/processed/scaler_signature_exp1_sota.json
+*.npz
+*.joblib
+data_generation/data_figure/
+
+# Checkpoints and model binaries
+trained_models/
+experiments/**/trained_models/
+checkpoints/
+*.pth
+*.pt
+
+# Generated experiment outputs. Keep only lightweight formal-v3 records.
+experiments/**/results/*
+!experiments/exp1_sota/results/formal_v3/
+!experiments/exp1_sota/results/formal_v3/**/
+!experiments/exp1_sota/results/formal_v3/**/*.json
+!experiments/exp1_sota/results/formal_v3/**/*.csv
+!experiments/exp1_sota/results/formal_v3/**/*.md
+!experiments/exp2_ablation/results/formal_v3/
+!experiments/exp2_ablation/results/formal_v3/**/
+!experiments/exp2_ablation/results/formal_v3/**/*.json
+!experiments/exp2_ablation/results/formal_v3/**/*.csv
+!experiments/exp2_ablation/results/formal_v3/**/*.md
+
+# Historical/generated paper artifacts are not core source.
+experiments/paper_artifacts/
+experiments/paper_artifacts_v2/
+experiments/taes_submission_artifacts/generated/
+
+# Logs and temporary workspaces
+*.log
+tmp/
+temp/
+.tmp*/
+*.tmp
+
+# Local assistant/tool state
+.claude/

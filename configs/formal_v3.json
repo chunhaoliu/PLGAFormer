@@ -1,0 +1,209 @@
+{
+  "schema_version": 1,
+  "generation": {
+    "name": "formal_v3",
+    "evidence_tier": "final",
+    "config_hash": "sha256(canonical_json_without_config_hash)",
+    "legacy_record_attestations": [
+      {"source_sha256": "fd02bf6ce7bb619260e02313f525fea3c98d0f9640cf80febeacca0c9b3b8980", "run_id": "formal_sota_seed123_af_ciln_20260808_150111", "model_key": "af_ciln", "seed": 123},
+      {"source_sha256": "768db4661eb6cfd8a2741ce39d86d97d381ea1e931bf1dd3344188d32b3fe217", "run_id": "formal_sota_seed123_baseline_20260808_160656", "model_key": "baseline", "seed": 123},
+      {"source_sha256": "46d32af58fae762def8d91283cf5aa8379093a70b3c7bf8a121602a209b6f40e", "run_id": "formal_sota_seed123_dlinear_20260808_154509", "model_key": "dlinear", "seed": 123},
+      {"source_sha256": "90c2e9d7cab304786cdd7203f58550b354ac283a16061859b74dedc88890ba14", "run_id": "formal_sota_seed123_full_20260808_164308", "model_key": "full", "seed": 123},
+      {"source_sha256": "10001d7b51f6dc1a56b5c66f29c7b6d9e65a9362a52f0aee0651021891db88b7", "run_id": "formal_sota_seed123_itransformer_20260808_155257", "model_key": "itransformer", "seed": 123},
+      {"source_sha256": "6706878fcda415f071cd5c2afcabbd009f348fd23749aaa31e166ea9bc00c948", "run_id": "formal_sota_seed123_kinematic_20260808_154335", "model_key": "kinematic", "seed": 123},
+      {"source_sha256": "6ad52cbeaa52be4cccea879546b2d4866059e1cd345e38264821f31a24203f77", "run_id": "formal_sota_seed123_patchtst_20260808_154627", "model_key": "patchtst", "seed": 123},
+      {"source_sha256": "fe124acc571d5343877e9bd37d74b66929c5a0a78e07eb1d10255f6d56d2c34d", "run_id": "formal_sota_seed123_rotating_3dof_20260808_154339", "model_key": "rotating_3dof", "seed": 123},
+      {"source_sha256": "f9079a04ab3c71a21ce4c5ffeb89baed812c3e82b04008bc4ea050feada150cb", "run_id": "formal_sota_seed42_af_ciln_20260808_144002", "model_key": "af_ciln", "seed": 42},
+      {"source_sha256": "239c5c6047aade5ea6f82eb3db864664a9335ec7ea8e9df6eec80306c5729e84", "run_id": "formal_sota_seed42_baseline_20260807_161707", "model_key": "baseline", "seed": 42},
+      {"source_sha256": "e655796bb6d49209a7d69ab23aa5c76acceff5a3003bc37d35c08d2f635687ae", "run_id": "formal_sota_seed42_dlinear_20260808_143004", "model_key": "dlinear", "seed": 42},
+      {"source_sha256": "6bd81a152fe337b626b7863b428a9e3ef0fc7d1f4332c4b533b2d90beba7f548", "run_id": "formal_sota_seed42_full_20260807_163809", "model_key": "full", "seed": 42},
+      {"source_sha256": "4607e9204b444a0f3ad25ec33b15050b8e1ec7bf39f1bc56b8521e04e6b82c97", "run_id": "formal_sota_seed42_itransformer_20260808_143642", "model_key": "itransformer", "seed": 42},
+      {"source_sha256": "ae2a1a335abb103ad59de5b513be99b5b3f04bfcdaade364c9a437f7cec75e31", "run_id": "formal_sota_seed42_kinematic_20260808_142831", "model_key": "kinematic", "seed": 42},
+      {"source_sha256": "4819e512403b393b208e5c0e5b3b4d35f03cc97142bae59c298fc6423418306d", "run_id": "formal_sota_seed42_patchtst_20260808_143122", "model_key": "patchtst", "seed": 42},
+      {"source_sha256": "36ac115836de313e24ad778ca5c1c259f3eeaf56ad2e61814e1c6262c0461d22", "run_id": "formal_sota_seed42_rotating_3dof_20260808_142836", "model_key": "rotating_3dof", "seed": 42},
+      {"source_sha256": "3bc6b71d5765d0abb6c191eeeb69e98366aa55b478bb329892b60724a709ba22", "run_id": "formal_sota_seed456_af_ciln_20260808_152219", "model_key": "af_ciln", "seed": 456},
+      {"source_sha256": "a80071cd7bc2b9ad19c5bc25a35b61061c9e74a19abbcbbf52fb5f0240a51770", "run_id": "formal_sota_seed456_baseline_20260808_171531", "model_key": "baseline", "seed": 456},
+      {"source_sha256": "95abaa8d21ae7042ff806c2763dfe7bc3261d0179e464e8b59fcbb945b31de83", "run_id": "formal_sota_seed456_dlinear_20260808_155625", "model_key": "dlinear", "seed": 456},
+      {"source_sha256": "9ea06f6c3827d784a6ab1d851e026722035b06b7054f2231b62438d3ef39efb0", "run_id": "formal_sota_seed456_itransformer_20260808_160426", "model_key": "itransformer", "seed": 456},
+      {"source_sha256": "291241b5931590f569b359e3ee9b241baca943431bd22f2414a75604cfc2cec6", "run_id": "formal_sota_seed456_kinematic_20260808_155453", "model_key": "kinematic", "seed": 456},
+      {"source_sha256": "a4b6fb9977fe4838e90c15725be3a3093abbbc7364576b234824c601b3acba9b", "run_id": "formal_sota_seed456_patchtst_20260808_155744", "model_key": "patchtst", "seed": 456},
+      {"source_sha256": "73a9c0360dfa664bd023b060cfd8ec4f22f6755941f3d6fd7826aae8d8924c96", "run_id": "formal_sota_seed456_rotating_3dof_20260808_155457", "model_key": "rotating_3dof", "seed": 456}
+    ]
+  },
+  "dataset": {
+    "protocol": "hgv_multiregime_state_v2_1",
+    "relative_path": "data_generation/data/processed/hgv_multiregime_dataset_v2_1.npz",
+    "sha256": "526d50d05b14ed17f9093249cbb5a382f526468e36723457c08c790d449112e7",
+    "sampling_interval_s": 1.0,
+    "complete_trajectories": 1800,
+    "points_per_trajectory": 1000,
+    "joint_strata": {
+      "count": 6,
+      "trajectories_per_stratum": 300
+    }
+  },
+  "task": {
+    "input_dim": 6,
+    "output_dim": 3,
+    "target_space": "ecef_cartesian",
+    "seq_len": 256,
+    "pred_len": 256,
+    "label_len": 128,
+    "reporting_horizons": [32, 64, 128, 256],
+    "training_origins": 16,
+    "evaluation_stride": 5,
+    "window_stride": 5,
+    "train_supervision_protocol": "source_context_pred_window",
+    "eval_protocol": "source_context_decoder",
+    "eval_ar_seed_mode": "zero"
+  },
+  "split": {
+    "complete_trajectory_counts": {
+      "train": 1260,
+      "validation": 180,
+      "test": 360
+    },
+    "test_trajectory_ids_sha256": "c5851880f81e334717527bec68e91dccab59e78a0ef99d609b04926b5ad3e070",
+    "split_unit": "complete_trajectory_id",
+    "window_generation": "after_complete_trajectory_split"
+  },
+  "training": {
+    "seeds": [42, 123, 456],
+    "epochs_max": 50,
+    "batch_size": 128,
+    "patience": 15,
+    "warmup_epochs": 5,
+    "learning_rate": 0.001,
+    "weight_decay": 0.00005,
+    "gradient_clip_norm": 1.0,
+    "precision": "float32",
+    "workers": 0,
+    "amp": false,
+    "cache_physics_prior": true,
+    "physics_prior_cache_batch_size": 512,
+    "test_policy": "one_frozen_test_evaluation_after_validation_selection"
+  },
+  "main_results": {
+    "trainable_model_keys": [
+      "baseline",
+      "full",
+      "pit",
+      "dlinear",
+      "patchtst",
+      "itransformer",
+      "af_ciln"
+    ],
+    "analytical_models": {
+      "kinematic": {
+        "required_policy": "one_deterministic_record",
+        "anchor_seed": 42
+      },
+      "rotating_3dof": {
+        "required_policy": "one_deterministic_record",
+        "anchor_seed": 42
+      }
+    },
+    "required_metrics": ["ade", "fde", "rmse_cart_m"],
+    "required_evidence_tier": "final",
+    "required_test_evaluation": true
+  },
+  "ablation": {
+    "phase": "phase4_final_mechanism_controls",
+    "required_trainable_model_keys": ["spherical_prior", "schedule_only"],
+    "required_seeds": [42, 123, 456],
+    "reused_main_controls": {
+      "baseline": "main_results.baseline",
+      "full": "main_results.full"
+    },
+    "paper_rows": ["baseline", "spherical_prior", "schedule_only", "full"],
+    "required_metrics": ["ade", "fde", "rmse_cart_m"]
+  },
+  "robustness": {
+    "optional": true,
+    "protocol_match_required": true
+  },
+  "efficiency": {
+    "optional": true,
+    "protocol_match_required": true
+  },
+  "studies": {
+    "main": {
+      "study_id": "overall_prediction",
+      "display_name": "Overall Prediction Performance",
+      "runner": "scripts.run_formal_sota_unit",
+      "bundle_kind": "main",
+      "input_bundle": null,
+      "artifact_root": "experiments/exp1_sota/results/formal_v3/hgv_multiregime_state_v2_1/final",
+      "paper_facing": true,
+      "scenarios": ["nominal"],
+      "retrain": true
+    },
+    "mechanism": {
+      "study_id": "mechanism_ablation_physical_consistency",
+      "display_name": "Mechanism Ablation and Physical Consistency",
+      "runner": "scripts.run_formal_ablation_unit",
+      "bundle_kind": "ablation",
+      "input_bundle": "main",
+      "artifact_root": "experiments/exp2_ablation/results/formal_v3/hgv_multiregime_state_v2_1/final",
+      "paper_facing": true,
+      "phase": "phase4_final_mechanism_controls",
+      "scenarios": ["phase4", "physical_consistency"],
+      "retrain": true
+    },
+    "robustness": {
+      "study_id": "generalization_robustness",
+      "display_name": "Generalization and Robustness",
+      "runner": "scripts.run_taes_dynamics_shift",
+      "bundle_kind": null,
+      "input_bundle": "main",
+      "artifact_root": "experiments/exp5_ood_dynamics/results/formal_v3/hgv_multiregime_state_v2_1",
+      "paper_facing": true,
+      "retrain": false,
+      "model_keys": ["baseline", "full", "rotating_3dof"],
+      "model_seeds": [42, 123, 456],
+      "dynamics_shift_conditions": [
+        {"name": "nominal", "mass_scale": 1.0, "area_scale": 1.0, "cl_scale": 1.0, "cd_scale": 1.0},
+        {"name": "aero_shift", "mass_scale": 1.0, "area_scale": 1.0, "cl_scale": 0.9, "cd_scale": 1.1},
+        {"name": "ballistic_shift", "mass_scale": 1.15, "area_scale": 0.9, "cl_scale": 1.0, "cd_scale": 1.0}
+      ],
+      "sensor_noise": {
+        "enabled": true,
+        "seed": 1001,
+        "scale_multipliers": [0.0, 0.5, 1.0, 1.5, 2.0],
+        "channel_units": ["m", "rad", "rad", "m/s", "rad", "rad"]
+      },
+      "shortened_history": {
+        "enabled": true,
+        "input_lengths": [64, 128, 192, 256]
+      },
+      "random_missing": {"enabled": false}
+    },
+    "efficiency": {
+      "study_id": "efficiency_computational_cost",
+      "display_name": "Efficiency and Computational Cost",
+      "runner": "experiments.exp6_efficiency.efficiency_experiment",
+      "bundle_kind": null,
+      "input_bundle": "main",
+      "artifact_root": "experiments/exp6_efficiency/results/formal_v3/hgv_multiregime_state_v2_1",
+      "paper_facing": true,
+      "retrain": false,
+      "metrics": ["parameters", "flops", "batch1_latency", "throughput", "peak_memory"],
+      "timing": {"warmup": 10, "repeats": 50, "batch_size": 64, "dtype": "float32", "cuda_synchronize": true}
+    }
+  },
+  "external_sources": {
+    "af_ciln": {
+      "required": true,
+      "root_field": "af_ciln_root",
+      "source_hash_field": "source_hash",
+      "commit_hash_field": "commit_hash"
+    }
+  },
+  "artifact_layout": {
+    "main_results_records": "experiments/exp1_sota/results/formal_v3/hgv_multiregime_state_v2_1/final",
+    "main_results_checkpoints": "experiments/exp1_sota/trained_models/formal_v3/hgv_multiregime_state_v2_1/final",
+    "ablation_records": "experiments/exp2_ablation/results/formal_v3/hgv_multiregime_state_v2_1/final",
+    "ablation_checkpoints": "experiments/exp2_ablation/trained_models/formal_v3/hgv_multiregime_state_v2_1/final",
+    "generated_root": "experiments/taes_submission_artifacts/generated/formal_v3/hgv_multiregime_state_v2_1"
+  }
+}

@@ -1,0 +1,359 @@
+experiment,phase,seed,eval_protocol,eval_ar_seed_mode,train_supervision_protocol,optimizer_profile,strict_repro_mode,scenario_type,scenario_value,model,horizon,metric,value
+exp1_sota,,,strict_autoregressive,zero,shifted_next_step,enhanced,False,,,Transformer (baseline),32,mse_mean,0.16584438714198768
+exp1_sota,,,strict_autoregressive,zero,shifted_next_step,enhanced,False,,,Transformer (baseline),32,mse_std,0.007701103575527668
+exp1_sota,,,strict_autoregressive,zero,shifted_next_step,enhanced,False,,,Transformer (baseline),32,mae_mean,0.2672333971131593
+exp1_sota,,,strict_autoregressive,zero,shifted_next_step,enhanced,False,,,Transformer (baseline),32,mae_std,0.004105234984308481
+exp1_sota,,,strict_autoregressive,zero,shifted_next_step,enhanced,False,,,Transformer (baseline),32,fde_mean,261498.20385742188
+exp1_sota,,,strict_autoregressive,zero,shifted_next_step,enhanced,False,,,Transformer (baseline),32,fde_std,23288.3603515625
+exp1_sota,,,strict_autoregressive,zero,shifted_next_step,enhanced,False,,,Transformer (baseline),32,ade_mean,323657.14453125
+exp1_sota,,,strict_autoregressive,zero,shifted_next_step,enhanced,False,,,Transformer (baseline),32,ade_std,16256.5341796875
+exp1_sota,,,strict_autoregressive,zero,shifted_next_step,enhanced,False,,,Transformer (baseline),64,mse_mean,0.2634987864876166
+exp1_sota,,,strict_autoregressive,zero,shifted_next_step,enhanced,False,,,Transformer (baseline),64,mse_std,0.004571171826682985
+exp1_sota,,,strict_autoregressive,zero,shifted_next_step,enhanced,False,,,Transformer (baseline),64,mae_mean,0.2968495669774711
+exp1_sota,,,strict_autoregressive,zero,shifted_next_step,enhanced,False,,,Transformer (baseline),64,mae_std,0.0007187970913946629
+exp1_sota,,,strict_autoregressive,zero,shifted_next_step,enhanced,False,,,Transformer (baseline),64,fde_mean,213730.5321044922
+exp1_sota,,,strict_autoregressive,zero,shifted_next_step,enhanced,False,,,Transformer (baseline),64,fde_std,27583.794311523438
+exp1_sota,,,strict_autoregressive,zero,shifted_next_step,enhanced,False,,,Transformer (baseline),64,ade_mean,276731.3934326172
+exp1_sota,,,strict_autoregressive,zero,shifted_next_step,enhanced,False,,,Transformer (baseline),64,ade_std,19989.911743164062
+exp1_sota,,,strict_autoregressive,zero,shifted_next_step,enhanced,False,,,Transformer (baseline),128,mse_mean,0.21067953493911773
+exp1_sota,,,strict_autoregressive,zero,shifted_next_step,enhanced,False,,,Transformer (baseline),128,mse_std,0.002468236139975488
+exp1_sota,,,strict_autoregressive,zero,shifted_next_step,enhanced,False,,,Transformer (baseline),128,mae_mean,0.2616079687140882
+exp1_sota,,,strict_autoregressive,zero,shifted_next_step,enhanced,False,,,Transformer (baseline),128,mae_std,0.0014301305636763573
+exp1_sota,,,strict_autoregressive,zero,shifted_next_step,enhanced,False,,,Transformer (baseline),128,fde_mean,307818.0029296875
+exp1_sota,,,strict_autoregressive,zero,shifted_next_step,enhanced,False,,,Transformer (baseline),128,fde_std,3255.728515625
+exp1_sota,,,strict_autoregressive,zero,shifted_next_step,enhanced,False,,,Transformer (baseline),128,ade_mean,266799.6495361328
+exp1_sota,,,strict_autoregressive,zero,shifted_next_step,enhanced,False,,,Transformer (baseline),128,ade_std,15249.464233398438
+exp1_sota,,,strict_autoregressive,zero,shifted_next_step,enhanced,False,,,Transformer (baseline),256,mse_mean,0.21067953493911773
+exp1_sota,,,strict_autoregressive,zero,shifted_next_step,enhanced,False,,,Transformer (baseline),256,mse_std,0.002468236139975488
+exp1_sota,,,strict_autoregressive,zero,shifted_next_step,enhanced,False,,,Transformer (baseline),256,mae_mean,0.2616079687140882
+exp1_sota,,,strict_autoregressive,zero,shifted_next_step,enhanced,False,,,Transformer (baseline),256,mae_std,0.0014301305636763573
+exp1_sota,,,strict_autoregressive,zero,shifted_next_step,enhanced,False,,,Transformer (baseline),256,fde_mean,307818.0029296875
+exp1_sota,,,strict_autoregressive,zero,shifted_next_step,enhanced,False,,,Transformer (baseline),256,fde_std,3255.728515625
+exp1_sota,,,strict_autoregressive,zero,shifted_next_step,enhanced,False,,,Transformer (baseline),256,ade_mean,266799.6495361328
+exp1_sota,,,strict_autoregressive,zero,shifted_next_step,enhanced,False,,,Transformer (baseline),256,ade_std,15249.464233398438
+exp1_sota,,,strict_autoregressive,zero,shifted_next_step,enhanced,False,,,PLGAFormer (proposed),32,mse_mean,0.2399344727746211
+exp1_sota,,,strict_autoregressive,zero,shifted_next_step,enhanced,False,,,PLGAFormer (proposed),32,mse_std,0.11514562420779839
+exp1_sota,,,strict_autoregressive,zero,shifted_next_step,enhanced,False,,,PLGAFormer (proposed),32,mae_mean,0.3130481658736244
+exp1_sota,,,strict_autoregressive,zero,shifted_next_step,enhanced,False,,,PLGAFormer (proposed),32,mae_std,0.1216528796358034
+exp1_sota,,,strict_autoregressive,zero,shifted_next_step,enhanced,False,,,PLGAFormer (proposed),32,fde_mean,462463.53717041016
+exp1_sota,,,strict_autoregressive,zero,shifted_next_step,enhanced,False,,,PLGAFormer (proposed),32,fde_std,325400.25091552734
+exp1_sota,,,strict_autoregressive,zero,shifted_next_step,enhanced,False,,,PLGAFormer (proposed),32,ade_mean,622304.2725830078
+exp1_sota,,,strict_autoregressive,zero,shifted_next_step,enhanced,False,,,PLGAFormer (proposed),32,ade_std,390307.6229248047
+exp1_sota,,,strict_autoregressive,zero,shifted_next_step,enhanced,False,,,PLGAFormer (proposed),64,mse_mean,0.1943980465293862
+exp1_sota,,,strict_autoregressive,zero,shifted_next_step,enhanced,False,,,PLGAFormer (proposed),64,mse_std,0.08025882713263854
+exp1_sota,,,strict_autoregressive,zero,shifted_next_step,enhanced,False,,,PLGAFormer (proposed),64,mae_mean,0.2768847952829674
+exp1_sota,,,strict_autoregressive,zero,shifted_next_step,enhanced,False,,,PLGAFormer (proposed),64,mae_std,0.09877434594091028
+exp1_sota,,,strict_autoregressive,zero,shifted_next_step,enhanced,False,,,PLGAFormer (proposed),64,fde_mean,389927.49182128906
+exp1_sota,,,strict_autoregressive,zero,shifted_next_step,enhanced,False,,,PLGAFormer (proposed),64,fde_std,266623.66833496094
+exp1_sota,,,strict_autoregressive,zero,shifted_next_step,enhanced,False,,,PLGAFormer (proposed),64,ade_mean,521315.99267578125
+exp1_sota,,,strict_autoregressive,zero,shifted_next_step,enhanced,False,,,PLGAFormer (proposed),64,ade_std,340835.34423828125
+exp1_sota,,,strict_autoregressive,zero,shifted_next_step,enhanced,False,,,PLGAFormer (proposed),128,mse_mean,0.18465395888779312
+exp1_sota,,,strict_autoregressive,zero,shifted_next_step,enhanced,False,,,PLGAFormer (proposed),128,mse_std,0.07495646888855845
+exp1_sota,,,strict_autoregressive,zero,shifted_next_step,enhanced,False,,,PLGAFormer (proposed),128,mae_mean,0.2588178204605356
+exp1_sota,,,strict_autoregressive,zero,shifted_next_step,enhanced,False,,,PLGAFormer (proposed),128,mae_std,0.08908901398535818
+exp1_sota,,,strict_autoregressive,zero,shifted_next_step,enhanced,False,,,PLGAFormer (proposed),128,fde_mean,345395.75897216797
+exp1_sota,,,strict_autoregressive,zero,shifted_next_step,enhanced,False,,,PLGAFormer (proposed),128,fde_std,222216.07061767578
+exp1_sota,,,strict_autoregressive,zero,shifted_next_step,enhanced,False,,,PLGAFormer (proposed),128,ade_mean,440338.37322998047
+exp1_sota,,,strict_autoregressive,zero,shifted_next_step,enhanced,False,,,PLGAFormer (proposed),128,ade_std,291116.79766845703
+exp1_sota,,,strict_autoregressive,zero,shifted_next_step,enhanced,False,,,PLGAFormer (proposed),256,mse_mean,0.18465395888779312
+exp1_sota,,,strict_autoregressive,zero,shifted_next_step,enhanced,False,,,PLGAFormer (proposed),256,mse_std,0.07495646888855845
+exp1_sota,,,strict_autoregressive,zero,shifted_next_step,enhanced,False,,,PLGAFormer (proposed),256,mae_mean,0.2588178204605356
+exp1_sota,,,strict_autoregressive,zero,shifted_next_step,enhanced,False,,,PLGAFormer (proposed),256,mae_std,0.08908901398535818
+exp1_sota,,,strict_autoregressive,zero,shifted_next_step,enhanced,False,,,PLGAFormer (proposed),256,fde_mean,345395.75897216797
+exp1_sota,,,strict_autoregressive,zero,shifted_next_step,enhanced,False,,,PLGAFormer (proposed),256,fde_std,222216.07061767578
+exp1_sota,,,strict_autoregressive,zero,shifted_next_step,enhanced,False,,,PLGAFormer (proposed),256,ade_mean,440338.37322998047
+exp1_sota,,,strict_autoregressive,zero,shifted_next_step,enhanced,False,,,PLGAFormer (proposed),256,ade_std,291116.79766845703
+exp1_sota,,,strict_autoregressive,zero,shifted_next_step,enhanced,False,,,PIT,32,mse_mean,0.001080086730326002
+exp1_sota,,,strict_autoregressive,zero,shifted_next_step,enhanced,False,,,PIT,32,mse_std,6.689321708108764e-06
+exp1_sota,,,strict_autoregressive,zero,shifted_next_step,enhanced,False,,,PIT,32,mae_mean,0.019477842812193558
+exp1_sota,,,strict_autoregressive,zero,shifted_next_step,enhanced,False,,,PIT,32,mae_std,7.927455590106547e-05
+exp1_sota,,,strict_autoregressive,zero,shifted_next_step,enhanced,False,,,PIT,32,fde_mean,15282.075759887695
+exp1_sota,,,strict_autoregressive,zero,shifted_next_step,enhanced,False,,,PIT,32,fde_std,632.6998748779297
+exp1_sota,,,strict_autoregressive,zero,shifted_next_step,enhanced,False,,,PIT,32,ade_mean,15801.107696533203
+exp1_sota,,,strict_autoregressive,zero,shifted_next_step,enhanced,False,,,PIT,32,ade_std,115.01425170898438
+exp1_sota,,,strict_autoregressive,zero,shifted_next_step,enhanced,False,,,PIT,64,mse_mean,0.0010385578666500805
+exp1_sota,,,strict_autoregressive,zero,shifted_next_step,enhanced,False,,,PIT,64,mse_std,1.1628222182480386e-05
+exp1_sota,,,strict_autoregressive,zero,shifted_next_step,enhanced,False,,,PIT,64,mae_mean,0.0191174166102428
+exp1_sota,,,strict_autoregressive,zero,shifted_next_step,enhanced,False,,,PIT,64,mae_std,0.00019108326523564756
+exp1_sota,,,strict_autoregressive,zero,shifted_next_step,enhanced,False,,,PIT,64,fde_mean,16049.958503723145
+exp1_sota,,,strict_autoregressive,zero,shifted_next_step,enhanced,False,,,PIT,64,fde_std,1292.2470474243164
+exp1_sota,,,strict_autoregressive,zero,shifted_next_step,enhanced,False,,,PIT,64,ade_mean,15712.787467956543
+exp1_sota,,,strict_autoregressive,zero,shifted_next_step,enhanced,False,,,PIT,64,ade_std,521.881477355957
+exp1_sota,,,strict_autoregressive,zero,shifted_next_step,enhanced,False,,,PIT,128,mse_mean,0.0010088193816955027
+exp1_sota,,,strict_autoregressive,zero,shifted_next_step,enhanced,False,,,PIT,128,mse_std,1.361281420031446e-05
+exp1_sota,,,strict_autoregressive,zero,shifted_next_step,enhanced,False,,,PIT,128,mae_mean,0.01908766376436688
+exp1_sota,,,strict_autoregressive,zero,shifted_next_step,enhanced,False,,,PIT,128,mae_std,0.00012410717317834496
+exp1_sota,,,strict_autoregressive,zero,shifted_next_step,enhanced,False,,,PIT,128,fde_mean,22722.269424438477
+exp1_sota,,,strict_autoregressive,zero,shifted_next_step,enhanced,False,,,PIT,128,fde_std,2511.685073852539
+exp1_sota,,,strict_autoregressive,zero,shifted_next_step,enhanced,False,,,PIT,128,ade_mean,16997.97723388672
+exp1_sota,,,strict_autoregressive,zero,shifted_next_step,enhanced,False,,,PIT,128,ade_std,598.9587860107422
+exp1_sota,,,strict_autoregressive,zero,shifted_next_step,enhanced,False,,,PIT,256,mse_mean,0.0010088193816955027
+exp1_sota,,,strict_autoregressive,zero,shifted_next_step,enhanced,False,,,PIT,256,mse_std,1.361281420031446e-05
+exp1_sota,,,strict_autoregressive,zero,shifted_next_step,enhanced,False,,,PIT,256,mae_mean,0.01908766376436688
+exp1_sota,,,strict_autoregressive,zero,shifted_next_step,enhanced,False,,,PIT,256,mae_std,0.00012410717317834496
+exp1_sota,,,strict_autoregressive,zero,shifted_next_step,enhanced,False,,,PIT,256,fde_mean,22722.269424438477
+exp1_sota,,,strict_autoregressive,zero,shifted_next_step,enhanced,False,,,PIT,256,fde_std,2511.685073852539
+exp1_sota,,,strict_autoregressive,zero,shifted_next_step,enhanced,False,,,PIT,256,ade_mean,16997.97723388672
+exp1_sota,,,strict_autoregressive,zero,shifted_next_step,enhanced,False,,,PIT,256,ade_std,598.9587860107422
+exp1_sota,,,strict_autoregressive,zero,shifted_next_step,enhanced,False,,,Kalman,32,mse_mean,0.20033575873821974
+exp1_sota,,,strict_autoregressive,zero,shifted_next_step,enhanced,False,,,Kalman,32,mse_std,0.0
+exp1_sota,,,strict_autoregressive,zero,shifted_next_step,enhanced,False,,,Kalman,32,mae_mean,0.27312524407170713
+exp1_sota,,,strict_autoregressive,zero,shifted_next_step,enhanced,False,,,Kalman,32,mae_std,0.0
+exp1_sota,,,strict_autoregressive,zero,shifted_next_step,enhanced,False,,,Kalman,32,fde_mean,252715.078125
+exp1_sota,,,strict_autoregressive,zero,shifted_next_step,enhanced,False,,,Kalman,32,fde_std,0.0
+exp1_sota,,,strict_autoregressive,zero,shifted_next_step,enhanced,False,,,Kalman,32,ade_mean,283664.431640625
+exp1_sota,,,strict_autoregressive,zero,shifted_next_step,enhanced,False,,,Kalman,32,ade_std,0.0
+exp1_sota,,,strict_autoregressive,zero,shifted_next_step,enhanced,False,,,Kalman,64,mse_mean,0.29133653617464006
+exp1_sota,,,strict_autoregressive,zero,shifted_next_step,enhanced,False,,,Kalman,64,mse_std,0.0
+exp1_sota,,,strict_autoregressive,zero,shifted_next_step,enhanced,False,,,Kalman,64,mae_mean,0.3079237826168537
+exp1_sota,,,strict_autoregressive,zero,shifted_next_step,enhanced,False,,,Kalman,64,mae_std,0.0
+exp1_sota,,,strict_autoregressive,zero,shifted_next_step,enhanced,False,,,Kalman,64,fde_mean,297046.74951171875
+exp1_sota,,,strict_autoregressive,zero,shifted_next_step,enhanced,False,,,Kalman,64,fde_std,0.0
+exp1_sota,,,strict_autoregressive,zero,shifted_next_step,enhanced,False,,,Kalman,64,ade_mean,275948.57568359375
+exp1_sota,,,strict_autoregressive,zero,shifted_next_step,enhanced,False,,,Kalman,64,ade_std,0.0
+exp1_sota,,,strict_autoregressive,zero,shifted_next_step,enhanced,False,,,Kalman,128,mse_mean,0.23729781922884285
+exp1_sota,,,strict_autoregressive,zero,shifted_next_step,enhanced,False,,,Kalman,128,mse_std,0.0
+exp1_sota,,,strict_autoregressive,zero,shifted_next_step,enhanced,False,,,Kalman,128,mae_mean,0.2911316337995231
+exp1_sota,,,strict_autoregressive,zero,shifted_next_step,enhanced,False,,,Kalman,128,mae_std,0.0
+exp1_sota,,,strict_autoregressive,zero,shifted_next_step,enhanced,False,,,Kalman,128,fde_mean,492548.86279296875
+exp1_sota,,,strict_autoregressive,zero,shifted_next_step,enhanced,False,,,Kalman,128,fde_std,0.0
+exp1_sota,,,strict_autoregressive,zero,shifted_next_step,enhanced,False,,,Kalman,128,ade_mean,334745.7744140625
+exp1_sota,,,strict_autoregressive,zero,shifted_next_step,enhanced,False,,,Kalman,128,ade_std,0.0
+exp1_sota,,,strict_autoregressive,zero,shifted_next_step,enhanced,False,,,Kalman,256,mse_mean,0.23729781922884285
+exp1_sota,,,strict_autoregressive,zero,shifted_next_step,enhanced,False,,,Kalman,256,mse_std,0.0
+exp1_sota,,,strict_autoregressive,zero,shifted_next_step,enhanced,False,,,Kalman,256,mae_mean,0.2911316337995231
+exp1_sota,,,strict_autoregressive,zero,shifted_next_step,enhanced,False,,,Kalman,256,mae_std,0.0
+exp1_sota,,,strict_autoregressive,zero,shifted_next_step,enhanced,False,,,Kalman,256,fde_mean,492548.86279296875
+exp1_sota,,,strict_autoregressive,zero,shifted_next_step,enhanced,False,,,Kalman,256,fde_std,0.0
+exp1_sota,,,strict_autoregressive,zero,shifted_next_step,enhanced,False,,,Kalman,256,ade_mean,334745.7744140625
+exp1_sota,,,strict_autoregressive,zero,shifted_next_step,enhanced,False,,,Kalman,256,ade_std,0.0
+exp1_sota,,,strict_autoregressive,zero,shifted_next_step,enhanced,False,,,Informer,32,mse_mean,0.11171662510605529
+exp1_sota,,,strict_autoregressive,zero,shifted_next_step,enhanced,False,,,Informer,32,mse_std,0.0012946065398864448
+exp1_sota,,,strict_autoregressive,zero,shifted_next_step,enhanced,False,,,Informer,32,mae_mean,0.21714559162501246
+exp1_sota,,,strict_autoregressive,zero,shifted_next_step,enhanced,False,,,Informer,32,mae_std,0.0035704519832506776
+exp1_sota,,,strict_autoregressive,zero,shifted_next_step,enhanced,False,,,Informer,32,fde_mean,200699.2041015625
+exp1_sota,,,strict_autoregressive,zero,shifted_next_step,enhanced,False,,,Informer,32,fde_std,8928.486572265625
+exp1_sota,,,strict_autoregressive,zero,shifted_next_step,enhanced,False,,,Informer,32,ade_mean,266950.1513671875
+exp1_sota,,,strict_autoregressive,zero,shifted_next_step,enhanced,False,,,Informer,32,ade_std,10017.930419921875
+exp1_sota,,,strict_autoregressive,zero,shifted_next_step,enhanced,False,,,Informer,64,mse_mean,0.11697433900553733
+exp1_sota,,,strict_autoregressive,zero,shifted_next_step,enhanced,False,,,Informer,64,mse_std,0.0010916354367509484
+exp1_sota,,,strict_autoregressive,zero,shifted_next_step,enhanced,False,,,Informer,64,mae_mean,0.2057661364087835
+exp1_sota,,,strict_autoregressive,zero,shifted_next_step,enhanced,False,,,Informer,64,mae_std,0.002793209278024733
+exp1_sota,,,strict_autoregressive,zero,shifted_next_step,enhanced,False,,,Informer,64,fde_mean,77560.25573730469
+exp1_sota,,,strict_autoregressive,zero,shifted_next_step,enhanced,False,,,Informer,64,fde_std,5489.958251953125
+exp1_sota,,,strict_autoregressive,zero,shifted_next_step,enhanced,False,,,Informer,64,ade_mean,200650.72534179688
+exp1_sota,,,strict_autoregressive,zero,shifted_next_step,enhanced,False,,,Informer,64,ade_std,8763.488525390625
+exp1_sota,,,strict_autoregressive,zero,shifted_next_step,enhanced,False,,,Informer,128,mse_mean,0.10911042522639036
+exp1_sota,,,strict_autoregressive,zero,shifted_next_step,enhanced,False,,,Informer,128,mse_std,0.00018665788229554892
+exp1_sota,,,strict_autoregressive,zero,shifted_next_step,enhanced,False,,,Informer,128,mae_mean,0.18951741454657167
+exp1_sota,,,strict_autoregressive,zero,shifted_next_step,enhanced,False,,,Informer,128,mae_std,0.0002265089424327016
+exp1_sota,,,strict_autoregressive,zero,shifted_next_step,enhanced,False,,,Informer,128,fde_mean,236846.03369140625
+exp1_sota,,,strict_autoregressive,zero,shifted_next_step,enhanced,False,,,Informer,128,fde_std,17839.274169921875
+exp1_sota,,,strict_autoregressive,zero,shifted_next_step,enhanced,False,,,Informer,128,ade_mean,167142.14379882812
+exp1_sota,,,strict_autoregressive,zero,shifted_next_step,enhanced,False,,,Informer,128,ade_std,249.5439453125
+exp1_sota,,,strict_autoregressive,zero,shifted_next_step,enhanced,False,,,Informer,256,mse_mean,0.10911042522639036
+exp1_sota,,,strict_autoregressive,zero,shifted_next_step,enhanced,False,,,Informer,256,mse_std,0.00018665788229554892
+exp1_sota,,,strict_autoregressive,zero,shifted_next_step,enhanced,False,,,Informer,256,mae_mean,0.18951741454657167
+exp1_sota,,,strict_autoregressive,zero,shifted_next_step,enhanced,False,,,Informer,256,mae_std,0.0002265089424327016
+exp1_sota,,,strict_autoregressive,zero,shifted_next_step,enhanced,False,,,Informer,256,fde_mean,236846.03369140625
+exp1_sota,,,strict_autoregressive,zero,shifted_next_step,enhanced,False,,,Informer,256,fde_std,17839.274169921875
+exp1_sota,,,strict_autoregressive,zero,shifted_next_step,enhanced,False,,,Informer,256,ade_mean,167142.14379882812
+exp1_sota,,,strict_autoregressive,zero,shifted_next_step,enhanced,False,,,Informer,256,ade_std,249.5439453125
+exp1_sota,,,strict_autoregressive,zero,shifted_next_step,enhanced,False,,,PatchTST,32,mse_mean,0.014506762334349332
+exp1_sota,,,strict_autoregressive,zero,shifted_next_step,enhanced,False,,,PatchTST,32,mse_std,0.007889205448009307
+exp1_sota,,,strict_autoregressive,zero,shifted_next_step,enhanced,False,,,PatchTST,32,mae_mean,0.074081038183067
+exp1_sota,,,strict_autoregressive,zero,shifted_next_step,enhanced,False,,,PatchTST,32,mae_std,0.014435295306611806
+exp1_sota,,,strict_autoregressive,zero,shifted_next_step,enhanced,False,,,PatchTST,32,fde_mean,152886.5810546875
+exp1_sota,,,strict_autoregressive,zero,shifted_next_step,enhanced,False,,,PatchTST,32,fde_std,24180.5234375
+exp1_sota,,,strict_autoregressive,zero,shifted_next_step,enhanced,False,,,PatchTST,32,ade_mean,150819.61450195312
+exp1_sota,,,strict_autoregressive,zero,shifted_next_step,enhanced,False,,,PatchTST,32,ade_std,23180.0693359375
+exp1_sota,,,strict_autoregressive,zero,shifted_next_step,enhanced,False,,,PatchTST,64,mse_mean,0.016828957515826914
+exp1_sota,,,strict_autoregressive,zero,shifted_next_step,enhanced,False,,,PatchTST,64,mse_std,0.009278768637159374
+exp1_sota,,,strict_autoregressive,zero,shifted_next_step,enhanced,False,,,PatchTST,64,mae_mean,0.07770247620646842
+exp1_sota,,,strict_autoregressive,zero,shifted_next_step,enhanced,False,,,PatchTST,64,mae_std,0.015569265087833628
+exp1_sota,,,strict_autoregressive,zero,shifted_next_step,enhanced,False,,,PatchTST,64,fde_mean,158708.84796142578
+exp1_sota,,,strict_autoregressive,zero,shifted_next_step,enhanced,False,,,PatchTST,64,fde_std,26498.615173339844
+exp1_sota,,,strict_autoregressive,zero,shifted_next_step,enhanced,False,,,PatchTST,64,ade_mean,152959.79754638672
+exp1_sota,,,strict_autoregressive,zero,shifted_next_step,enhanced,False,,,PatchTST,64,ade_std,23968.675354003906
+exp1_sota,,,strict_autoregressive,zero,shifted_next_step,enhanced,False,,,PatchTST,128,mse_mean,0.0188865737109154
+exp1_sota,,,strict_autoregressive,zero,shifted_next_step,enhanced,False,,,PatchTST,128,mse_std,0.010048084212030517
+exp1_sota,,,strict_autoregressive,zero,shifted_next_step,enhanced,False,,,PatchTST,128,mae_mean,0.08141196201904677
+exp1_sota,,,strict_autoregressive,zero,shifted_next_step,enhanced,False,,,PatchTST,128,mae_std,0.016819921002024785
+exp1_sota,,,strict_autoregressive,zero,shifted_next_step,enhanced,False,,,PatchTST,128,fde_mean,180636.5673828125
+exp1_sota,,,strict_autoregressive,zero,shifted_next_step,enhanced,False,,,PatchTST,128,fde_std,35335.51611328125
+exp1_sota,,,strict_autoregressive,zero,shifted_next_step,enhanced,False,,,PatchTST,128,ade_mean,160589.95709228516
+exp1_sota,,,strict_autoregressive,zero,shifted_next_step,enhanced,False,,,PatchTST,128,ade_std,27086.301696777344
+exp1_sota,,,strict_autoregressive,zero,shifted_next_step,enhanced,False,,,PatchTST,256,mse_mean,0.0188865737109154
+exp1_sota,,,strict_autoregressive,zero,shifted_next_step,enhanced,False,,,PatchTST,256,mse_std,0.010048084212030517
+exp1_sota,,,strict_autoregressive,zero,shifted_next_step,enhanced,False,,,PatchTST,256,mae_mean,0.08141196201904677
+exp1_sota,,,strict_autoregressive,zero,shifted_next_step,enhanced,False,,,PatchTST,256,mae_std,0.016819921002024785
+exp1_sota,,,strict_autoregressive,zero,shifted_next_step,enhanced,False,,,PatchTST,256,fde_mean,180636.5673828125
+exp1_sota,,,strict_autoregressive,zero,shifted_next_step,enhanced,False,,,PatchTST,256,fde_std,35335.51611328125
+exp1_sota,,,strict_autoregressive,zero,shifted_next_step,enhanced,False,,,PatchTST,256,ade_mean,160589.95709228516
+exp1_sota,,,strict_autoregressive,zero,shifted_next_step,enhanced,False,,,PatchTST,256,ade_std,27086.301696777344
+exp1_sota,,,strict_autoregressive,zero,shifted_next_step,enhanced,False,,,FEDformer,32,mse_mean,0.0027412861218181206
+exp1_sota,,,strict_autoregressive,zero,shifted_next_step,enhanced,False,,,FEDformer,32,mse_std,9.9196697192383e-05
+exp1_sota,,,strict_autoregressive,zero,shifted_next_step,enhanced,False,,,FEDformer,32,mae_mean,0.0386595037416555
+exp1_sota,,,strict_autoregressive,zero,shifted_next_step,enhanced,False,,,FEDformer,32,mae_std,0.00020550924818962812
+exp1_sota,,,strict_autoregressive,zero,shifted_next_step,enhanced,False,,,FEDformer,32,fde_mean,163380.6884765625
+exp1_sota,,,strict_autoregressive,zero,shifted_next_step,enhanced,False,,,FEDformer,32,fde_std,15259.40625
+exp1_sota,,,strict_autoregressive,zero,shifted_next_step,enhanced,False,,,FEDformer,32,ade_mean,82426.2142944336
+exp1_sota,,,strict_autoregressive,zero,shifted_next_step,enhanced,False,,,FEDformer,32,ade_std,1681.8179321289062
+exp1_sota,,,strict_autoregressive,zero,shifted_next_step,enhanced,False,,,FEDformer,64,mse_mean,0.00715905541437678
+exp1_sota,,,strict_autoregressive,zero,shifted_next_step,enhanced,False,,,FEDformer,64,mse_std,3.413469676161185e-05
+exp1_sota,,,strict_autoregressive,zero,shifted_next_step,enhanced,False,,,FEDformer,64,mae_mean,0.049287614529021084
+exp1_sota,,,strict_autoregressive,zero,shifted_next_step,enhanced,False,,,FEDformer,64,mae_std,0.000289323041215539
+exp1_sota,,,strict_autoregressive,zero,shifted_next_step,enhanced,False,,,FEDformer,64,fde_mean,84401.2474975586
+exp1_sota,,,strict_autoregressive,zero,shifted_next_step,enhanced,False,,,FEDformer,64,fde_std,22484.478576660156
+exp1_sota,,,strict_autoregressive,zero,shifted_next_step,enhanced,False,,,FEDformer,64,ade_mean,111869.65350341797
+exp1_sota,,,strict_autoregressive,zero,shifted_next_step,enhanced,False,,,FEDformer,64,ade_std,1792.5592651367188
+exp1_sota,,,strict_autoregressive,zero,shifted_next_step,enhanced,False,,,FEDformer,128,mse_mean,0.007097820802300703
+exp1_sota,,,strict_autoregressive,zero,shifted_next_step,enhanced,False,,,FEDformer,128,mse_std,8.136218093568459e-05
+exp1_sota,,,strict_autoregressive,zero,shifted_next_step,enhanced,False,,,FEDformer,128,mae_mean,0.04833620769204572
+exp1_sota,,,strict_autoregressive,zero,shifted_next_step,enhanced,False,,,FEDformer,128,mae_std,0.000201934773940593
+exp1_sota,,,strict_autoregressive,zero,shifted_next_step,enhanced,False,,,FEDformer,128,fde_mean,44836.43263244629
+exp1_sota,,,strict_autoregressive,zero,shifted_next_step,enhanced,False,,,FEDformer,128,fde_std,8546.799362182617
+exp1_sota,,,strict_autoregressive,zero,shifted_next_step,enhanced,False,,,FEDformer,128,ade_mean,112061.0601196289
+exp1_sota,,,strict_autoregressive,zero,shifted_next_step,enhanced,False,,,FEDformer,128,ade_std,1786.2927856445312
+exp1_sota,,,strict_autoregressive,zero,shifted_next_step,enhanced,False,,,FEDformer,256,mse_mean,0.007097820802300703
+exp1_sota,,,strict_autoregressive,zero,shifted_next_step,enhanced,False,,,FEDformer,256,mse_std,8.136218093568459e-05
+exp1_sota,,,strict_autoregressive,zero,shifted_next_step,enhanced,False,,,FEDformer,256,mae_mean,0.04833620769204572
+exp1_sota,,,strict_autoregressive,zero,shifted_next_step,enhanced,False,,,FEDformer,256,mae_std,0.000201934773940593
+exp1_sota,,,strict_autoregressive,zero,shifted_next_step,enhanced,False,,,FEDformer,256,fde_mean,44836.43263244629
+exp1_sota,,,strict_autoregressive,zero,shifted_next_step,enhanced,False,,,FEDformer,256,fde_std,8546.799362182617
+exp1_sota,,,strict_autoregressive,zero,shifted_next_step,enhanced,False,,,FEDformer,256,ade_mean,112061.0601196289
+exp1_sota,,,strict_autoregressive,zero,shifted_next_step,enhanced,False,,,FEDformer,256,ade_std,1786.2927856445312
+exp1_sota,,,strict_autoregressive,zero,shifted_next_step,enhanced,False,,,iTransformer,32,mse_mean,0.0007983315508681699
+exp1_sota,,,strict_autoregressive,zero,shifted_next_step,enhanced,False,,,iTransformer,32,mse_std,0.0001583774010214256
+exp1_sota,,,strict_autoregressive,zero,shifted_next_step,enhanced,False,,,iTransformer,32,mae_mean,0.019794310654106084
+exp1_sota,,,strict_autoregressive,zero,shifted_next_step,enhanced,False,,,iTransformer,32,mae_std,0.0033993880133493803
+exp1_sota,,,strict_autoregressive,zero,shifted_next_step,enhanced,False,,,iTransformer,32,fde_mean,29120.91813659668
+exp1_sota,,,strict_autoregressive,zero,shifted_next_step,enhanced,False,,,iTransformer,32,fde_std,9615.606216430664
+exp1_sota,,,strict_autoregressive,zero,shifted_next_step,enhanced,False,,,iTransformer,32,ade_mean,29359.412384033203
+exp1_sota,,,strict_autoregressive,zero,shifted_next_step,enhanced,False,,,iTransformer,32,ade_std,9952.808380126953
+exp1_sota,,,strict_autoregressive,zero,shifted_next_step,enhanced,False,,,iTransformer,64,mse_mean,0.0014634463404945564
+exp1_sota,,,strict_autoregressive,zero,shifted_next_step,enhanced,False,,,iTransformer,64,mse_std,0.0002898264501709491
+exp1_sota,,,strict_autoregressive,zero,shifted_next_step,enhanced,False,,,iTransformer,64,mae_mean,0.0252692976500839
+exp1_sota,,,strict_autoregressive,zero,shifted_next_step,enhanced,False,,,iTransformer,64,mae_std,0.0033061986323446035
+exp1_sota,,,strict_autoregressive,zero,shifted_next_step,enhanced,False,,,iTransformer,64,fde_mean,220922.3572998047
+exp1_sota,,,strict_autoregressive,zero,shifted_next_step,enhanced,False,,,iTransformer,64,fde_std,43976.96960449219
+exp1_sota,,,strict_autoregressive,zero,shifted_next_step,enhanced,False,,,iTransformer,64,ade_mean,46819.88525390625
+exp1_sota,,,strict_autoregressive,zero,shifted_next_step,enhanced,False,,,iTransformer,64,ade_std,10263.528137207031
+exp1_sota,,,strict_autoregressive,zero,shifted_next_step,enhanced,False,,,iTransformer,128,mse_mean,0.0013039077994108084
+exp1_sota,,,strict_autoregressive,zero,shifted_next_step,enhanced,False,,,iTransformer,128,mse_std,0.0002765534454738372
+exp1_sota,,,strict_autoregressive,zero,shifted_next_step,enhanced,False,,,iTransformer,128,mae_mean,0.023448263091268018
+exp1_sota,,,strict_autoregressive,zero,shifted_next_step,enhanced,False,,,iTransformer,128,mae_std,0.003530594753101468
+exp1_sota,,,strict_autoregressive,zero,shifted_next_step,enhanced,False,,,iTransformer,128,fde_mean,32443.57455444336
+exp1_sota,,,strict_autoregressive,zero,shifted_next_step,enhanced,False,,,iTransformer,128,fde_std,8853.38119506836
+exp1_sota,,,strict_autoregressive,zero,shifted_next_step,enhanced,False,,,iTransformer,128,ade_mean,47476.29672241211
+exp1_sota,,,strict_autoregressive,zero,shifted_next_step,enhanced,False,,,iTransformer,128,ade_std,10573.095733642578
+exp1_sota,,,strict_autoregressive,zero,shifted_next_step,enhanced,False,,,iTransformer,256,mse_mean,0.0013039077994108084
+exp1_sota,,,strict_autoregressive,zero,shifted_next_step,enhanced,False,,,iTransformer,256,mse_std,0.0002765534454738372
+exp1_sota,,,strict_autoregressive,zero,shifted_next_step,enhanced,False,,,iTransformer,256,mae_mean,0.023448263091268018
+exp1_sota,,,strict_autoregressive,zero,shifted_next_step,enhanced,False,,,iTransformer,256,mae_std,0.003530594753101468
+exp1_sota,,,strict_autoregressive,zero,shifted_next_step,enhanced,False,,,iTransformer,256,fde_mean,32443.57455444336
+exp1_sota,,,strict_autoregressive,zero,shifted_next_step,enhanced,False,,,iTransformer,256,fde_std,8853.38119506836
+exp1_sota,,,strict_autoregressive,zero,shifted_next_step,enhanced,False,,,iTransformer,256,ade_mean,47476.29672241211
+exp1_sota,,,strict_autoregressive,zero,shifted_next_step,enhanced,False,,,iTransformer,256,ade_std,10573.095733642578
+exp2_ablation,phase1_structural_mse_only,42,strict_autoregressive,zero,shifted_next_step,enhanced,False,,,Transformer (baseline),64,mse,0.16966613628246166
+exp2_ablation,phase1_structural_mse_only,42,strict_autoregressive,zero,shifted_next_step,enhanced,False,,,Transformer (baseline),64,mae,0.2590433260442789
+exp2_ablation,phase1_structural_mse_only,42,strict_autoregressive,zero,shifted_next_step,enhanced,False,,,Transformer (baseline),64,rmse,0.4119054943581861
+exp2_ablation,phase1_structural_mse_only,123,strict_autoregressive,zero,shifted_next_step,enhanced,False,,,Transformer (baseline),64,mse,0.13724016464296193
+exp2_ablation,phase1_structural_mse_only,123,strict_autoregressive,zero,shifted_next_step,enhanced,False,,,Transformer (baseline),64,mae,0.23385766017584153
+exp2_ablation,phase1_structural_mse_only,123,strict_autoregressive,zero,shifted_next_step,enhanced,False,,,Transformer (baseline),64,rmse,0.370459396753493
+exp2_ablation,phase1_structural_mse_only,42,strict_autoregressive,zero,shifted_next_step,enhanced,False,,,PLGAFormer (A+B+C),64,mse,0.06063579641742471
+exp2_ablation,phase1_structural_mse_only,42,strict_autoregressive,zero,shifted_next_step,enhanced,False,,,PLGAFormer (A+B+C),64,mae,0.10565862671337992
+exp2_ablation,phase1_structural_mse_only,42,strict_autoregressive,zero,shifted_next_step,enhanced,False,,,PLGAFormer (A+B+C),64,rmse,0.24624336827095408
+exp2_ablation,phase1_structural_mse_only,123,strict_autoregressive,zero,shifted_next_step,enhanced,False,,,PLGAFormer (A+B+C),64,mse,0.16924058168513295
+exp2_ablation,phase1_structural_mse_only,123,strict_autoregressive,zero,shifted_next_step,enhanced,False,,,PLGAFormer (A+B+C),64,mae,0.18964583926730685
+exp2_ablation,phase1_structural_mse_only,123,strict_autoregressive,zero,shifted_next_step,enhanced,False,,,PLGAFormer (A+B+C),64,rmse,0.4113886017929191
+exp2_ablation,phase1_structural_mse_only,42,strict_autoregressive,zero,shifted_next_step,enhanced,False,,,PLGAFormer w/o A,64,mse,0.09790956881801778
+exp2_ablation,phase1_structural_mse_only,42,strict_autoregressive,zero,shifted_next_step,enhanced,False,,,PLGAFormer w/o A,64,mae,0.17058747122807758
+exp2_ablation,phase1_structural_mse_only,42,strict_autoregressive,zero,shifted_next_step,enhanced,False,,,PLGAFormer w/o A,64,rmse,0.312905047607126
+exp2_ablation,phase1_structural_mse_only,123,strict_autoregressive,zero,shifted_next_step,enhanced,False,,,PLGAFormer w/o A,64,mse,0.15566247225788885
+exp2_ablation,phase1_structural_mse_only,123,strict_autoregressive,zero,shifted_next_step,enhanced,False,,,PLGAFormer w/o A,64,mae,0.22151271576744047
+exp2_ablation,phase1_structural_mse_only,123,strict_autoregressive,zero,shifted_next_step,enhanced,False,,,PLGAFormer w/o A,64,rmse,0.3945408372499466
+exp2_ablation,phase1_structural_mse_only,42,strict_autoregressive,zero,shifted_next_step,enhanced,False,,,PLGAFormer w/o B,64,mse,0.06913787347299082
+exp2_ablation,phase1_structural_mse_only,42,strict_autoregressive,zero,shifted_next_step,enhanced,False,,,PLGAFormer w/o B,64,mae,0.11796636338096587
+exp2_ablation,phase1_structural_mse_only,42,strict_autoregressive,zero,shifted_next_step,enhanced,False,,,PLGAFormer w/o B,64,rmse,0.2629408174342485
+exp2_ablation,phase1_structural_mse_only,123,strict_autoregressive,zero,shifted_next_step,enhanced,False,,,PLGAFormer w/o B,64,mse,0.11361547470092774
+exp2_ablation,phase1_structural_mse_only,123,strict_autoregressive,zero,shifted_next_step,enhanced,False,,,PLGAFormer w/o B,64,mae,0.17343293193927026
+exp2_ablation,phase1_structural_mse_only,123,strict_autoregressive,zero,shifted_next_step,enhanced,False,,,PLGAFormer w/o B,64,rmse,0.337068946509357
+exp2_ablation,phase1_structural_mse_only,42,strict_autoregressive,zero,shifted_next_step,enhanced,False,,,PLGAFormer w/o C,64,mse,0.12331968801992911
+exp2_ablation,phase1_structural_mse_only,42,strict_autoregressive,zero,shifted_next_step,enhanced,False,,,PLGAFormer w/o C,64,mae,0.18116880691591114
+exp2_ablation,phase1_structural_mse_only,42,strict_autoregressive,zero,shifted_next_step,enhanced,False,,,PLGAFormer w/o C,64,rmse,0.3511690305535628
+exp2_ablation,phase1_structural_mse_only,123,strict_autoregressive,zero,shifted_next_step,enhanced,False,,,PLGAFormer w/o C,64,mse,0.1765555616465125
+exp2_ablation,phase1_structural_mse_only,123,strict_autoregressive,zero,shifted_next_step,enhanced,False,,,PLGAFormer w/o C,64,mae,0.26834784048574944
+exp2_ablation,phase1_structural_mse_only,123,strict_autoregressive,zero,shifted_next_step,enhanced,False,,,PLGAFormer w/o C,64,rmse,0.42018515162546205
+exp2_ablation,phase2_structural_with_physics,42,strict_autoregressive,zero,shifted_next_step,enhanced,False,,,Transformer (baseline),64,mse,0.16191831282627436
+exp2_ablation,phase2_structural_with_physics,42,strict_autoregressive,zero,shifted_next_step,enhanced,False,,,Transformer (baseline),64,mae,0.2814727802041136
+exp2_ablation,phase2_structural_with_physics,42,strict_autoregressive,zero,shifted_next_step,enhanced,False,,,Transformer (baseline),64,rmse,0.4023907464471249
+exp2_ablation,phase2_structural_with_physics,123,strict_autoregressive,zero,shifted_next_step,enhanced,False,,,Transformer (baseline),64,mse,0.13956876998085052
+exp2_ablation,phase2_structural_with_physics,123,strict_autoregressive,zero,shifted_next_step,enhanced,False,,,Transformer (baseline),64,mae,0.1959960507365411
+exp2_ablation,phase2_structural_with_physics,123,strict_autoregressive,zero,shifted_next_step,enhanced,False,,,Transformer (baseline),64,rmse,0.37358903889280604
+exp2_ablation,phase2_structural_with_physics,42,strict_autoregressive,zero,shifted_next_step,enhanced,False,,,PLGAFormer (A+B+C),64,mse,0.18969296647687997
+exp2_ablation,phase2_structural_with_physics,42,strict_autoregressive,zero,shifted_next_step,enhanced,False,,,PLGAFormer (A+B+C),64,mae,0.24668419575004422
+exp2_ablation,phase2_structural_with_physics,42,strict_autoregressive,zero,shifted_next_step,enhanced,False,,,PLGAFormer (A+B+C),64,rmse,0.4355375603514351
+exp2_ablation,phase2_structural_with_physics,123,strict_autoregressive,zero,shifted_next_step,enhanced,False,,,PLGAFormer (A+B+C),64,mse,0.2096845747708293
+exp2_ablation,phase2_structural_with_physics,123,strict_autoregressive,zero,shifted_next_step,enhanced,False,,,PLGAFormer (A+B+C),64,mae,0.273831698413739
+exp2_ablation,phase2_structural_with_physics,123,strict_autoregressive,zero,shifted_next_step,enhanced,False,,,PLGAFormer (A+B+C),64,rmse,0.4579132830251043
+exp2_ablation,phase2_structural_with_physics,42,strict_autoregressive,zero,shifted_next_step,enhanced,False,,,PLGAFormer w/o A,64,mse,0.18474170935987935
+exp2_ablation,phase2_structural_with_physics,42,strict_autoregressive,zero,shifted_next_step,enhanced,False,,,PLGAFormer w/o A,64,mae,0.25543465210086524
+exp2_ablation,phase2_structural_with_physics,42,strict_autoregressive,zero,shifted_next_step,enhanced,False,,,PLGAFormer w/o A,64,rmse,0.42981590170662526
+exp2_ablation,phase2_structural_with_physics,123,strict_autoregressive,zero,shifted_next_step,enhanced,False,,,PLGAFormer w/o A,64,mse,0.18154918356687444
+exp2_ablation,phase2_structural_with_physics,123,strict_autoregressive,zero,shifted_next_step,enhanced,False,,,PLGAFormer w/o A,64,mae,0.249807374742296
+exp2_ablation,phase2_structural_with_physics,123,strict_autoregressive,zero,shifted_next_step,enhanced,False,,,PLGAFormer w/o A,64,rmse,0.4260858875471874
+exp2_ablation,phase2_structural_with_physics,42,strict_autoregressive,zero,shifted_next_step,enhanced,False,,,PLGAFormer w/o B,64,mse,0.1695898349589281
+exp2_ablation,phase2_structural_with_physics,42,strict_autoregressive,zero,shifted_next_step,enhanced,False,,,PLGAFormer w/o B,64,mae,0.2047493002934711
+exp2_ablation,phase2_structural_with_physics,42,strict_autoregressive,zero,shifted_next_step,enhanced,False,,,PLGAFormer w/o B,64,rmse,0.4118128640036978
+exp2_ablation,phase2_structural_with_physics,123,strict_autoregressive,zero,shifted_next_step,enhanced,False,,,PLGAFormer w/o B,64,mse,0.06991193151277769
+exp2_ablation,phase2_structural_with_physics,123,strict_autoregressive,zero,shifted_next_step,enhanced,False,,,PLGAFormer w/o B,64,mae,0.11515828167950666
+exp2_ablation,phase2_structural_with_physics,123,strict_autoregressive,zero,shifted_next_step,enhanced,False,,,PLGAFormer w/o B,64,rmse,0.2644086449282203
+exp2_ablation,phase2_structural_with_physics,42,strict_autoregressive,zero,shifted_next_step,enhanced,False,,,PLGAFormer w/o C,64,mse,0.13924038263014804
+exp2_ablation,phase2_structural_with_physics,42,strict_autoregressive,zero,shifted_next_step,enhanced,False,,,PLGAFormer w/o C,64,mae,0.19615561544159313
+exp2_ablation,phase2_structural_with_physics,42,strict_autoregressive,zero,shifted_next_step,enhanced,False,,,PLGAFormer w/o C,64,rmse,0.37314927660407976
+exp2_ablation,phase2_structural_with_physics,123,strict_autoregressive,zero,shifted_next_step,enhanced,False,,,PLGAFormer w/o C,64,mse,0.25064979364842543
+exp2_ablation,phase2_structural_with_physics,123,strict_autoregressive,zero,shifted_next_step,enhanced,False,,,PLGAFormer w/o C,64,mae,0.29291997603428216
+exp2_ablation,phase2_structural_with_physics,123,strict_autoregressive,zero,shifted_next_step,enhanced,False,,,PLGAFormer w/o C,64,rmse,0.5006493719644772
+exp3_robustness,,,strict_autoregressive,zero,shifted_next_step,enhanced,False,noise,0.0,PLGAFormer (proposed),64,mse,0.27512758277816535
+exp3_robustness,,,strict_autoregressive,zero,shifted_next_step,enhanced,False,noise,0.0,PLGAFormer (proposed),64,mae,0.37610962259916614
+exp3_robustness,,,strict_autoregressive,zero,shifted_next_step,enhanced,False,noise,0.05,PLGAFormer (proposed),64,mse,0.2755380011414304
+exp3_robustness,,,strict_autoregressive,zero,shifted_next_step,enhanced,False,noise,0.05,PLGAFormer (proposed),64,mae,0.37654528657595315
+exp3_robustness,,,strict_autoregressive,zero,shifted_next_step,enhanced,False,noise,0.1,PLGAFormer (proposed),64,mse,0.27674837677567093
+exp3_robustness,,,strict_autoregressive,zero,shifted_next_step,enhanced,False,noise,0.1,PLGAFormer (proposed),64,mae,0.37782330018502697
+exp3_robustness,,,strict_autoregressive,zero,shifted_next_step,enhanced,False,noise,0.15,PLGAFormer (proposed),64,mse,0.2787629028382125
+exp3_robustness,,,strict_autoregressive,zero,shifted_next_step,enhanced,False,noise,0.15,PLGAFormer (proposed),64,mae,0.37989626064712617
+exp3_robustness,,,strict_autoregressive,zero,shifted_next_step,enhanced,False,noise,0.2,PLGAFormer (proposed),64,mse,0.2811801919892982
+exp3_robustness,,,strict_autoregressive,zero,shifted_next_step,enhanced,False,noise,0.2,PLGAFormer (proposed),64,mae,0.38231543752882213
+exp3_robustness,,,strict_autoregressive,zero,shifted_next_step,enhanced,False,missing,0.0,PLGAFormer (proposed),64,mse,0.27512758277816535
+exp3_robustness,,,strict_autoregressive,zero,shifted_next_step,enhanced,False,missing,0.0,PLGAFormer (proposed),64,mae,0.37610962259916614
+exp3_robustness,,,strict_autoregressive,zero,shifted_next_step,enhanced,False,missing,0.05,PLGAFormer (proposed),64,mse,0.3003023995293511
+exp3_robustness,,,strict_autoregressive,zero,shifted_next_step,enhanced,False,missing,0.05,PLGAFormer (proposed),64,mae,0.39584127220106713
+exp3_robustness,,,strict_autoregressive,zero,shifted_next_step,enhanced,False,missing,0.1,PLGAFormer (proposed),64,mse,0.3265436995618137
+exp3_robustness,,,strict_autoregressive,zero,shifted_next_step,enhanced,False,missing,0.1,PLGAFormer (proposed),64,mae,0.4162515017427044
+exp3_robustness,,,strict_autoregressive,zero,shifted_next_step,enhanced,False,missing,0.15,PLGAFormer (proposed),64,mse,0.35544569227430556
+exp3_robustness,,,strict_autoregressive,zero,shifted_next_step,enhanced,False,missing,0.15,PLGAFormer (proposed),64,mae,0.43773609435116806
+exp3_robustness,,,strict_autoregressive,zero,shifted_next_step,enhanced,False,missing,0.2,PLGAFormer (proposed),64,mse,0.38463669516422133
+exp3_robustness,,,strict_autoregressive,zero,shifted_next_step,enhanced,False,missing,0.2,PLGAFormer (proposed),64,mae,0.45893726566691456
+exp3_robustness,,,strict_autoregressive,zero,shifted_next_step,enhanced,False,input_length,16,PLGAFormer (proposed),64,mse,0.4285933971552201
+exp3_robustness,,,strict_autoregressive,zero,shifted_next_step,enhanced,False,input_length,16,PLGAFormer (proposed),64,mae,0.45155262923535006
+exp3_robustness,,,strict_autoregressive,zero,shifted_next_step,enhanced,False,input_length,32,PLGAFormer (proposed),64,mse,0.37408999585811004
+exp3_robustness,,,strict_autoregressive,zero,shifted_next_step,enhanced,False,input_length,32,PLGAFormer (proposed),64,mae,0.4353716974788242
+exp3_robustness,,,strict_autoregressive,zero,shifted_next_step,enhanced,False,input_length,48,PLGAFormer (proposed),64,mse,0.31105522919584205
+exp3_robustness,,,strict_autoregressive,zero,shifted_next_step,enhanced,False,input_length,48,PLGAFormer (proposed),64,mae,0.40557698051134744
+exp3_robustness,,,strict_autoregressive,zero,shifted_next_step,enhanced,False,input_length,64,PLGAFormer (proposed),64,mse,0.27512758277816535
+exp3_robustness,,,strict_autoregressive,zero,shifted_next_step,enhanced,False,input_length,64,PLGAFormer (proposed),64,mae,0.37610962259916614
+exp4_physics_consistency,,,strict_autoregressive,zero,shifted_next_step,enhanced,False,physics,overall,Transformer (baseline),128,mse_scaled,0.12596700069345074
+exp4_physics_consistency,,,strict_autoregressive,zero,shifted_next_step,enhanced,False,physics,overall,Transformer (baseline),128,mse_physical,2246373.6796296295
+exp4_physics_consistency,,,strict_autoregressive,zero,shifted_next_step,enhanced,False,physics,overall,Transformer (baseline),128,height_violation_rate,0.0
+exp4_physics_consistency,,,strict_autoregressive,zero,shifted_next_step,enhanced,False,physics,overall,Transformer (baseline),128,velocity_violation_rate,0.0711941189236111
+exp4_physics_consistency,,,strict_autoregressive,zero,shifted_next_step,enhanced,False,physics,overall,Transformer (baseline),128,acceleration_violation_rate,0.055976019965277776
+exp4_physics_consistency,,,strict_autoregressive,zero,shifted_next_step,enhanced,False,physics,overall,Transformer (baseline),128,position_smoothness_ratio,1.58956356563724
+exp4_physics_consistency,,,strict_autoregressive,zero,shifted_next_step,enhanced,False,physics,overall,Transformer (baseline),128,velocity_smoothness_ratio,1.58956356563724
+exp4_physics_consistency,,,strict_autoregressive,zero,shifted_next_step,enhanced,False,physics,overall,PLGAFormer (proposed),128,mse_scaled,0.2603123477947565
+exp4_physics_consistency,,,strict_autoregressive,zero,shifted_next_step,enhanced,False,physics,overall,PLGAFormer (proposed),128,mse_physical,6048751.912098765
+exp4_physics_consistency,,,strict_autoregressive,zero,shifted_next_step,enhanced,False,physics,overall,PLGAFormer (proposed),128,height_violation_rate,0.0
+exp4_physics_consistency,,,strict_autoregressive,zero,shifted_next_step,enhanced,False,physics,overall,PLGAFormer (proposed),128,velocity_violation_rate,0.041937934027777776
+exp4_physics_consistency,,,strict_autoregressive,zero,shifted_next_step,enhanced,False,physics,overall,PLGAFormer (proposed),128,acceleration_violation_rate,0.039252387152777776
+exp4_physics_consistency,,,strict_autoregressive,zero,shifted_next_step,enhanced,False,physics,overall,PLGAFormer (proposed),128,position_smoothness_ratio,1.7173070134656014
+exp4_physics_consistency,,,strict_autoregressive,zero,shifted_next_step,enhanced,False,physics,overall,PLGAFormer (proposed),128,velocity_smoothness_ratio,1.7173070134656014

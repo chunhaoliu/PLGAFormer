@@ -1,0 +1,44 @@
+{
+  "artifact": "D:\\OneDrive\\02_Study\\2024_NJUST\\Trajectory  Prediction\\HGV_Project\\HGVTP_PLGAformer-main\\data_generation\\data\\processed\\hgv_multiregime_dataset_v2_1.npz",
+  "sha256": "526d50d05b14ed17f9093249cbb5a382f526468e36723457c08c790d449112e7",
+  "generated_at_utc": "2026-07-30T16:30:18.684673+00:00",
+  "dataset_protocol": "hgv_multiregime_state_v2_1",
+  "trajectory_count": 1800,
+  "joint_stratum_count": 300,
+  "sampling_design": "split_and_joint_stratum_latin_hypercube_v1",
+  "points_per_trajectory": 1000,
+  "sampling_interval_s": 1.0,
+  "trajectory_duration_s": 999.0,
+  "complete_trajectory_split_counts": {
+    "train": 1260,
+    "val": 180,
+    "test": 360
+  },
+  "window_counts": {
+    "train": 20160,
+    "val": 17640,
+    "test": 35280
+  },
+  "generation_attempts": 2139,
+  "acceptance_rate": 0.8415147265077139,
+  "elapsed_s": 553.0582685000263,
+  "arguments": {
+    "formal": true,
+    "count": null,
+    "output": null,
+    "force": false,
+    "seed": 42,
+    "split_seed": 42,
+    "points": 1000,
+    "sampling_interval_s": 1.0,
+    "seq_len": 256,
+    "pred_len": 256,
+    "train_origins_per_trajectory": 16,
+    "eval_window_stride": 5,
+    "integration_method": "DOP853",
+    "integration_rtol": 1e-07,
+    "integration_atol": 1e-09,
+    "integration_max_step_s": 4.0,
+    "max_attempt_factor": 6
+  }
+}

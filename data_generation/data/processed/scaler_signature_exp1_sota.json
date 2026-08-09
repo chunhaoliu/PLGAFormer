@@ -1,0 +1,15 @@
+{
+  "subset_ratio": 1.0,
+  "dataset_protocol": "trajectory_level_v1",
+  "train_shape": [
+    78302,
+    256,
+    6
+  ],
+  "target_shape": [
+    78302,
+    256,
+    3
+  ],
+  "train_idx_hash": "0893c83bd30c9ae04d0302a64a0713c59c294ae5dde5e5dfebb298639868c394"
+}

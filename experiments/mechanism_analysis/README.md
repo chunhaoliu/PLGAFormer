@@ -1,8 +1,17 @@
 # Mechanism Ablation and Physical Consistency
 
 Paper-level study for formal-v3 phase4 mechanism controls and physical
-consistency evaluation. The phase4 runner and records remain under
-`experiments/exp2_ablation/`; this directory is a logical registry entry only.
+consistency evaluation.
+
+## Canonical implementation
+
+- `physics_consistency.py` is the canonical physical-consistency evaluator.
+- The phase4 ablation engine and formal records remain under
+  `experiments/exp2_ablation/`.
+- The old `experiments/exp4_physics_consistency/physics_consistency.py` path is
+  retained as a compatibility shim for legacy CLI, tests, and summaries.
+
+## Formal route
 
 - CLI: `python run.py formal mechanism`
 - Required phase: `phase4_final_mechanism_controls`

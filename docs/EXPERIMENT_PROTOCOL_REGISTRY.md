@@ -130,7 +130,7 @@ or historical protocol outputs.
 
 The machine-readable orchestration contract is
 `configs/formal_v3.json`; its current canonical SHA-256 is
-  `37209254645c1bfacea975371f40be9b602dcfa03904091587f6a98ff557a539`.
+  `1ccff2bce0f0683638babe6475d7f8f55b39fc0d1bcf6d2579113f10efc4ad94`.
 
 Run records remain immutable under the preserved protocol roots. The
 read-only status/audit layer normalizes them through

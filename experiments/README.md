@@ -9,7 +9,7 @@ protocol tests, or legacy CLI still import them.
 | Overall prediction | `python run.py formal main` | `exp1_sota/` | `exp1_sota/results/formal_v3/` and `exp1_sota/trained_models/formal_v3/` |
 | Mechanism / physical consistency | `python run.py formal mechanism` | `exp2_ablation/` plus the physical evaluator | `exp2_ablation/results/formal_v3/` |
 | Generalization / robustness | `python run.py formal robustness` | `scripts/run_taes_dynamics_shift.py` | `exp5_ood_dynamics/results/formal_v3/` |
-| Efficiency | `python run.py formal efficiency` | `exp6_efficiency/efficiency_experiment.py` | `exp6_efficiency/results/formal_v3/` |
+| Efficiency | `python run.py formal efficiency` | `efficiency/` (`exp6_efficiency/` compatibility shim) | `exp6_efficiency/results/formal_v3/` |
 
 ## Numbered compatibility implementations
 
@@ -19,8 +19,10 @@ protocol tests, or legacy CLI still import them.
   regression and diagnostic compatibility routes.
 - `exp5_missing_data/` and `exp7_longterm/` are legacy diagnostic studies;
   they are not evidence fallbacks for the formal-v3 paper route.
-- `exp5_ood_dynamics/` is the current dynamics-shift result root, while
-  `exp6_efficiency/` is the current efficiency implementation.
+- `exp5_ood_dynamics/` is the current dynamics-shift result root. The
+  canonical efficiency source is under `efficiency/`; `exp6_efficiency/`
+  retains only the compatibility module/script and the registered result
+  root.
 - `legacy/` records the evidence boundary for the numbered directories.
 
 Historical result files, generated paper bundles, and transient logs are kept

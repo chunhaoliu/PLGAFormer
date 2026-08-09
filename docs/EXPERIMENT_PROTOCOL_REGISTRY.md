@@ -101,7 +101,7 @@ withheld until all of the following exist for the active route:
 1. complete three-seed Main Results;
 2. complete matched ablations;
 3. frozen test evaluation records;
-4. protocol-aware tables and figures generated only from `formal_v3`;
+4. protocol-aware tables and figures generated only from the current frozen evidence artifacts;
 5. a manuscript-wide replacement of timing, dataset, table, and limitation
    statements followed by a clean compile and visual QA.
 
@@ -115,24 +115,24 @@ the old numbered directories remain implementation/diagnostic locations:
 
 | Study | Formal command | Input | Registered implementation |
 |---|---|---|---|
-| Overall Prediction Performance | `python run.py formal main` | frozen dataset | `experiments/exp1_sota/` |
-| Mechanism Ablation and Physical Consistency | `python run.py formal mechanism` | eligible Main bundle | `experiments/exp2_ablation/` + physics evaluator |
-| Generalization and Robustness | `python run.py formal robustness` | eligible Main bundle | `scripts/run_taes_dynamics_shift.py` |
-| Efficiency and Computational Cost | `python run.py formal efficiency` | eligible Main bundle | `experiments/exp6_efficiency/` |
+| Overall Prediction Performance | `python run.py formal main` | frozen dataset | `experiments/overall_prediction/main_results.py` |
+| Mechanism Ablation and Physical Consistency | `python run.py formal mechanism` | eligible Main bundle | `experiments/mechanism_analysis/ablation_study.py` + `physics_consistency.py` |
+| Generalization and Robustness | `python run.py formal robustness` | eligible Main bundle | `experiments/generalization_robustness/dynamics_shift.py` |
+| Efficiency and Computational Cost | `python run.py formal efficiency` | eligible Main bundle | `experiments/efficiency/efficiency_experiment.py` |
 
-The registry is logical and does not move or copy formal-v3 evidence roots.
+The registry is logical and does not move or copy the preserved evidence roots.
 `exp5_missing_data`, `exp7_longterm`, old ablation phases, and old
 `exp3_robustness` routes remain explicit legacy diagnostics. Formal missing
 evidence is a blocker; no study may fall back to pilot, partial, quick, smoke,
 or historical protocol outputs.
 
-## Formal-v3 evidence bundles
+## Current evidence bundles
 
 The machine-readable orchestration contract is
 `configs/formal_v3.json`; its current canonical SHA-256 is
   `37209254645c1bfacea975371f40be9b602dcfa03904091587f6a98ff557a539`.
 
-Run records remain immutable under the `formal_v3/.../final/` roots. The
+Run records remain immutable under the preserved protocol roots. The
 read-only status/audit layer normalizes them through
 `utils/formal_evidence.py`. Aggregation may add only:
 

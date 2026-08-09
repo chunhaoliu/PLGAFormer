@@ -1,35 +1,20 @@
 # Experiment layout
 
-The paper-facing work is organized as four studies. The numbered directories
-are retained as compatibility implementations because the formal runners,
-protocol tests, or legacy CLI still import them.
+The paper has exactly four study entries. Their active implementations are
+kept in the following canonical directories:
 
-| Paper-level study | Formal command | Current implementation | Formal output boundary |
-|---|---|---|---|
-| Overall prediction | `python run.py formal main` | `exp1_sota/` | `exp1_sota/results/formal_v3/` and `exp1_sota/trained_models/formal_v3/` |
-| Mechanism / physical consistency | `python run.py formal mechanism` | `exp2_ablation/` plus the physical evaluator | `exp2_ablation/results/formal_v3/` |
-| Generalization / robustness | `python run.py formal robustness` | `scripts/run_taes_dynamics_shift.py` | `exp5_ood_dynamics/results/formal_v3/` |
-| Efficiency | `python run.py formal efficiency` | `efficiency/` (`exp6_efficiency/` compatibility shim) | `exp6_efficiency/results/formal_v3/` |
+| Paper study | Formal command | Canonical implementation |
+|---|---|---|
+| Overall prediction | `python run.py formal main` | `experiments/overall_prediction/main_results.py` |
+| Mechanism analysis | `python run.py formal mechanism` | `experiments/mechanism_analysis/ablation_study.py` and `physics_consistency.py` |
+| Generalization and robustness | `python run.py formal robustness` | `experiments/generalization_robustness/dynamics_shift.py` |
+| Efficiency | `python run.py formal efficiency` | `experiments/efficiency/efficiency_experiment.py` |
 
-## Numbered compatibility implementations
+The numbered directories are compatibility or historical diagnostic boundaries,
+not additional paper studies. Existing result and checkpoint roots retain their
+original paths so historical evidence remains traceable while source imports
+move to the canonical directories.
 
-- `exp1_sota/` and `exp2_ablation/` contain the shared engines used by the
-  current formal Main and mechanism runners.
-- `exp3_robustness/` and `exp4_physics_consistency/` remain available to the
-  regression and diagnostic compatibility routes.
-- `exp5_missing_data/` and `exp7_longterm/` are legacy diagnostic studies;
-  they are not evidence fallbacks for the formal-v3 paper route.
-- `exp5_ood_dynamics/` is the current dynamics-shift result root. The
-  canonical efficiency source is under `efficiency/`; `exp6_efficiency/`
-  retains only the compatibility module/script and the registered result
-  root.
-- `legacy/` records the evidence boundary for the numbered directories.
-
-Historical result files, generated paper bundles, and transient logs are kept
-outside the active tree under `D:\Research\HGV_Code\Archive\` with their
-original relative paths. The active tree keeps only source, formal-v3 evidence,
-and explicitly retained compatibility artifacts.
-
-Use `python run.py formal status --json` to inspect evidence completeness before
-using any output in a manuscript. Do not combine archived historical outputs
-with formal-v3 records.
+Use `python run.py formal status --json` before treating any artifact as
+paper evidence. Do not combine compatibility, pilot, smoke, or historical
+outputs with the current study records.

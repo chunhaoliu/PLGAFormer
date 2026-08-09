@@ -1,19 +1,17 @@
 # Legacy experiment index
 
-The numbered experiment directories remain in place as compatibility
-implementations and historical evidence roots. They are not a second formal
-paper route and are not automatically imported by the four registered studies.
+The numbered directories below are retained only where tests, result readers,
+visualizers, or historical commands still depend on them. They do not define a
+second paper route.
 
-| Legacy path | Logical role | Formal status |
-|---|---|---|
-| `exp1_sota/` | Main comparison implementation | retained implementation; formal Main bundle only |
-| `exp2_ablation/` | historical and phase4 ablation implementation | phase4 only for formal mechanism |
-| `exp3_robustness/` | old noise/missing/history stress runner | legacy diagnostic; formal definitions live in `formal_v3.json` |
-| `exp4_physics_consistency/` | physical evaluator implementation | evaluator input to mechanism study |
-| `exp5_missing_data/` | missing-data experiment | legacy, excluded from the formal mainline |
-| `exp5_ood_dynamics/` | dynamics-shift output root | consumed by the robustness study |
-| `exp6_efficiency/` | efficiency implementation | consumed by the efficiency study |
-| `exp7_longterm/` | extended ablation/development search | legacy, excluded from the formal mainline |
+| Legacy path | Role |
+|---|---|
+| `exp1_sota/`, `exp2_ablation/`, `exp6_efficiency/` | Thin compatibility boundaries for the canonical studies |
+| `exp3_robustness/` | Older noise, missingness, and short-history diagnostic |
+| `exp4_physics_consistency/` | Compatibility boundary for the mechanism evaluator |
+| `exp5_missing_data/`, `exp7_longterm/` | Development and diagnostic studies excluded from the paper mainline |
+| `exp5_ood_dynamics/` | Preserved robustness result root, not an active source directory |
 
-No historical code or result is deleted by this index. Any future move to an
-outer archive requires a zero-reference audit and separate approval.
+No historical source or result is deleted during the source migration. A move
+to `D:\Research\HGV_Code\Archive` requires a fresh zero-reference audit and a
+separate review of tests, summaries, visualizers, and manifests.

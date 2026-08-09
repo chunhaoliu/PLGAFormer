@@ -153,7 +153,7 @@
     "robustness": {
       "study_id": "generalization_robustness",
       "display_name": "Generalization and Robustness",
-      "runner": "scripts.run_taes_dynamics_shift",
+      "runner": "experiments.generalization_robustness.dynamics_shift",
       "bundle_kind": null,
       "input_bundle": "main",
       "artifact_root": "experiments/exp5_ood_dynamics/results/formal_v3/hgv_multiregime_state_v2_1",

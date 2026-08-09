@@ -1,16 +1,11 @@
-# Generalization and Robustness
+# Generalization and robustness
 
-Paper-level frozen-model study for HGV dynamics shifts and the configured
-sensor-noise/short-history stress tests. The current dynamics implementation
-is retained at `scripts/run_taes_dynamics_shift.py` until a later physical
-directory migration is approved.
+This directory contains the paper's single frozen-model generalization and robustness study.
 
-- CLI: `python run.py formal robustness`
-- Input: an eligible formal Main bundle; `retrain=false`
-- Core scenarios: nominal, aerodynamic shift, and ballistic-parameter shift
-- Auxiliary scenarios: configured sensor noise and shortened histories;
-  random missingness is disabled for the formal route
-- Paper mapping: Generalization / Robustness
+- Canonical dynamics-shift evaluator: `experiments/generalization_robustness/dynamics_shift.py`
+- Formal entry point: `python run.py formal robustness`
+- Core conditions: nominal, aerodynamic-parameter shift, and ballistic-parameter shift
+- Inputs: an eligible Main evidence bundle and frozen checkpoints; the evaluator does not retrain models
+- Existing result roots, checkpoint identities, and artifact metadata remain unchanged during this source migration.
 
-Every output must retain condition units, perturbation seed, test trajectory
-IDs, checkpoint hashes, config hash, and dataset hash.
+The older `experiments/exp3_robustness/` implementation is retained only as a historical diagnostic boundary. It is not an additional paper study.

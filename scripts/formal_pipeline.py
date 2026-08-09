@@ -277,13 +277,13 @@ def _run_robustness(args: argparse.Namespace, config) -> int:
     bundle, blockers = _verified_main_bundle(config, bundle_path)
     if blockers or bundle is None:
         raise FormalPipelineError("Robustness requires an eligible formal Main bundle.", blockers=blockers)
-    from scripts import run_taes_dynamics_shift
+    from experiments.generalization_robustness import dynamics_shift
 
     forwarded = ["--config", str(config.path), "--registry", str(bundle_path)]
     results_dir = args.output_dir or resolve_study_artifact_root(config, "robustness")
     forwarded.extend(["--results-dir", str(results_dir.expanduser().resolve())])
     forwarded.extend(_runner_args(args))
-    return int(run_taes_dynamics_shift.main(forwarded))
+    return int(dynamics_shift.main(forwarded))
 
 
 def _run_efficiency(args: argparse.Namespace, config) -> int:

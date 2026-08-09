@@ -271,7 +271,7 @@ def run_search(args: argparse.Namespace) -> dict[str, Path]:
     ensure_utf8_console()
 
     import torch
-    from experiments.exp2_ablation import ablation_study as exp2
+    from experiments.mechanism_analysis import ablation_study as exp2
 
     _configure_exp2_module(exp2, args)
     exp2.set_random_seed(int(args.seed))

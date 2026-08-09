@@ -185,7 +185,7 @@ def run_best_candidate_ablation(args: argparse.Namespace) -> dict[str, Any]:
     ensure_utf8_console()
 
     import torch
-    from experiments.exp2_ablation import ablation_study as exp2
+    from experiments.mechanism_analysis import ablation_study as exp2
 
     candidate_path = Path(args.candidate_file)
     if not candidate_path.is_absolute():

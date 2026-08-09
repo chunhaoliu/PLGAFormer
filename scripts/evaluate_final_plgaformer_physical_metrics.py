@@ -74,7 +74,7 @@ def evaluate(argv: list[str] | None = None) -> dict[str, Any]:
         codes = sorted({str(item.get("code")) for item in verification.get("blockers", [])})
         raise RuntimeError("Formal-v3 Main Results bundle failed verification: " + ", ".join(codes))
     bundle = verification["bundle"]
-    from experiments.exp2_ablation import ablation_study as exp2
+    from experiments.mechanism_analysis import ablation_study as exp2
 
     exp2.TRAIN_CONFIG["batch_size"] = int(args.batch_size)
     exp2.TRAIN_CONFIG["dataloader_workers"] = int(args.workers)

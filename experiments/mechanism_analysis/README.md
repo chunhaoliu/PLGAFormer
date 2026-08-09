@@ -1,25 +1,10 @@
-# Mechanism Ablation and Physical Consistency
+# Mechanism analysis
 
-Paper-level study for formal-v3 phase4 mechanism controls and physical
-consistency evaluation.
+This directory contains the paper's single mechanism-analysis study.
 
-## Canonical implementation
+- Ablation engine: `experiments/mechanism_analysis/ablation_study.py`
+- Physical-consistency evaluator: `experiments/mechanism_analysis/physics_consistency.py`
+- Formal entry point: `python run.py formal mechanism`
+- Existing result roots and experiment metadata remain unchanged during this source migration so historical records stay traceable.
 
-- `physics_consistency.py` is the canonical physical-consistency evaluator.
-- The phase4 ablation engine and formal records remain under
-  `experiments/exp2_ablation/`.
-- The old `experiments/exp4_physics_consistency/physics_consistency.py` path is
-  retained as a compatibility shim for legacy CLI, tests, and summaries.
-
-## Formal route
-
-- CLI: `python run.py formal mechanism`
-- Required phase: `phase4_final_mechanism_controls`
-- Input: the eligible formal Main bundle, including reused baseline/full
-  identities
-- Outputs: matched ablation records, ablation bundle, and evaluator-derived
-  physical-consistency evidence
-- Paper mapping: Mechanism / Physics
-
-Historical phase1--3 outputs are compatibility diagnostics and cannot satisfy
-the formal phase4 gate.
+The study covers matched component controls and the associated physics evidence. The old numbered experiment directories are compatibility or provenance boundaries, not additional paper studies.

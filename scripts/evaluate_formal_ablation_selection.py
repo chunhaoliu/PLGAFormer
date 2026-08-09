@@ -104,7 +104,7 @@ def evaluate_frozen_ablation(args: argparse.Namespace) -> dict[str, Any]:
     )
 
     import torch
-    from experiments.exp2_ablation import ablation_study as exp2
+    from experiments.mechanism_analysis import ablation_study as exp2
 
     if args.phase not in exp2.ABLATION_PHASES:
         raise ValueError(

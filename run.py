@@ -71,7 +71,7 @@ def run_exp1_sota() -> None:
 
 
 def run_exp2_ablation() -> None:
-    from experiments.exp2_ablation.ablation_study import main as run_main
+    from experiments.mechanism_analysis.ablation_study import main as run_main
 
     run_main()
 

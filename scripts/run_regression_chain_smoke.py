@@ -59,7 +59,7 @@ def _run_exp1(project_root: Path):
 
 
 def _run_exp2():
-    from experiments.exp2_ablation import ablation_study as exp2
+    from experiments.mechanism_analysis import ablation_study as exp2
 
     smoke_results = Path(exp2.PROJECT_ROOT) / "experiments" / "exp2_ablation" / "results" / "smoke"
     smoke_models = Path(exp2.PROJECT_ROOT) / "experiments" / "exp2_ablation" / "trained_models" / "smoke"

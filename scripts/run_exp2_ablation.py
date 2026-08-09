@@ -13,7 +13,7 @@ def main() -> int:
     from utils.console import ensure_utf8_console
     ensure_utf8_console()
 
-    from experiments.exp2_ablation.ablation_study import main as run_main
+    from experiments.mechanism_analysis.ablation_study import main as run_main
 
     run_main()
     return 0

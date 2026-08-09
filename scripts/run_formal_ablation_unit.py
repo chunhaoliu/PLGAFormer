@@ -196,7 +196,7 @@ def build_ablation_protocol_identity(
     dataset_identity = dataset_identity or _default_formal_dataset_identity()
     tracked_files = {
         "dataset": Path(str(dataset_identity["dataset_path"])),
-        "ablation": PROJECT_ROOT / "experiments" / "exp2_ablation" / "ablation_study.py",
+        "ablation": PROJECT_ROOT / "experiments" / "mechanism_analysis" / "ablation_study.py",
         "plgaformer": PROJECT_ROOT / "models" / "plgaformer.py",
         "model_factory": PROJECT_ROOT / "models" / "model_factory.py",
     }
@@ -498,7 +498,7 @@ def run_formal_ablation_units(args: argparse.Namespace) -> dict[str, Any]:
         )
 
     import torch
-    from experiments.exp2_ablation import ablation_study as exp2
+    from experiments.mechanism_analysis import ablation_study as exp2
 
     if args.phase not in exp2.ABLATION_PHASES:
         raise ValueError(

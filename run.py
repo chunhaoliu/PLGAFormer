@@ -95,7 +95,7 @@ def run_exp5_missing_data(child_args: list[str] | None = None) -> None:
 
 
 def run_exp6_efficiency(child_args: list[str] | None = None) -> None:
-    from experiments.exp6_efficiency.efficiency_experiment import main as run_main
+    from experiments.efficiency.efficiency_experiment import main as run_main
 
     run_main(child_args or [])
 

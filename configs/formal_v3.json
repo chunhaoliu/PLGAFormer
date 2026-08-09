@@ -181,7 +181,7 @@
     "efficiency": {
       "study_id": "efficiency_computational_cost",
       "display_name": "Efficiency and Computational Cost",
-      "runner": "experiments.exp6_efficiency.efficiency_experiment",
+      "runner": "experiments.efficiency.efficiency_experiment",
       "bundle_kind": null,
       "input_bundle": "main",
       "artifact_root": "experiments/exp6_efficiency/results/formal_v3/hgv_multiregime_state_v2_1",

@@ -293,7 +293,7 @@ def _run_efficiency(args: argparse.Namespace, config) -> int:
     bundle, blockers = _verified_main_bundle(config, bundle_path)
     if blockers or bundle is None:
         raise FormalPipelineError("Efficiency requires an eligible formal Main bundle.", blockers=blockers)
-    from experiments.exp6_efficiency import efficiency_experiment
+    from experiments.efficiency import efficiency_experiment
 
     forwarded = [
         "--config", str(config.path),

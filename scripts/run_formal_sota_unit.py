@@ -92,7 +92,7 @@ def select_model_configs_by_key(
 ) -> OrderedDict[str, dict[str, Any]]:
     """Select SOTA model configs by short keys while preserving CLI order."""
     if comparison_models is None:
-        from experiments.exp1_sota import SOTA_comparison as exp1
+        from experiments.overall_prediction import main_results as exp1
 
         comparison_models = exp1.COMPARISON_MODELS
     requested = [item.strip().lower() for item in str(model_keys).split(",") if item.strip()]
@@ -501,7 +501,7 @@ def run_formal_sota_units(args: argparse.Namespace) -> dict[str, Any]:
 
     import numpy as np
     import torch
-    from experiments.exp1_sota import SOTA_comparison as exp1
+    from experiments.overall_prediction import main_results as exp1
     seeds, horizons = _configure_exp1(exp1, args)
     selected_models = select_model_configs_by_key(args.models, exp1.COMPARISON_MODELS)
     evidence_tier = resolve_evidence_tier(

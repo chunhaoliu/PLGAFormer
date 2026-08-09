@@ -103,7 +103,7 @@ def evaluate_frozen_selections(args: argparse.Namespace) -> dict[str, Any]:
 
     import numpy as np
     import torch
-    from experiments.exp1_sota import SOTA_comparison as exp1
+    from experiments.overall_prediction import main_results as exp1
 
     seeds, horizons = _configure_exp1(exp1, args)
     selected_models = select_model_configs_by_key(args.models, exp1.COMPARISON_MODELS)

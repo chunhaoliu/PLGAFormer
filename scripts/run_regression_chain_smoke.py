@@ -34,7 +34,7 @@ def _configure_global_speed_mode():
 
 
 def _run_exp1(project_root: Path):
-    from experiments.exp1_sota import SOTA_comparison as exp1
+    from experiments.overall_prediction import main_results as exp1
 
     exp1.NUM_RUNS = 1
     exp1.RANDOM_SEEDS = [42]

@@ -1,15 +1,10 @@
-# Overall Prediction Performance
+# Overall prediction
 
-Paper-level study for the matched Main Results comparison. The implementation
-remains under `experiments/exp1_sota/`; this directory is a logical registry
-entry and does not duplicate code or formal records.
+This directory contains the paper's main overall-prediction implementation.
 
-- CLI: `python run.py formal main`
-- Bundle: `main_run_set_manifest.json`
-- Inputs: frozen `hgv_multiregime_state_v2_1`, complete test trajectories,
-  and the formal-v3 model/seed matrix
-- Outputs: Main Results records and a validated Main bundle
-- Paper mapping: Overall Performance
+- Canonical engine: `experiments/overall_prediction/main_results.py`
+- Formal entry point: `python run.py formal main`
+- Historical output roots and result metadata remain unchanged during the source migration so existing records stay traceable.
+- Dataset preparation, model definitions, and shared evaluation utilities remain in their existing project modules.
 
-Missing model/seed units are blockers. Pilot, quick, partial, and historical
-protocol outputs are not fallback evidence.
+The old `experiments/exp1_sota/` path is retained only as a compatibility boundary for older scripts and imports. It is not a separate paper study.

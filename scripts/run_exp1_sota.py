@@ -13,7 +13,7 @@ def main() -> int:
     from utils.console import ensure_utf8_console
     ensure_utf8_console()
 
-    from experiments.exp1_sota.SOTA_comparison import main as run_main
+    from experiments.overall_prediction.main_results import main as run_main
 
     run_main()
     return 0

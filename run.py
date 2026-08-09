@@ -65,7 +65,7 @@ def _bootstrap_project_root() -> Path:
 
 
 def run_exp1_sota() -> None:
-    from experiments.exp1_sota.SOTA_comparison import main as run_main
+    from experiments.overall_prediction.main_results import main as run_main
 
     run_main()
 

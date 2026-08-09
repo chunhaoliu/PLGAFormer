@@ -11,7 +11,7 @@ def main() -> None:
     if str(project_root) not in sys.path:
         sys.path.insert(0, str(project_root))
 
-    from experiments.exp1_sota.SOTA_comparison import main as run_main
+    from experiments.overall_prediction.main_results import main as run_main
 
     print("Starting exp1_sota...")
     run_main()

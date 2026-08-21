@@ -5,6 +5,8 @@
 import os
 from pathlib import Path
 
+from utils.mainline_contract import ACTIVE_DATASET_RELATIVE_PATH
+
 
 def get_project_root() -> Path:
     return Path(__file__).resolve().parent.parent
@@ -23,7 +25,10 @@ def get_dataset_npz_path(project_root: Path | None = None) -> Path:
     override = os.getenv("HGV_DATASET_PATH")
     if override:
         return Path(override).expanduser().resolve()
-    return get_processed_data_dir(project_root) / "hgv_multiregime_dataset_v2_1.npz"
+    if os.getenv("HGV_PROCESSED_DIR"):
+        return get_processed_data_dir(project_root) / ACTIVE_DATASET_RELATIVE_PATH.name
+    root = project_root if project_root is not None else get_project_root()
+    return root / ACTIVE_DATASET_RELATIVE_PATH
 
 
 def get_raw_trajectories_npz_path(project_root: Path | None = None) -> Path:

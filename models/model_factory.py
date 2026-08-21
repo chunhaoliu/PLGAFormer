@@ -6,6 +6,8 @@ from __future__ import annotations
 
 import torch
 
+from utils.mainline_contract import ACTIVE_PLGAFORMER_FLAGS
+
 from .baseline_models import create_baseline_model
 from .sota_models import create_sota_model
 from .PIT import create_pit_model
@@ -139,10 +141,7 @@ def create_registered_model(
             "dim_feedforward": model_config.get("dim_feedforward", 1024),
             "dropout": model_config.get("dropout", 0.1),
             "output_dim": model_config.get("output_dim", 3),
-            "use_sparse_attention": False,
-            "use_physics_corrector": False,
-            "use_multi_head_output": True,
-            "use_adaptive_fusion": True,
+            **dict(ACTIVE_PLGAFORMER_FLAGS),
         }
         if plgaformer_kwargs:
             kwargs.update(plgaformer_kwargs)

@@ -3,6 +3,10 @@ from pathlib import Path
 
 import pytest
 
+import data_generation.data_paths as data_paths
+from data_generation.data_paths import get_dataset_npz_path
+import models.model_factory as model_factory
+from models.model_factory import create_registered_model
 import utils.mainline_contract as mainline_contract
 from utils.mainline_contract import (
     ACTIVE_CONFIG_PATH,
@@ -10,6 +14,7 @@ from utils.mainline_contract import (
     ACTIVE_MODEL_KEY,
     ACTIVE_PLGAFORMER_FLAGS,
     ACTIVE_TRAINABLE_MODEL_KEYS,
+    PROJECT_ROOT,
     load_mainline_config,
 )
 
@@ -49,6 +54,61 @@ def test_active_mainline_contract_matches_formal_v3():
 def test_active_plgaformer_flags_are_immutable():
     with pytest.raises(TypeError):
         ACTIVE_PLGAFORMER_FLAGS["use_prior_fusion"] = False
+
+
+def test_default_dataset_path_uses_active_mainline_contract(monkeypatch):
+    monkeypatch.delenv("HGV_DATASET_PATH", raising=False)
+    monkeypatch.delenv("HGV_PROCESSED_DIR", raising=False)
+
+    assert (
+        getattr(data_paths, "ACTIVE_DATASET_RELATIVE_PATH", None)
+        is ACTIVE_DATASET_RELATIVE_PATH
+    )
+    assert get_dataset_npz_path(PROJECT_ROOT) == (
+        PROJECT_ROOT / ACTIVE_DATASET_RELATIVE_PATH
+    )
+
+
+def test_processed_data_dir_override_selects_active_dataset(tmp_path, monkeypatch):
+    processed_dir = tmp_path / "diagnostic_processed"
+    monkeypatch.delenv("HGV_DATASET_PATH", raising=False)
+    monkeypatch.setenv("HGV_PROCESSED_DIR", str(processed_dir))
+
+    assert get_dataset_npz_path(PROJECT_ROOT) == (
+        processed_dir.resolve() / ACTIVE_DATASET_RELATIVE_PATH.name
+    )
+
+
+def test_dataset_path_override_takes_precedence(tmp_path, monkeypatch):
+    dataset_path = tmp_path / "candidate_dataset.npz"
+    processed_dir = tmp_path / "diagnostic_processed"
+    monkeypatch.setenv("HGV_DATASET_PATH", str(dataset_path))
+    monkeypatch.setenv("HGV_PROCESSED_DIR", str(processed_dir))
+
+    assert get_dataset_npz_path(PROJECT_ROOT) == dataset_path.resolve()
+
+
+def test_registered_plgaformer_uses_active_mainline_flags():
+    assert (
+        getattr(model_factory, "ACTIVE_PLGAFORMER_FLAGS", None)
+        is ACTIVE_PLGAFORMER_FLAGS
+    )
+    model = create_registered_model("plgaformer", input_dim=6, device="cpu")
+
+    for attribute, expected in ACTIVE_PLGAFORMER_FLAGS.items():
+        assert getattr(model, attribute) == expected
+    assert model.use_adaptive_fusion is True
+
+
+def test_registered_plgaformer_applies_explicit_overrides_last():
+    model = create_registered_model(
+        "plgaformer",
+        input_dim=6,
+        device="cpu",
+        plgaformer_kwargs={"use_prior_fusion": False},
+    )
+
+    assert model.use_prior_fusion is False
 
 
 def test_existing_final_model_helpers_reference_the_mainline_contract():

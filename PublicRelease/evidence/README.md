@@ -15,6 +15,7 @@ Files:
 - `maneuver_results_256s.csv`: longitudinal, turning, and weaving results.
 - `strongest_comparator.csv`: paired PLGAFormer comparisons with Holm control.
 - `ablation_256s.csv`: matched mechanism controls at 256 s.
+- `capacity_control_256s.csv`: three-seed learned-only PLGAFormer backbone control.
 - `adaptive_gate_paired.csv`: full versus fixed-schedule paired evidence.
 - `robustness.csv`: nominal and frozen dynamics-shift results.
 - `efficiency.csv`: parameters, FLOPs, memory, latency, and throughput.
@@ -26,5 +27,6 @@ Regenerate this snapshot only in a complete local experiment workspace:
 python scripts/generate_release_evidence.py
 ```
 
-The command verifies formal configuration, dataset, bundle, robustness, and
-efficiency hashes before writing output. It does not train or evaluate a model.
+The command verifies formal configuration, dataset, bundle, capacity-control,
+robustness, and efficiency hashes before writing output. It does not train or
+evaluate a model.

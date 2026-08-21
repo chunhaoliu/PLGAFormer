@@ -1,0 +1,4 @@
+configuration,horizon_s,metric,mean_m,sample_std_m,seed_count
+PLGAFormer learned-only backbone,256,ade,26300.519582624718,5176.916055595101,3
+PLGAFormer learned-only backbone,256,fde,36033.156068121694,8803.535314529485,3
+PLGAFormer learned-only backbone,256,rmse_cart_m,17343.484498175138,3273.0074578660133,3

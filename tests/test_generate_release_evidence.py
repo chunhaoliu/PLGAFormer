@@ -51,3 +51,16 @@ def test_adaptive_gate_release_table_keeps_restrained_256s_boundary():
         row["evidence_class"] == "trajectory_conditional_average_improvement_only"
         for row in at_256
     )
+
+
+def test_capacity_control_release_table_is_three_seed_and_hash_bound():
+    manifest = json.loads((EVIDENCE / "evidence_manifest.json").read_text(encoding="utf-8"))
+    sources = manifest["source_artifact_sha256"]["capacity_control"]
+    assert [item["seed"] for item in sources] == [42, 123, 456]
+    assert all(len(item["record_sha256"]) == 64 for item in sources)
+    assert all(len(item["checkpoint_sha256"]) == 64 for item in sources)
+
+    with (EVIDENCE / "capacity_control_256s.csv").open(encoding="utf-8", newline="") as handle:
+        rows = list(csv.DictReader(handle))
+    assert {row["metric"] for row in rows} == {"ade", "fde", "rmse_cart_m"}
+    assert all(row["seed_count"] == "3" for row in rows)

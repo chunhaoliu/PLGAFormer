@@ -156,6 +156,63 @@ def _ablation_rows(main_summary: dict[str, Any], config_sha: str, dataset_sha: s
     return rows
 
 
+def _capacity_control_rows(
+    config_sha: str, dataset_sha: str
+) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
+    final_dir = (
+        ROOT
+        / "experiments"
+        / "mechanism_analysis"
+        / "results"
+        / "capacity_control"
+        / "final"
+    )
+    paths = sorted(final_dir.glob("*learned_only*.json"))
+    if len(paths) != 3:
+        raise RuntimeError(f"Expected three learned-only records, found {len(paths)}")
+
+    records: list[dict[str, Any]] = []
+    sources: list[dict[str, Any]] = []
+    for path in paths:
+        record = _read_json(path)
+        checkpoint = Path(str(record.get("checkpoint", "")))
+        if (
+            record.get("model_key") != "learned_only"
+            or record.get("evidence_tier") != "final"
+            or record.get("test_evaluation_performed") is not True
+            or record.get("formal_config_sha256") != config_sha
+            or record.get("dataset_identity", {}).get("dataset_sha256") != dataset_sha
+            or not checkpoint.is_file()
+            or _sha256(checkpoint) != record.get("checkpoint_sha256")
+        ):
+            raise RuntimeError(f"Invalid learned-only provenance: {path}")
+        records.append(record)
+        sources.append(
+            {
+                "run_id": record["run_id"],
+                "seed": int(record["seed"]),
+                "record_sha256": _sha256(path),
+                "checkpoint_sha256": record["checkpoint_sha256"],
+            }
+        )
+    if sorted(int(record["seed"]) for record in records) != [42, 123, 456]:
+        raise RuntimeError("Learned-only capacity control requires seeds 42, 123, and 456")
+
+    rows = []
+    for metric in ("ade", "fde", "rmse_cart_m"):
+        values = [float(record["eval_results"]["256"][metric]) for record in records]
+        rows.append(
+            {
+                "configuration": "PLGAFormer learned-only backbone",
+                "horizon_s": 256,
+                "metric": metric,
+                "mean_m": statistics.mean(values),
+                "sample_std_m": statistics.stdev(values),
+                "seed_count": len(values),
+            }
+        )
+    return rows, sorted(sources, key=lambda item: item["seed"])
+
 def _robustness_rows(payload: dict[str, Any]) -> list[dict[str, Any]]:
     rows = []
     for condition, models in payload["results"].items():
@@ -205,6 +262,7 @@ def generate(output: Path) -> dict[str, Any]:
     paired = _read_json(paired_path)
     if paired["formal_config"]["canonical_sha256"] != config_sha or paired["dataset"]["sha256"] != dataset_sha:
         raise RuntimeError("Paired-gate evidence provenance mismatch")
+    capacity_rows, capacity_sources = _capacity_control_rows(config_sha, dataset_sha)
 
     output.mkdir(parents=True, exist_ok=True)
     tables = {
@@ -212,6 +270,7 @@ def generate(output: Path) -> dict[str, Any]:
         "maneuver_results_256s.csv": _maneuver_rows(main),
         "strongest_comparator.csv": main["strongest_comparator_rows"],
         "ablation_256s.csv": _ablation_rows(main, config_sha, dataset_sha),
+        "capacity_control_256s.csv": capacity_rows,
         "robustness.csv": _robustness_rows(robustness),
         "efficiency.csv": _efficiency_rows(efficiency),
         "adaptive_gate_paired.csv": paired["comparisons"],
@@ -252,6 +311,7 @@ def generate(output: Path) -> dict[str, Any]:
             "robustness": _sha256(robustness_path),
             "efficiency": _sha256(efficiency_path),
             "paired_gate": _sha256(paired_path),
+            "capacity_control": capacity_sources,
         },
         "files": {name: _sha256(output / name) for name in tables},
     }

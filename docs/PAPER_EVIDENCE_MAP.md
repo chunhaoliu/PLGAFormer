@@ -44,6 +44,7 @@ configuration, Main, Ablation, complete paper, and adaptive-gate identities.
 | Maneuver-resolved accuracy | `maneuver_results_256s.csv` |
 | Strongest-comparator inference | `strongest_comparator.csv` |
 | Mechanism controls | `ablation_256s.csv` |
+| Learned-only capacity control | `capacity_control_256s.csv` |
 | Adaptive-gate marginal contribution | `adaptive_gate_paired.csv` |
 | Dynamics-shift robustness | `robustness.csv` |
 | Computational cost | `efficiency.csv` |
@@ -66,12 +67,17 @@ configuration, Main, Ablation, complete paper, and adaptive-gate identities.
    seed-and-trajectory 95% intervals include zero: [-447.719, 162.227] m for
    ADE and [-1394.255, 942.892] m for FDE. Only two of three seeds favor the
    final model, so the 256 s marginal gate benefit is not seed-robust.
-5. Under the aerodynamic shift, PLGAFormer obtains 4.855/12.796 km ADE/FDE,
+5. The learned-only PLGAFormer backbone obtains 26.301/36.033/17.343 km
+   ADE/FDE/RMSE at 256 s across three seeds. It uses the same three-encoder,
+   two-decoder, 256-dimensional learned backbone as the final model, so the
+   final gain is not explained by a deeper learned path alone under this
+   training protocol.
+6. Under the aerodynamic shift, PLGAFormer obtains 4.855/12.796 km ADE/FDE,
    compared with 20.130/38.904 km for Transformer and 5.371/14.439 km for the
    rotating-Earth propagator. Under the ballistic shift, PLGAFormer obtains
    5.029/13.142 km; the propagator is marginally lower in ADE at 5.004 km and
    PLGAFormer is marginally lower in FDE than its 13.252 km.
-6. On the measured NVIDIA GeForce RTX 4090, PLGAFormer has 4.546 M parameters,
+7. On the measured NVIDIA GeForce RTX 4090, PLGAFormer has 4.546 M parameters,
    3,021.7 MFLOPs, 849.2 MB peak inference memory, 491.44 ms batch-one latency,
    and 121.9 trajectories/s at batch 64.
 
@@ -94,7 +100,7 @@ configuration, Main, Ablation, complete paper, and adaptive-gate identities.
 ## Manuscript Synchronization Status
 
 The canonical TAES manuscript has been synchronized to the frozen trajectory
-count, split, training budget, public baseline matrix, four-row mechanism
+count, split, training budget, public baseline matrix, five-row mechanism
 ablation, dynamics-shift evidence, and restrained adaptive-gate conclusion. It
 compiles to nine pages without undefined references or layout errors.
 

@@ -446,28 +446,25 @@ def render_efficiency_table(rows: list[dict], metadata: dict) -> str:
     lines = [
         r"\begin{table*}[!t]",
         r"\centering",
-        r"\caption{Inference cost on " + str(metadata.get("device_name", "the evaluation device")).replace("_", r"\_")
-        + r". Batch-one latency includes the complete 256 s forecast; throughput uses batch 64.}",
+        r"\caption{Measured inference cost on "
+        + str(metadata.get("device_name", "the evaluation device")).replace("_", r"\_")
+        + r". Batch-one latency includes the complete 256 s forecast.}",
         r"\label{tab:efficiency}",
         r"\scriptsize",
-        r"\resizebox{\textwidth}{!}{%",
-        r"\begin{tabular}{lrrrrrr}",
+        r"\begin{tabular}{lrrr}",
         r"\toprule",
-        r"Method & Params (M) & MFLOPs & Peak memory (MB) & Latency (ms) & Traj./s & ADE$_{256}$ (km) \\",
+        r"Method & Params (M) & MFLOPs & Latency (ms) \\",
         r"\midrule",
     ]
     for name in EFFICIENCY_MODELS:
         row = lookup[name]
         display = rf"\textbf{{{name}}}" if name == "PLGAFormer" else name
         params = float(row["params"]) / 1e6
-        ade = row.get("ADE_256_m")
-        ade_text = "--" if ade is None else f"{float(ade) / 1000:.3f}"
         lines.append(
             f"{display} & {params:.3f} & {float(row['flops_mflops']):.1f} & "
-            f"{float(row['peak_inference_memory_mb']):.1f} & {float(row['latency_batch1_ms']):.2f} & "
-            f"{float(row['throughput_trajectories_s']):.1f} & {ade_text} " + r"\\"
+            f"{float(row['latency_batch1_ms']):.2f} " + r"\\"
         )
-    lines.extend([r"\bottomrule", r"\end{tabular}", r"}", r"\end{table*}"])
+    lines.extend([r"\bottomrule", r"\end{tabular}", r"\end{table*}"])
     return "\n".join(lines) + "\n"
 
 

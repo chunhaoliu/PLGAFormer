@@ -76,9 +76,10 @@ configuration, Main, Ablation, complete paper, and adaptive-gate identities.
    compared with 20.130/38.904 km for Transformer. Under the ballistic shift,
    PLGAFormer obtains 5.029/13.142 km, compared with 15.869/30.597 km for
    Transformer.
+
 7. On the measured NVIDIA GeForce RTX 4090, PLGAFormer has 4.546 M parameters,
-   3,021.7 MFLOPs, 849.2 MB peak inference memory, 491.44 ms batch-one latency,
-   and 121.9 trajectories/s at batch 64.
+   3,021.7 MFLOPs, and 491.44 ms batch-one latency for the complete 256 s
+   forecast. The paper reports these fields as hardware-specific feasibility evidence.
 
 ## Unsupported or Restricted Claims
 

@@ -59,7 +59,7 @@ def test_ablation_table_can_include_hash_bound_capacity_control():
     assert "PLGAFormer learned-only backbone" in table
 
 
-def test_efficiency_table_covers_all_formal_models_and_cost_fields():
+def test_efficiency_table_is_compact_and_feasibility_focused():
     rows = [
         {
             "model": name,
@@ -82,4 +82,7 @@ def test_efficiency_table_covers_all_formal_models_and_cost_fields():
     assert "Spherical kinematics" not in table
     assert "Rotating-Earth 3-DOF" not in table
     assert "MFLOPs" in table
-    assert "Peak memory (MB)" in table
+    assert "Latency (ms)" in table
+    assert "Peak memory (MB)" not in table
+    assert "Traj./s" not in table
+    assert r"ADE$_{256}$" not in table

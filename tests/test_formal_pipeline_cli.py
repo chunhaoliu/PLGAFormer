@@ -154,7 +154,10 @@ def test_aggregate_dry_run_is_read_only():
     config = load_formal_config(DEFAULT_CONFIG)
     main_manifest = resolve_config_path(config, "main_results_records") / "main_run_set_manifest.json"
     ablation_manifest = resolve_config_path(config, "ablation_records") / "ablation_run_set_manifest.json"
-    before = (main_manifest.read_bytes(), ablation_manifest.read_bytes())
+    before = tuple(
+        path.read_bytes() if path.is_file() else None
+        for path in (main_manifest, ablation_manifest)
+    )
     result = subprocess.run(
         [sys.executable, "run.py", "formal", "aggregate", "--dry-run"],
         cwd=PROJECT_ROOT,
@@ -164,7 +167,11 @@ def test_aggregate_dry_run_is_read_only():
     )
     assert result.returncode == 0
     assert "formal aggregate --dry-run" in result.stdout
-    assert (main_manifest.read_bytes(), ablation_manifest.read_bytes()) == before
+    after = tuple(
+        path.read_bytes() if path.is_file() else None
+        for path in (main_manifest, ablation_manifest)
+    )
+    assert after == before
 
 def _robustness_payload(trajectory_count: int):
     models = ["Transformer (baseline)", "PLGAFormer (proposed)"]

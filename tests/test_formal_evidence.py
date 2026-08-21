@@ -354,6 +354,15 @@ def test_formal_paper_synthetic_success_stages_complete_bundle(monkeypatch, tmp_
     from scripts import generate_taes_main_results
 
     monkeypatch.setattr(
+        formal_pipeline,
+        "audit_dataset",
+        lambda _config: {
+            "passed": True,
+            "protocol": config["dataset"]["protocol"],
+            "observed_sha256": config["dataset"]["sha256"],
+        },
+    )
+    monkeypatch.setattr(
         generate_taes_main_results,
         "trajectory_maneuver_map",
         lambda: {

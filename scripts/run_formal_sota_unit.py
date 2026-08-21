@@ -100,13 +100,11 @@ def select_model_configs_by_key(
         requested = [
             "transformer",
             "plgaformer",
-            "pit",
             "kinematic",
             "rotating_3dof",
             "dlinear",
             "patchtst",
             "itransformer",
-            "af_ciln",
         ]
     selected: OrderedDict[str, dict[str, Any]] = OrderedDict()
     for key in requested:
@@ -258,6 +256,21 @@ def sha256_file(path: str | Path) -> str:
         for chunk in iter(lambda: handle.read(8 * 1024 * 1024), b""):
             digest.update(chunk)
     return digest.hexdigest()
+
+
+def _configure_tslib_checkout(path_value: str | None) -> Path | None:
+    """Set the validated public TSLib root for paper-facing baselines."""
+    raw = str(path_value or os.getenv("HGV_TSLIB_ROOT", "")).strip()
+    if not raw:
+        return None
+    root = Path(raw).expanduser()
+    if not root.is_absolute():
+        root = PROJECT_ROOT / root
+    root = root.resolve()
+    if not root.is_dir():
+        raise FileNotFoundError(f"TSLib checkout is missing: {root}")
+    os.environ["HGV_TSLIB_ROOT"] = str(root)
+    return root
 
 
 def _default_formal_dataset_identity() -> dict[str, Any]:
@@ -462,6 +475,7 @@ def run_formal_sota_units(args: argparse.Namespace) -> dict[str, Any]:
         if not af_ciln_root.is_dir():
             raise FileNotFoundError(f"AF-CILN checkout is missing: {af_ciln_root}")
         os.environ["HGV_AF_CILN_ROOT"] = str(af_ciln_root.resolve())
+    _configure_tslib_checkout(getattr(args, "tslib_root", None))
 
     from data_generation.data_paths import (
         configure_protocol_scaler_paths,
@@ -504,6 +518,17 @@ def run_formal_sota_units(args: argparse.Namespace) -> dict[str, Any]:
     from experiments.overall_prediction import main_results as exp1
     seeds, horizons = _configure_exp1(exp1, args)
     selected_models = select_model_configs_by_key(args.models, exp1.COMPARISON_MODELS)
+    public_types = {"transformer", "dlinear", "patchtst", "itransformer"}
+    selected_public_types = {
+        str(config.get("model_type", "")).lower()
+        for config in selected_models.values()
+        if str(config.get("model_type", "")).lower() in public_types
+    }
+    if selected_public_types and not os.getenv("HGV_TSLIB_ROOT", "").strip():
+        raise RuntimeError(
+            "The paper-facing Main matrix uses official TSLib implementations for "
+            f"{', '.join(sorted(selected_public_types))}. Pass --tslib-root or set HGV_TSLIB_ROOT."
+        )
     evidence_tier = resolve_evidence_tier(
         float(args.subset_ratio), bool(args.selection_only)
     )
@@ -586,6 +611,15 @@ def run_formal_sota_units(args: argparse.Namespace) -> dict[str, Any]:
                 device=device,
                 plgaformer_kwargs=plgaformer_kwargs,
             )
+            external_source_provenance = None
+            model_type = str(model_config.get("model_type", "")).lower()
+            if model_key == "af_ciln" or model_type in public_types:
+                source_audit = getattr(model, "source_audit", None)
+                if not isinstance(source_audit, dict) or not source_audit.get("root"):
+                    raise RuntimeError(
+                        "External baseline runs require a validated source audit."
+                    )
+                external_source_provenance = dict(source_audit)
             trained_model, training_history = exp1.train_model(
                 model_name,
                 model_config,
@@ -626,6 +660,10 @@ def run_formal_sota_units(args: argparse.Namespace) -> dict[str, Any]:
             record_model_config = dict(model_config)
             if model_key == "full":
                 record_model_config.update(FINAL_MODEL_FLAGS)
+            if external_source_provenance is not None:
+                if model_type in public_types:
+                    record_model_config["source"] = "tslib"
+                record_model_config["external_source_provenance"] = external_source_provenance
             payload = {
                 "schema_version": 2,
                 "formal_config_sha256": formal_config.config_sha256,
@@ -648,6 +686,8 @@ def run_formal_sota_units(args: argparse.Namespace) -> dict[str, Any]:
                 "dataset_identity": dataset_identity,
                 "scaler_paths": {key: str(path) for key, path in scaler_paths.items()},
             }
+            if external_source_provenance is not None:
+                payload["external_source_provenance"] = external_source_provenance
             run_json.write_text(json.dumps(payload, indent=2, ensure_ascii=False), encoding="utf-8")
             completed.append({"run_id": run_id, "json": str(run_json), "checkpoint": str(checkpoint)})
             print(f"[formal-sota] wrote {run_json}")
@@ -684,11 +724,17 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
         help="Audited official AF-CILN checkout used by the external adapter.",
     )
     parser.add_argument(
+        "--tslib-root",
+        type=str,
+        default=None,
+        help="Official Time-Series-Library checkout used by paper-facing public baselines.",
+    )
+    parser.add_argument(
         "--models",
         type=str,
         default=(
-            "transformer,plgaformer,pit,kinematic,rotating_3dof,"
-            "dlinear,patchtst,itransformer,af_ciln"
+            "transformer,plgaformer,kinematic,rotating_3dof,"
+            "dlinear,patchtst,itransformer"
         ),
     )
     parser.add_argument("--seeds", type=str, default="42,123,456")

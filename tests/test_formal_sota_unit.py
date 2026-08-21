@@ -50,6 +50,19 @@ class FormalSotaUnitTests(unittest.TestCase):
         self.assertTrue(args.cache_physics_prior)
         self.assertEqual(args.physics_prior_cache_batch_size, 512)
 
+    def test_default_paper_selection_excludes_isolated_baselines(self):
+        from scripts.run_formal_sota_unit import parse_args, select_model_configs_by_key
+
+        args = parse_args([])
+        default_keys = {item.strip() for item in args.models.split(",")}
+        self.assertNotIn("pit", default_keys)
+        self.assertNotIn("af_ciln", default_keys)
+
+        selected = select_model_configs_by_key("")
+        selected_types = {config["model_type"] for config in selected.values()}
+        self.assertNotIn("pit", selected_types)
+        self.assertNotIn("af_ciln", selected_types)
+
     def test_pit_identity_records_step_and_second_horizons(self):
         from scripts.run_formal_sota_unit import build_protocol_identity, parse_args
 

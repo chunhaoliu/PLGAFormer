@@ -11,6 +11,40 @@ from scripts.generate_taes_secondary_results import validate_robustness
 
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
+LOCAL_FORMAL_DATA = (
+    PROJECT_ROOT
+    / "data_generation"
+    / "data"
+    / "processed"
+    / "hgv_multiregime_dataset_v2_1.npz"
+)
+LOCAL_MAIN_RECORDS = (
+    PROJECT_ROOT
+    / "experiments"
+    / "exp1_sota"
+    / "results"
+    / "formal_v3"
+    / "hgv_multiregime_state_v2_1"
+    / "final"
+)
+LOCAL_MAIN_CHECKPOINTS = (
+    PROJECT_ROOT
+    / "experiments"
+    / "exp1_sota"
+    / "trained_models"
+    / "formal_v3"
+    / "hgv_multiregime_state_v2_1"
+    / "final"
+)
+HAS_COMPLETE_LOCAL_EVIDENCE = (
+    LOCAL_FORMAL_DATA.is_file()
+    and len(list(LOCAL_MAIN_RECORDS.glob("formal_sota_*.json"))) >= 21
+    and len(list(LOCAL_MAIN_CHECKPOINTS.glob("*.pth"))) >= 15
+)
+requires_complete_local_evidence = pytest.mark.skipif(
+    not HAS_COMPLETE_LOCAL_EVIDENCE,
+    reason="complete local formal records/checkpoints are excluded from public Git",
+)
 
 
 def test_formal_parser_exposes_all_commands():
@@ -36,23 +70,22 @@ def test_formal_config_registers_exactly_four_studies():
     assert config["studies"]["efficiency"]["retrain"] is False
 
 
-def test_status_is_read_only_and_reports_expected_current_blockers():
-    config_path = DEFAULT_CONFIG
-    config = __import__("utils.formal_evidence", fromlist=["load_formal_config"]).load_formal_config(config_path)
+@requires_complete_local_evidence
+def test_status_is_read_only_and_reports_current_eligible_state():
+    config = load_formal_config(DEFAULT_CONFIG)
     main_manifest = resolve_config_path(config, "main_results_records") / "main_run_set_manifest.json"
     ablation_manifest = resolve_config_path(config, "ablation_records") / "ablation_run_set_manifest.json"
-    assert not main_manifest.exists()
-    assert not ablation_manifest.exists()
+    before = (main_manifest.read_bytes(), ablation_manifest.read_bytes())
 
     report = build_status(config)
     assert report["dataset"]["passed"] is True
-    assert report["paper_eligible"] is False
-    missing = {(item["context"]["model_key"], item["context"]["seed"]) for item in report["main_results"]["blockers"] if item["code"] == "MISSING_REQUIRED_RUN"}
-    assert ("full", 456) in missing
-    assert {("pit", 42), ("pit", 123), ("pit", 456)}.issubset(missing)
-    assert not main_manifest.exists()
-    assert not ablation_manifest.exists()
-
+    assert report["paper_eligible"] is True
+    assert report["main_results"]["paper_eligible"] is True
+    assert report["ablation"]["paper_eligible"] is True
+    assert report["main_results"]["blockers"] == []
+    assert report["ablation"]["blockers"] == []
+    assert "pit" not in config["main_results"]["trainable_model_keys"]
+    assert (main_manifest.read_bytes(), ablation_manifest.read_bytes()) == before
 
 def test_run_py_formal_help_routes_without_training_imports():
     result = subprocess.run(
@@ -63,7 +96,7 @@ def test_run_py_formal_help_routes_without_training_imports():
         text=True,
     )
     assert result.returncode == 0
-    assert "formal-v3" in result.stdout
+    assert "formal evidence" in result.stdout.lower()
     assert "status" in result.stdout
     assert "paper" in result.stdout
 
@@ -81,6 +114,7 @@ def test_run_py_without_arguments_prints_help_only():
     assert "Paper-facing route" in result.stdout
 
 
+@requires_complete_local_evidence
 def test_status_json_is_machine_readable():
     result = subprocess.run(
         [sys.executable, "run.py", "formal", "status", "--json"],
@@ -92,9 +126,17 @@ def test_status_json_is_machine_readable():
     assert result.returncode == 0
     payload = json.loads(result.stdout)
     assert payload["command"] == "formal status"
-    assert payload["main_results"]["record_count"] == 23
+    config = load_formal_config(DEFAULT_CONFIG)
+    minimum_required = (
+        len(config["main_results"]["trainable_model_keys"])
+        * len(config["training"]["seeds"])
+        + len(config["main_results"]["analytical_models"])
+    )
+    assert payload["main_results"]["record_count"] >= minimum_required
+    assert payload["paper_eligible"] is True
 
-def test_paper_dry_run_refuses_with_machine_readable_blockers():
+@requires_complete_local_evidence
+def test_paper_dry_run_accepts_complete_machine_readable_bundles():
     result = subprocess.run(
         [sys.executable, "run.py", "formal", "paper", "--json", "--dry-run"],
         cwd=PROJECT_ROOT,
@@ -102,14 +144,17 @@ def test_paper_dry_run_refuses_with_machine_readable_blockers():
         capture_output=True,
         text=True,
     )
-    assert result.returncode == 1
+    assert result.returncode == 0
     payload = json.loads(result.stdout)
-    assert payload["paper_eligible"] is False
-    codes = {item["code"] for item in payload["blockers"]}
-    assert "MISSING_REQUIRED_RUN" in codes
-    assert "MISSING_REQUIRED_ABLATION_RUN" in codes
+    assert payload["paper_eligible"] is True
+    assert Path(payload["main_bundle"]).is_file()
+    assert Path(payload["ablation_bundle"]).is_file()
 
 def test_aggregate_dry_run_is_read_only():
+    config = load_formal_config(DEFAULT_CONFIG)
+    main_manifest = resolve_config_path(config, "main_results_records") / "main_run_set_manifest.json"
+    ablation_manifest = resolve_config_path(config, "ablation_records") / "ablation_run_set_manifest.json"
+    before = (main_manifest.read_bytes(), ablation_manifest.read_bytes())
     result = subprocess.run(
         [sys.executable, "run.py", "formal", "aggregate", "--dry-run"],
         cwd=PROJECT_ROOT,
@@ -119,11 +164,7 @@ def test_aggregate_dry_run_is_read_only():
     )
     assert result.returncode == 0
     assert "formal aggregate --dry-run" in result.stdout
-    config = __import__("utils.formal_evidence", fromlist=["load_formal_config"]).load_formal_config(DEFAULT_CONFIG)
-    assert not (resolve_config_path(config, "main_results_records") / "main_run_set_manifest.json").exists()
-    assert not (resolve_config_path(config, "ablation_records") / "ablation_run_set_manifest.json").exists()
-
-
+    assert (main_manifest.read_bytes(), ablation_manifest.read_bytes()) == before
 
 def _robustness_payload(trajectory_count: int):
     models = ["Transformer (baseline)", "PLGAFormer (proposed)"]

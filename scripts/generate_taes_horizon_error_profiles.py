@@ -47,28 +47,24 @@ DEFAULT_OUTPUT = PROJECT_ROOT / "experiments" / "taes_submission_artifacts" / "g
 FORMAL_SEEDS = (42, 123, 456)
 FORMAL_HORIZONS = (32, 64, 128, 256)
 PRED_LEN = 256
-MODEL_ORDER = ("plgaformer", "af_ciln", "transformer", "rotating_3dof")
+MODEL_ORDER = ("plgaformer", "transformer", "rotating_3dof")
 MODEL_NAMES = {
     "plgaformer": "PLGAFormer",
-    "af_ciln": "AF-CILN",
     "transformer": "Transformer",
     "rotating_3dof": "3-DOF predictor",
 }
 SUMMARY_NAMES = {
     "plgaformer": "PLGAFormer (proposed)",
-    "af_ciln": "AF-CILN",
     "transformer": "Transformer (baseline)",
     "rotating_3dof": "Rotating-Earth 3-DOF",
 }
 COLORS = {
     "plgaformer": "#0F4D92",
-    "af_ciln": "#C27A2C",
     "transformer": "#6B7280",
     "rotating_3dof": "#2E8B57",
 }
 LINESTYLES = {
     "plgaformer": "-",
-    "af_ciln": "-",
     "transformer": "-",
     "rotating_3dof": "--",
 }
@@ -113,11 +109,8 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
         "--device",
         default="cuda" if torch.cuda.is_available() else "cpu",
     )
-    parser.add_argument(
-        "--af-ciln-root",
-        type=Path,
-        default=PROJECT_ROOT / "tmp" / "AF-CILN",
-    )
+    parser.add_argument("--tslib-root", type=Path, default=None)
+
     parser.add_argument(
         "--replot-only",
         action="store_true",
@@ -147,7 +140,6 @@ def main_summary_from_bundle(path: Path) -> dict[str, Any]:
     key_to_summary = {
         "full": "PLGAFormer (proposed)",
         "baseline": "Transformer (baseline)",
-        "af_ciln": "AF-CILN",
         "rotating_3dof": "Rotating-Earth 3-DOF",
     }
     grouped: dict[str, dict[int, dict[str, float]]] = {}
@@ -327,9 +319,17 @@ def build_model(
     torch.manual_seed(int(seed))
     kwargs = (
         physical_kwargs(input_scaler, output_scaler)
-        if model_type in {"plgaformer", "af_ciln", "rotating_3dof"}
+        if model_type in {"plgaformer", "rotating_3dof"}
         else None
     )
+    if model_type in {"transformer", "dlinear", "patchtst", "itransformer"}:
+        tslib_root = os.getenv("HGV_TSLIB_ROOT", "").strip()
+        if not tslib_root:
+            raise RuntimeError(
+                "Horizon profile reconstruction of public baselines requires "
+                "--tslib-root or HGV_TSLIB_ROOT."
+            )
+        kwargs = {"source": "tslib", "tslib_root": tslib_root}
     if model_type == "plgaformer":
         kwargs.update(final_plgaformer_kwargs())
     model = create_registered_model(
@@ -546,7 +546,7 @@ def crossover_audit(
     for metric in ("ade", "fde", "rmse_cart_m"):
         proposed = summary["plgaformer"][f"{metric}_mean"]
         output[metric] = {}
-        for comparator in ("af_ciln", "transformer", "rotating_3dof"):
+        for comparator in ("transformer", "rotating_3dof"):
             advantage = proposed < summary[comparator][f"{metric}_mean"]
             persistent_from = None
             for index in range(PRED_LEN):
@@ -712,7 +712,6 @@ def profiles_from_manifest(payload: dict[str, Any]) -> dict[str, dict[str, dict[
     stored = payload.get("profiles", {})
     aliases = {
         "plgaformer": ("PLGAFormer",),
-        "af_ciln": ("AF-CILN",),
         "transformer": ("Transformer",),
         "rotating_3dof": ("3-DOF predictor", "Rotating-Earth 3-DOF"),
     }
@@ -737,6 +736,11 @@ def main(argv: list[str] | None = None) -> int:
 
     ensure_utf8_console()
     config = load_formal_config(args.config)
+    if args.tslib_root is not None:
+        tslib_root = args.tslib_root.expanduser().resolve()
+        if not tslib_root.is_dir():
+            raise FileNotFoundError(f"TSLib checkout is missing: {tslib_root}")
+        os.environ["HGV_TSLIB_ROOT"] = str(tslib_root)
     if not args.registry.is_file():
         raise FileNotFoundError(f"Formal-v3 Main Results bundle is missing: {args.registry}")
     verification = validate_evidence_bundle(args.registry, config, expected_kind="main")
@@ -783,9 +787,7 @@ def main(argv: list[str] | None = None) -> int:
         )
         return 0
 
-    if not args.af_ciln_root.is_dir():
-        raise FileNotFoundError(f"AF-CILN checkout is missing: {args.af_ciln_root}")
-    os.environ["HGV_AF_CILN_ROOT"] = str(args.af_ciln_root.resolve())
+
 
     device = torch.device(args.device)
     registry, signature = load_registry(args.registry)

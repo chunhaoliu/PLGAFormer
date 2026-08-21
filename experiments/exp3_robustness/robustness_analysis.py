@@ -11,6 +11,7 @@ import warnings
 warnings.filterwarnings('ignore', message='.*flash attention.*', category=UserWarning)
 warnings.filterwarnings('ignore', category=UserWarning, message='.*Glyph.*missing from font.*')
 
+import os
 import torch
 import torch.nn as nn
 from torch.utils.data import DataLoader, TensorDataset
@@ -28,7 +29,7 @@ sys.path.insert(0, str(PROJECT_ROOT))
 
 from models import (
     PLGAFormerTransformer, HGVPhysicsLoss, create_baseline_model, create_sota_model,
-    create_pit_model, HGVConfig
+    create_pit_model, create_registered_model, HGVConfig
 )
 from utils.repro import set_global_seed
 from utils.experiment_io import (
@@ -519,7 +520,18 @@ def create_model_for_robustness(
 ):
     """创建鲁棒性测试用模型（与 exp1 create_model 对齐）"""
     if model_type == 'transformer':
-        return create_baseline_model('transformer', input_dim=input_dim, device=device)
+        tslib_root = os.getenv("HGV_TSLIB_ROOT", "").strip()
+        if not tslib_root:
+            raise RuntimeError(
+                "Legacy robustness Transformer comparison requires the pinned TSLib checkout. "
+                "Set HGV_TSLIB_ROOT before running this diagnostic."
+            )
+        return create_registered_model(
+            'transformer',
+            input_dim=input_dim,
+            device=device,
+            plgaformer_kwargs={"source": "tslib", "tslib_root": tslib_root},
+        )
     if model_type == 'pit':
         return create_pit_model(input_dim=input_dim, device=device)
     if model_type == 'plgaformer':

@@ -71,7 +71,15 @@ def _payload(tmp_path: Path, config, *, model_key="baseline", seed=42, metrics=N
     }
     if metrics:
         eval_results["256"].update(metrics)
-    model_config = {"model_type": "plgaformer" if model_key == "full" else model_key}
+    model_config = {
+        "model_type": (
+            "plgaformer"
+            if model_key == "full"
+            else "transformer"
+            if model_key == "baseline"
+            else model_key
+        )
+    }
     if model_key == "full":
         model_config["innovations"] = ["C: identified rotating-Earth 3-DOF prior with adaptive fusion"]
         model_config.update(FINAL_MODEL_FLAGS)
@@ -110,6 +118,24 @@ def _payload(tmp_path: Path, config, *, model_key="baseline", seed=42, metrics=N
     }
     if af_root is not None:
         payload["config"] = {"af_ciln_root": str(af_root)}
+    public_source_keys = set(config["main_results"].get("public_source_model_keys", []))
+    if model_key in public_source_keys:
+        from models.public_baselines import TSLIB_FILE_SHA256, _required_files
+
+        source_model_type = "transformer" if model_key == "baseline" else model_key
+        payload["external_source_provenance"] = {
+            "kind": "TSLib",
+            "repository": config["external_sources"]["tslib"]["repository"],
+            "root": str(tmp_path / "Time-Series-Library"),
+            "commit": config["external_sources"]["tslib"]["commit"],
+            "model_types": [source_model_type],
+            "source_files": {
+                relative: TSLIB_FILE_SHA256[relative]
+                for relative in _required_files([source_model_type])
+            },
+            "license": "MIT",
+            "adapter_config": config["external_sources"]["tslib"]["adapter_config"],
+        }
     return payload
 
 
@@ -225,13 +251,13 @@ def test_bundle_manifest_is_hashable_and_resolves_exact_checkpoint(tmp_path):
     assert checkpoint.is_file()
 
 
-def test_invalid_external_source_provenance_blocks_af_ciln(tmp_path):
+def test_af_ciln_is_rejected_from_paper_main_matrix(tmp_path):
     config = load_formal_config(CONFIG_PATH)
     payload = _payload(tmp_path, config, model_key="af_ciln", seed=42, af_root=tmp_path / "missing-af-ciln")
     record = _write_record(tmp_path, payload, "formal_sota_af_ciln_42.json")
     audit = validate_main_completeness([record], config)
 
-    assert any(item["code"] == "INVALID_EXTERNAL_SOURCE_PROVENANCE" for item in audit["blockers"])
+    assert any(item["code"] == "UNEXPECTED_MODEL_RECORD" for item in audit["blockers"])
 
 def test_tampered_bundle_source_is_rejected(tmp_path):
     config = load_formal_config(CONFIG_PATH)
@@ -440,17 +466,25 @@ def test_formal_paper_rejects_wrong_bundle_type_hashes_empty_records_and_mismatc
     assert result == 1
 
 
-def test_real_formal_v3_legacy_records_are_hash_attested_without_rewriting():
+@pytest.mark.skipif(
+    not (CONFIG_PATH.parent.parent / "data_generation" / "data" / "processed" / "hgv_multiregime_dataset_v2_1.npz").is_file(),
+    reason="complete local formal evidence is excluded from public Git",
+)
+def test_real_formal_v3_records_are_complete_and_hash_attested():
     config = load_formal_config(CONFIG_PATH)
     records = discover_run_records(resolve_config_path(config, "main_results_records"), "main")
     audit = validate_main_completeness(records, config)
 
-    assert len(records) == 23
-    assert len(audit["selected_records"]) == 19
-    codes = {item["code"] for item in audit["blockers"]}
-    assert codes == {"MISSING_REQUIRED_RUN"}
-    assert not audit["record_issues"]
-
+    minimum_required = (
+        len(config["main_results"]["trainable_model_keys"])
+        * len(config["training"]["seeds"])
+        + len(config["main_results"]["analytical_models"])
+    )
+    assert len(records) >= minimum_required
+    assert audit["passed"] is True
+    assert audit["paper_eligible"] is True
+    assert audit["blockers"] == []
+    assert audit["record_issues"] == {}
 
 def test_incomplete_trajectory_population_is_not_paper_eligible(tmp_path):
     config = load_formal_config(CONFIG_PATH)

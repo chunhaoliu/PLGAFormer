@@ -68,11 +68,24 @@ def _configure_external_checkout(path_value: str | None) -> None:
     os.environ["HGV_AF_CILN_ROOT"] = str(path.resolve())
 
 
+def _configure_tslib_checkout(path_value: str | None) -> None:
+    raw = str(path_value or os.getenv("HGV_TSLIB_ROOT", "")).strip()
+    if not raw:
+        return
+    path = Path(raw)
+    if not path.is_absolute():
+        path = PROJECT_ROOT / path
+    if not path.is_dir():
+        raise FileNotFoundError(f"TSLib checkout is missing: {path}")
+    os.environ["HGV_TSLIB_ROOT"] = str(path.resolve())
+
+
 def evaluate_frozen_selections(args: argparse.Namespace) -> dict[str, Any]:
     from utils.console import ensure_utf8_console
 
     ensure_utf8_console()
     _configure_external_checkout(args.af_ciln_root)
+    _configure_tslib_checkout(args.tslib_root)
 
     from data_generation.data_paths import (
         configure_protocol_scaler_paths,
@@ -107,6 +120,14 @@ def evaluate_frozen_selections(args: argparse.Namespace) -> dict[str, Any]:
 
     seeds, horizons = _configure_exp1(exp1, args)
     selected_models = select_model_configs_by_key(args.models, exp1.COMPARISON_MODELS)
+    public_types = {"transformer", "dlinear", "patchtst", "itransformer"}
+    if (
+        any(str(config.get("model_type", "")).lower() in public_types for config in selected_models.values())
+        and not os.getenv("HGV_TSLIB_ROOT", "").strip()
+    ):
+        raise RuntimeError(
+            "Frozen public-baseline evaluation requires --tslib-root or HGV_TSLIB_ROOT."
+        )
     default_selection_dir, _ = get_formal_protocol_dirs(
         PROJECT_ROOT,
         "exp1_sota",
@@ -232,6 +253,9 @@ def evaluate_frozen_selections(args: argparse.Namespace) -> dict[str, Any]:
                 continue
 
             model_config = dict(source_payload.get("model_config", default_model_config))
+            source_provenance = source_payload.get("external_source_provenance")
+            if isinstance(source_provenance, dict):
+                model_config["external_source_provenance"] = dict(source_provenance)
             reconstruction_kwargs = exp1._model_reconstruction_kwargs(
                 model_config["model_type"], scaler, output_scaler
             ) or {}
@@ -311,6 +335,8 @@ def evaluate_frozen_selections(args: argparse.Namespace) -> dict[str, Any]:
                 "checkpoint_sha256": checkpoint_sha256,
                 "metrics_csv": str(metrics_csv),
             }
+            if isinstance(source_provenance, dict):
+                payload["external_source_provenance"] = dict(source_provenance)
             run_json = output_dir / f"{run_id}.json"
             run_json.write_text(
                 json.dumps(payload, indent=2, ensure_ascii=False), encoding="utf-8"
@@ -334,10 +360,11 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--dataset-path", type=str, default=None)
     parser.add_argument("--candidate-file", type=str, default=None)
     parser.add_argument("--af-ciln-root", type=str, default=None)
+    parser.add_argument("--tslib-root", type=str, default=None)
     parser.add_argument(
         "--models",
         type=str,
-        default="transformer,plgaformer,pit,dlinear,patchtst,itransformer,af_ciln",
+        default="transformer,plgaformer,dlinear,patchtst,itransformer",
     )
     parser.add_argument("--seeds", type=str, default="42,123,456")
     parser.add_argument("--subset-ratio", type=float, default=1.0)

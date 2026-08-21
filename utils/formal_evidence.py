@@ -830,6 +830,58 @@ def _record_blockers(
         root_value = provenance.get("root") or provenance.get("source_root")
         if not root_value or not Path(str(root_value)).is_dir():
             blockers.append(_blocker("INVALID_EXTERNAL_SOURCE_PROVENANCE", "AF-CILN source checkout is missing or not recorded.", source_path=record.get("source_path"), root=root_value))
+    public_source_keys = {
+        str(item) for item in data["main_results"].get("public_source_model_keys", [])
+    }
+    if record.get("model_key") in public_source_keys:
+        provenance = record.get("external_source_provenance") or {}
+        tslib_config = data.get("external_sources", {}).get("tslib", {})
+        required_fields = {
+            "kind": "TSLib",
+            "repository": "https://github.com/thuml/Time-Series-Library",
+            "commit": str(tslib_config.get("commit", "")),
+            "license": "MIT",
+        }
+        missing_or_mismatched = [
+            key for key, expected in required_fields.items()
+            if not provenance.get(key) or (expected and str(provenance.get(key)) != expected)
+        ]
+        expected_adapter_config = tslib_config.get("adapter_config")
+        observed_adapter_config = provenance.get("adapter_config")
+        if expected_adapter_config and observed_adapter_config != expected_adapter_config:
+            missing_or_mismatched.append("adapter_config")
+        source_files = provenance.get("source_files")
+        if not isinstance(source_files, dict) or not source_files:
+            missing_or_mismatched.append("source_files")
+        else:
+            try:
+                from models.public_baselines import (
+                    TSLIB_FILE_SHA256,
+                    _required_files,
+                )
+
+                source_model_type = (
+                    "transformer"
+                    if record.get("model_key") == "baseline"
+                    else str(record.get("model_config", {}).get("model_type", ""))
+                )
+                expected_files = _required_files([source_model_type])
+                for relative in expected_files:
+                    expected_hash = TSLIB_FILE_SHA256.get(relative)
+                    if str(source_files.get(relative, "")).lower() != str(expected_hash or "").lower():
+                        missing_or_mismatched.append(f"source_files:{relative}")
+            except (ImportError, KeyError, ValueError):
+                missing_or_mismatched.append("source_files:expected_hash_registry")
+        if missing_or_mismatched:
+            blockers.append(
+                _blocker(
+                    "INVALID_PUBLIC_SOURCE_PROVENANCE",
+                    "Paper-facing public baseline lacks the pinned TSLib source identity.",
+                    source_path=record.get("source_path"),
+                    model_key=record.get("model_key"),
+                    fields=missing_or_mismatched,
+                )
+            )
     return blockers
 
 
@@ -906,6 +958,7 @@ def _selected_record_metadata(record: dict[str, Any], *, source: str = "formal_v
         "run_signature": record.get("run_signature"),
         "phase": record.get("phase"),
         "timestamp": record.get("timestamp"),
+        "external_source_provenance": record.get("external_source_provenance"),
     }
 
 

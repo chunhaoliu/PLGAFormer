@@ -87,11 +87,15 @@
     "trainable_model_keys": [
       "baseline",
       "full",
-      "pit",
       "dlinear",
       "patchtst",
-      "itransformer",
-      "af_ciln"
+      "itransformer"
+    ],
+    "public_source_model_keys": [
+      "baseline",
+      "dlinear",
+      "patchtst",
+      "itransformer"
     ],
     "analytical_models": {
       "kinematic": {
@@ -192,8 +196,33 @@
     }
   },
   "external_sources": {
-    "af_ciln": {
+    "tslib": {
       "required": true,
+      "paper_facing": true,
+      "status": "official_public_checkout_required_for_main_baselines",
+      "repository": "https://github.com/thuml/Time-Series-Library",
+      "commit": "4e938a1767106324dd753b2a44832bf870a0252e",
+      "license": "MIT",
+      "root_field": "tslib_root",
+      "model_types": ["transformer", "dlinear", "patchtst", "itransformer"],
+      "adapter_config": {
+        "d_model": 256,
+        "n_heads": 8,
+        "e_layers": 2,
+        "d_layers": 1,
+        "d_ff": 1024,
+        "factor": 1,
+        "dropout": 0.1,
+        "patch_len": 16,
+        "stride": 8,
+        "moving_avg": 25
+      }
+    },
+    "af_ciln": {
+      "required": false,
+      "paper_facing": false,
+      "status": "isolated_revalidation_only",
+      "repository": "https://github.com/WEAPONCHUA/AF-CILN",
       "root_field": "af_ciln_root",
       "source_hash_field": "source_hash",
       "commit_hash_field": "commit_hash"

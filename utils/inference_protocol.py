@@ -31,7 +31,9 @@ def default_causal_mask(size: int, device) -> torch.Tensor:
 def is_oneshot_model(model, oneshot_models: Iterable[str] | None = None) -> bool:
     """Return True if model is expected to support one-shot prediction."""
     oneshot = set(oneshot_models or DEFAULT_ONESHOT_MODELS)
-    return hasattr(model, "__class__") and model.__class__.__name__ in oneshot
+    return bool(getattr(model, "is_oneshot", False)) or (
+        hasattr(model, "__class__") and model.__class__.__name__ in oneshot
+    )
 
 
 def build_decoder_context_for_eval(

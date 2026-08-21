@@ -73,10 +73,10 @@ ROBUSTNESS_MODELS = ["Transformer (baseline)", "PLGAFormer (proposed)"]
 EFFICIENCY_MODELS = [
     "PLGAFormer",
     "Transformer",
-    "PIT",
-    "AF-CILN",
-    "PatchTST",
     "iTransformer",
+    "PatchTST",
+    "DLinear",
+    "Spherical kinematics",
     "Rotating-Earth 3-DOF",
 ]
 
@@ -396,7 +396,16 @@ def validate_efficiency(
     if missing:
         raise RuntimeError(f"Efficiency result lacks models: {missing}.")
     for row in rows:
-        for key in ("latency_batch1_ms", "throughput_trajectories_s"):
+        for key in (
+            "params",
+            "flops_mflops",
+            "peak_inference_memory_mb",
+            "latency_batch1_ms",
+            "throughput_trajectories_s",
+            "ADE_256_m",
+            "FDE_256_m",
+            "RMSE_256_m",
+        ):
             if row.get(key) is None or not math.isfinite(float(row[key])):
                 raise RuntimeError(f"Invalid efficiency field {key} for {row.get('model')}.")
     return rows
@@ -411,10 +420,10 @@ def render_efficiency_table(rows: list[dict], metadata: dict) -> str:
         + r". Batch-one latency includes the complete 256 s forecast; throughput uses batch 64.}",
         r"\label{tab:efficiency}",
         r"\scriptsize",
-        r"\resizebox{0.72\textwidth}{!}{%",
-        r"\begin{tabular}{lrrrr}",
+        r"\resizebox{\textwidth}{!}{%",
+        r"\begin{tabular}{lrrrrrr}",
         r"\toprule",
-        r"Method & Params (M) & Latency (ms) & Traj./s & ADE$_{256}$ (km) \\",
+        r"Method & Params (M) & MFLOPs & Peak memory (MB) & Latency (ms) & Traj./s & ADE$_{256}$ (km) \\",
         r"\midrule",
     ]
     for name in EFFICIENCY_MODELS:
@@ -424,7 +433,8 @@ def render_efficiency_table(rows: list[dict], metadata: dict) -> str:
         ade = row.get("ADE_256_m")
         ade_text = "--" if ade is None else f"{float(ade) / 1000:.3f}"
         lines.append(
-            f"{display} & {params:.3f} & {float(row['latency_batch1_ms']):.2f} & "
+            f"{display} & {params:.3f} & {float(row['flops_mflops']):.1f} & "
+            f"{float(row['peak_inference_memory_mb']):.1f} & {float(row['latency_batch1_ms']):.2f} & "
             f"{float(row['throughput_trajectories_s']):.1f} & {ade_text} " + r"\\"
         )
     lines.extend([r"\bottomrule", r"\end{tabular}", r"}", r"\end{table*}"])

@@ -15,7 +15,7 @@ def test_incomplete_formal_cache_is_rejected():
         for seed in EXPECTED_SEEDS
         for model in EXPECTED_MODELS
     }
-    records.pop((456, "PIT"))
+    records.pop((456, "PLGAFormer (proposed)"))
 
     with pytest.raises(RuntimeError, match="incomplete"):
         validate_complete(records)

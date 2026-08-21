@@ -73,6 +73,7 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--signature", default=os.getenv("HGV_EXP1_RUN_SIGNATURE", ""))
     parser.add_argument("--seed", type=int, default=42)
     parser.add_argument("--device", default="cuda" if torch.cuda.is_available() else "cpu")
+    parser.add_argument("--tslib-root", type=Path, default=None)
     return parser.parse_args(argv)
 
 
@@ -220,6 +221,14 @@ def predict_models(
             "plgaformer",
             "rotating_3dof",
         } else None
+        if model_type == "transformer":
+            tslib_root = os.getenv("HGV_TSLIB_ROOT", "").strip()
+            if not tslib_root:
+                raise RuntimeError(
+                    "Prediction analysis reconstruction of Transformer requires "
+                    "--tslib-root or HGV_TSLIB_ROOT."
+                )
+            kwargs = {"source": "tslib", "tslib_root": tslib_root}
         if model_type == "plgaformer":
             kwargs.update(final_plgaformer_kwargs())
         model = create_registered_model(
@@ -530,6 +539,11 @@ def plot_training_diagnostics(
 
 def main(argv: list[str] | None = None) -> int:
     args = parse_args(argv)
+    if args.tslib_root is not None:
+        tslib_root = args.tslib_root.expanduser().resolve()
+        if not tslib_root.is_dir():
+            raise FileNotFoundError(f"TSLib checkout is missing: {tslib_root}")
+        os.environ["HGV_TSLIB_ROOT"] = str(tslib_root)
     bundle = load_evidence_bundle(args.registry.resolve())
     registry, signature = load_registry(args.registry.resolve(), args.signature)
     if args.output_dir is None:

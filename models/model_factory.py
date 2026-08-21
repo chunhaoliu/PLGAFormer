@@ -10,6 +10,11 @@ from .baseline_models import create_baseline_model
 from .sota_models import create_sota_model
 from .PIT import create_pit_model
 from .external_baselines import AFCILNExternalAdapter
+from .public_baselines import (
+    PUBLIC_TSLIB_MODEL_TYPES,
+    TSLIB_ADAPTER_DEFAULTS,
+    TSLibForecastAdapter,
+)
 from .plgaformer import PLGAFormerTransformer
 
 
@@ -34,6 +39,39 @@ def get_supported_model_types() -> tuple[str, ...]:
     )
 
 
+def _create_tslib_model(
+    model_type: str,
+    *,
+    input_dim: int,
+    device: torch.device | str,
+    source_kwargs: dict,
+):
+    """Construct one pinned TSLib model through the HGV adapter."""
+    from . import HGVConfig  # delayed import to avoid circular dependency
+
+    train_config = HGVConfig.get_train_config()
+    model_config = HGVConfig.get_model_config(model_type)
+    adapter_config = dict(TSLIB_ADAPTER_DEFAULTS[model_type])
+    return TSLibForecastAdapter(
+        model_type=model_type,
+        input_dim=input_dim,
+        output_dim=model_config.get("output_dim", 3),
+        seq_len=train_config.get("seq_len", 256),
+        pred_len=train_config.get("pred_len", 256),
+        d_model=adapter_config["d_model"],
+        n_heads=adapter_config["n_heads"],
+        e_layers=adapter_config["e_layers"],
+        d_layers=adapter_config["d_layers"],
+        d_ff=adapter_config["d_ff"],
+        factor=adapter_config["factor"],
+        dropout=adapter_config["dropout"],
+        patch_len=model_config.get("patch_len", 16),
+        stride=model_config.get("stride", 8),
+        moving_avg=model_config.get("moving_avg", 25),
+        source_root=source_kwargs.get("tslib_root"),
+    ).to(device)
+
+
 def create_registered_model(
     model_type: str,
     input_dim: int = 6,
@@ -52,6 +90,14 @@ def create_registered_model(
     mt = model_type.lower()
 
     if mt in ("baseline", "transformer"):
+        source_kwargs = dict(plgaformer_kwargs or {})
+        if str(source_kwargs.get("source", "")).lower() == "tslib":
+            return _create_tslib_model(
+                "transformer",
+                input_dim=input_dim,
+                device=device,
+                source_kwargs=source_kwargs,
+            )
         return create_baseline_model("transformer", input_dim=input_dim, device=device)
     if mt == "kalman":
         return create_baseline_model("kalman", input_dim=input_dim, device=device)
@@ -70,6 +116,14 @@ def create_registered_model(
             **(plgaformer_kwargs or {}),
         )
     if mt == "dlinear":
+        source_kwargs = dict(plgaformer_kwargs or {})
+        if str(source_kwargs.get("source", "")).lower() == "tslib":
+            return _create_tslib_model(
+                "dlinear",
+                input_dim=input_dim,
+                device=device,
+                source_kwargs=source_kwargs,
+            )
         return create_baseline_model("dlinear", input_dim=input_dim, device=device)
     if mt == "pit":
         return create_pit_model(input_dim=input_dim, device=device)
@@ -120,4 +174,13 @@ def create_registered_model(
         ).to(device)
 
     # SOTA models
+    if mt in PUBLIC_TSLIB_MODEL_TYPES:
+        source_kwargs = dict(plgaformer_kwargs or {})
+        if str(source_kwargs.get("source", "")).lower() == "tslib":
+            return _create_tslib_model(
+                mt,
+                input_dim=input_dim,
+                device=device,
+                source_kwargs=source_kwargs,
+            )
     return create_sota_model(mt, input_dim=input_dim, device=device)

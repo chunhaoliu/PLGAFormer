@@ -96,7 +96,7 @@ def _add_config_argument(parser: argparse.ArgumentParser) -> None:
         "--config",
         type=Path,
         default=argparse.SUPPRESS,
-        help=f"Frozen formal-v3 configuration (default: {DEFAULT_CONFIG}).",
+        help=f"Frozen formal configuration (default: {DEFAULT_CONFIG}).",
     )
 
 
@@ -104,7 +104,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         prog="python run.py formal",
         description=(
-            "Formal-v3 evidence coordinator for physics-aware long-horizon "
+            "Formal evidence coordinator for physics-aware long-horizon "
             "hypersonic glide vehicle trajectory prediction."
         ),
     )
@@ -176,7 +176,7 @@ def build_parser() -> argparse.ArgumentParser:
     efficiency.add_argument("--dry-run", action="store_true")
     efficiency.add_argument("runner_args", nargs=argparse.REMAINDER)
 
-    aggregate = subparsers.add_parser("aggregate", help="Validate records and write formal-v3 bundle manifests.")
+    aggregate = subparsers.add_parser("aggregate", help="Validate records and write formal bundle manifests.")
     _add_config_argument(aggregate)
     aggregate.add_argument("--kind", choices=("main", "ablation", "all"), default="all")
     aggregate.add_argument("--force", action="store_true", help="Replace an existing manifest explicitly.")

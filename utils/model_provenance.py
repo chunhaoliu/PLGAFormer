@@ -8,9 +8,12 @@ from typing import Any
 
 MODEL_PROVENANCE: dict[str, dict[str, Any]] = {
     "transformer": {
-        "source_type": "internal_baseline",
-        "implementation_level": "simplified",
+        "source_type": "official_external_checkout",
+        "implementation_level": "official_tslib_model_with_hgv_adapter",
         "reference_family": "vanilla_transformer",
+        "upstream_repository": "https://github.com/thuml/Time-Series-Library",
+        "upstream_commit": "4e938a1767106324dd753b2a44832bf870a0252e",
+        "license_status": "MIT",
     },
     "baseline": {
         "source_type": "internal_baseline",
@@ -52,9 +55,12 @@ MODEL_PROVENANCE: dict[str, dict[str, Any]] = {
         "reference_family": "rotating_spherical_earth_point_mass",
     },
     "dlinear": {
-        "source_type": "reimplemented",
-        "implementation_level": "architecture_faithful",
+        "source_type": "official_external_checkout",
+        "implementation_level": "official_tslib_model_with_hgv_adapter",
         "reference_family": "dlinear",
+        "upstream_repository": "https://github.com/thuml/Time-Series-Library",
+        "upstream_commit": "4e938a1767106324dd753b2a44832bf870a0252e",
+        "license_status": "MIT",
     },
     "informer": {
         "source_type": "reimplemented",
@@ -67,9 +73,12 @@ MODEL_PROVENANCE: dict[str, dict[str, Any]] = {
         "reference_family": "autoformer",
     },
     "patchtst": {
-        "source_type": "reimplemented",
-        "implementation_level": "architecture_faithful",
+        "source_type": "official_external_checkout",
+        "implementation_level": "official_tslib_model_with_hgv_adapter",
         "reference_family": "patchtst",
+        "upstream_repository": "https://github.com/thuml/Time-Series-Library",
+        "upstream_commit": "4e938a1767106324dd753b2a44832bf870a0252e",
+        "license_status": "MIT",
     },
     "fedformer": {
         "source_type": "reimplemented",
@@ -82,9 +91,12 @@ MODEL_PROVENANCE: dict[str, dict[str, Any]] = {
         "reference_family": "timesnet",
     },
     "itransformer": {
-        "source_type": "reimplemented",
-        "implementation_level": "architecture_faithful",
+        "source_type": "official_external_checkout",
+        "implementation_level": "official_tslib_model_with_hgv_adapter",
         "reference_family": "itransformer",
+        "upstream_repository": "https://github.com/thuml/Time-Series-Library",
+        "upstream_commit": "4e938a1767106324dd753b2a44832bf870a0252e",
+        "license_status": "MIT",
     },
 }
 

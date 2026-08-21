@@ -12,6 +12,5 @@ seaborn>=0.12.0
 # Data & Experiment Utilities
 joblib>=1.3.0
 
-# Optional: SOTA model backends
-# einops>=0.7.0        # for reformer_pytorch (Informer)
-# reformer_pytorch     # for LSHSelfAttention (not in main comparison)
+# Public baselines: install requirements-public-baselines.txt for the pinned
+# TSLib Transformer/DLinear/PatchTST/iTransformer source stack.

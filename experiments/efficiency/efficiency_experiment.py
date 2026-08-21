@@ -75,10 +75,16 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--batch-size", type=int, default=None)
     parser.add_argument("--warmup", type=int, default=None)
     parser.add_argument("--repeats", type=int, default=None)
+    parser.add_argument(
+        "--tslib-root",
+        type=Path,
+        default=None,
+        help="Official Time-Series-Library checkout for public baseline profiling.",
+    )
     parser.add_argument("--performance-results", type=Path, default=DEFAULT_EXP1_RESULTS)
     parser.add_argument(
         "--models",
-        default="PLGAFormer,Transformer,AF-CILN,iTransformer,PatchTST,DLinear,PIT,Spherical kinematics,Rotating-Earth 3-DOF",
+        default="PLGAFormer,Transformer,iTransformer,PatchTST,DLinear,Spherical kinematics,Rotating-Earth 3-DOF",
         help="Comma-separated model names",
     )
     return parser.parse_args(argv)
@@ -116,7 +122,10 @@ def load_performance_reference(
         grouped: dict[tuple[str, int, str], list[float]] = {}
         for entry in bundle.get("source_records", []):
             record = normalize_run_record(entry["source_path"])
-            display_name = DISPLAY_NAMES.get(str(record.get("model_key")), str(record.get("model", "")))
+            raw_display_name = DISPLAY_NAMES.get(
+                str(record.get("model_key")), str(record.get("model", ""))
+            )
+            display_name = aliases.get(raw_display_name, raw_display_name)
             for horizon in (32, 64, 128, 256):
                 item = record.get("eval_results", {}).get(str(horizon), {})
                 for metric, aliases_for_metric in {
@@ -139,7 +148,14 @@ def load_performance_reference(
                 name: sorted(
                     int(entry.get("seed", -1))
                     for entry in bundle.get("source_records", [])
-                    if DISPLAY_NAMES.get(str(entry.get("model_key")), str(entry.get("model", ""))) == name
+                    if aliases.get(
+                        DISPLAY_NAMES.get(
+                            str(entry.get("model_key")), str(entry.get("model", ""))
+                        ),
+                        DISPLAY_NAMES.get(
+                            str(entry.get("model_key")), str(entry.get("model", ""))
+                        ),
+                    ) == name
                 )
                 for name in reference
             },
@@ -244,8 +260,17 @@ def build_model(
         "af_ciln": "af_ciln",
     }
     model_type = aliases.get(normalized, normalized)
+    public_types = {"transformer", "dlinear", "patchtst", "itransformer"}
     needs_scalers = model_type in {"plgaformer", "kinematic", "rotating_3dof", "af_ciln"}
-    model_kwargs = dict(physics_kwargs or {}) if needs_scalers else None
+    if model_type in public_types:
+        root = os.getenv("HGV_TSLIB_ROOT", "").strip()
+        if not root:
+            raise RuntimeError(
+                "Public baseline profiling requires --tslib-root or HGV_TSLIB_ROOT."
+            )
+        model_kwargs = {"source": "tslib", "tslib_root": root}
+    else:
+        model_kwargs = dict(physics_kwargs or {}) if needs_scalers else None
     if model_type == "plgaformer":
         model_kwargs.update(final_plgaformer_kwargs())
     return create_registered_model(
@@ -332,6 +357,11 @@ def measure_peak_memory_mb(model, *, batch_size, seq_len, pred_len, device):
 
 def run_benchmark(args: argparse.Namespace, config=None) -> tuple[list[dict], dict]:
     config = config or load_formal_config(args.config)
+    if args.tslib_root is not None:
+        tslib_root = args.tslib_root.expanduser().resolve()
+        if not tslib_root.is_dir():
+            raise FileNotFoundError(f"TSLib checkout is missing: {tslib_root}")
+        os.environ["HGV_TSLIB_ROOT"] = str(tslib_root)
     set_global_seed(42)
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     seq_len = int(config["task"]["seq_len"])
@@ -348,6 +378,7 @@ def run_benchmark(args: argparse.Namespace, config=None) -> tuple[list[dict], di
     physics_kwargs = build_physics_kwargs()
 
     rows = []
+    model_source_audits = {}
     for model_name in model_names:
         print(f"[exp6] benchmarking {model_name}", flush=True)
         model = build_model(
@@ -357,6 +388,8 @@ def run_benchmark(args: argparse.Namespace, config=None) -> tuple[list[dict], di
             pred_len=pred_len,
             physics_kwargs=physics_kwargs,
         )
+        if hasattr(model, "source_audit"):
+            model_source_audits[model_name] = dict(model.source_audit)
         params = count_params(model)
         flops_m = measure_profiled_flops(model, seq_len=seq_len, pred_len=pred_len, device=device)
         latency_batch1_ms = measure_latency(
@@ -386,6 +419,12 @@ def run_benchmark(args: argparse.Namespace, config=None) -> tuple[list[dict], di
         )
         ref = performance_reference.get(model_name, {})
         ade_256 = ref.get("ADE_256")
+        if performance_audit.get("schema") == "formal_v3_main_results_bundle" and any(
+            ref.get(metric) is None for metric in ("ADE_256", "FDE_256", "RMSE_CART_M_256")
+        ):
+            raise RuntimeError(
+                f"Formal efficiency benchmark lacks 256-step performance metrics for {model_name}."
+            )
         rows.append(
             {
                 "model": model_name,
@@ -435,6 +474,7 @@ def run_benchmark(args: argparse.Namespace, config=None) -> tuple[list[dict], di
         "performance_reference_audit": performance_audit,
         "checkpoint_source": "formal Main bundle records; efficiency benchmark does not retrain",
         "flops_method": "torch.profiler operator FLOPs for one batch-size-1 forward; unsupported operators omitted",
+        "model_source_audits": model_source_audits,
     }
     return rows, metadata
 

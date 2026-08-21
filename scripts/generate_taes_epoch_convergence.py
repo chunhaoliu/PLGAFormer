@@ -43,15 +43,13 @@ DEFAULT_BUNDLE = (
 DEFAULT_OUTPUT = PROJECT_ROOT / "experiments" / "taes_submission_artifacts" / "generated" / "formal_v3"
 SEEDS = (42, 123, 456)
 MAX_EPOCHS = 50
-MODEL_ORDER = ("plgaformer", "af_ciln", "transformer")
+MODEL_ORDER = ("plgaformer", "transformer")
 DISPLAY_NAMES = {
     "plgaformer": "PLGAFormer",
-    "af_ciln": "AF-CILN",
     "transformer": "Transformer",
 }
 COLORS = {
     "plgaformer": "#0F4D92",
-    "af_ciln": "#B86B25",
     "transformer": "#737A86",
 }
 
@@ -126,7 +124,6 @@ def load_formal_histories(
     source_audit: dict[str, Any] = {}
     key_map = {
         "plgaformer": "full",
-        "af_ciln": "af_ciln",
         "transformer": "baseline",
     }
     for model_type in MODEL_ORDER:
@@ -201,7 +198,7 @@ def load_formal_histories_from_bundle(
     bundle = load_evidence_bundle(bundle_path)
     if bundle.get("bundle_kind") != "main" or bundle.get("paper_eligible") is not True:
         raise RuntimeError("Convergence generation requires an eligible formal-v3 Main bundle.")
-    key_map = {"plgaformer": "full", "af_ciln": "af_ciln", "transformer": "baseline"}
+    key_map = {"plgaformer": "full", "transformer": "baseline"}
     histories: dict[str, dict[str, dict[str, np.ndarray]]] = {
         model_type: {} for model_type in MODEL_ORDER
     }
@@ -416,7 +413,7 @@ def plot_convergence(
     ax.legend(
         handles=handles,
         loc="center",
-        ncol=3,
+        ncol=2,
         handlelength=2.4,
         columnspacing=1.8,
     )
@@ -479,13 +476,10 @@ def main(argv: list[str] | None = None) -> int:
         }
         for model_type in MODEL_ORDER
     }
-    af_validation = final_epoch["AF-CILN"]["validation_mean"]
     transformer_validation = final_epoch["Transformer"]["validation_mean"]
     plga_validation = final_epoch["PLGAFormer"]["validation_mean"]
     comparison = {
-        "plgaformer_vs_af_ciln_final_validation_reduction_percent": float(
-            100.0 * (af_validation - plga_validation) / af_validation
-        ),
+
         "plgaformer_vs_transformer_final_validation_reduction_percent": float(
             100.0 * (transformer_validation - plga_validation)
             / transformer_validation

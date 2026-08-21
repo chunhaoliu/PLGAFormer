@@ -41,11 +41,9 @@ from utils.formal_evidence import (
 EXPECTED_MODELS = [
     "Transformer (baseline)",
     "PLGAFormer (proposed)",
-    "PIT",
     "Spherical kinematics",
     "Rotating-Earth 3-DOF",
     "DLinear",
-    "AF-CILN",
     "PatchTST",
     "iTransformer",
 ]
@@ -58,10 +56,8 @@ TABLE_MODELS = [
     "Rotating-Earth 3-DOF",
     "DLinear",
     "Transformer (baseline)",
-    "PIT",
     "PatchTST",
     "iTransformer",
-    "AF-CILN",
     "PLGAFormer (proposed)",
 ]
 DISPLAY_NAMES = {
@@ -462,10 +458,10 @@ def render_main_table(
         r"\setlength{\tabcolsep}{2.2pt}",
         r"\scriptsize",
         r"\resizebox{\textwidth}{!}{%",
-        r"\begin{tabular}{clccccccccc}",
+        r"\begin{tabular}{clccccccc}",
         r"\toprule",
         r"Horizon & Metric & Spherical & Rot.\ 3-DOF & DLinear & Transformer & "
-        r"PIT & PatchTST & iTransformer & AF-CILN & \textbf{PLGAFormer} \\",
+        r"PatchTST & iTransformer & \textbf{PLGAFormer} \\",
         r"\midrule",
     ]
     for horizon_index, horizon in enumerate(HORIZONS):

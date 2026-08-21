@@ -184,7 +184,8 @@ info(f"Attention Heads: {MODEL_CONFIG['nhead']}")
 info(f"Physics Loss Weight: {PHYSICS_CONFIG['alpha']}")
 info(f"{'='*60}\n")
 
-# SOTA模型对比实验配置：Transformer + PLGAFormer + PIT + Kalman + 时序SOTA (Informer/PatchTST/FEDformer/TimesNet/iTransformer)
+# 对比模型注册表：默认 paper-facing 子集由 _selected_comparison_models() 选择；
+# PIT/AF-CILN 及其他未审计实现仅保留为显式兼容/隔离入口。
 COMPARISON_MODELS = OrderedDict([
     ("Transformer (baseline)", {
         'model_type': 'transformer',
@@ -300,8 +301,8 @@ def _selected_comparison_models() -> OrderedDict:
     raw = os.getenv("HGV_SOTA_MODELS")
     if raw is None or raw.strip() == "":
         formal_types = {
-            'transformer', 'plgaformer', 'pit', 'kinematic', 'rotating_3dof',
-            'dlinear', 'patchtst', 'itransformer', 'af_ciln',
+            'transformer', 'plgaformer', 'kinematic', 'rotating_3dof',
+            'dlinear', 'patchtst', 'itransformer',
         }
         return OrderedDict(
             (name, config)
@@ -353,22 +354,39 @@ def _current_run_signature() -> str:
         "model_factory": PROJECT_ROOT / "models" / "model_factory.py",
         "baseline_models": PROJECT_ROOT / "models" / "baseline_models.py",
         "sota_models": PROJECT_ROOT / "models" / "sota_models.py",
-        "pit": PROJECT_ROOT / "models" / "PIT.py",
-        "external_baselines": PROJECT_ROOT / "models" / "external_baselines.py",
         "generator": PROJECT_ROOT / "data_generation" / "data_generator.py",
         "experiment": Path(__file__).resolve(),
     }
+    selected_model_types = {
+        str(config.get("model_type", "")).lower()
+        for config in _selected_comparison_models().values()
+    }
+    if "pit" in selected_model_types:
+        tracked_files["pit"] = PROJECT_ROOT / "models" / "PIT.py"
+    if "af_ciln" in selected_model_types:
+        tracked_files["external_baselines"] = PROJECT_ROOT / "models" / "external_baselines.py"
     af_ciln_root = os.getenv("HGV_AF_CILN_ROOT", "").strip()
-    if af_ciln_root:
+    if "af_ciln" in selected_model_types and af_ciln_root:
         af_ciln_file = Path(af_ciln_root).expanduser().resolve() / "models" / "AF_CILN.py"
         if af_ciln_file.is_file():
             tracked_files["af_ciln_official_model"] = af_ciln_file
+    tslib_types = selected_model_types & {"transformer", "dlinear", "patchtst", "itransformer"}
+    tslib_root = os.getenv("HGV_TSLIB_ROOT", "").strip()
+    TSLIB_OFFICIAL_COMMIT = None
+    if tslib_types:
+        from models.public_baselines import TSLIB_OFFICIAL_COMMIT, tslib_signature_files
+
+        if tslib_root:
+            for relative, path in tslib_signature_files(tslib_types, root=tslib_root).items():
+                tracked_files[f"tslib:{relative}"] = path
     payload = {
         "files": {name: _sha256_file(path) for name, path in tracked_files.items()},
         "train_config": _base_train_config,
         "model_config": MODEL_CONFIG,
         "physics_config": PHYSICS_CONFIG,
         "evaluation_metrics": EVAL_METRICS,
+        "selected_model_types": sorted(selected_model_types),
+        "tslib_commit": TSLIB_OFFICIAL_COMMIT if tslib_types else None,
     }
     serialized = json.dumps(convert_to_serializable(payload), sort_keys=True, separators=(",", ":"))
     _RUN_SIGNATURE = hashlib.sha256(serialized.encode("utf-8")).hexdigest()
@@ -691,12 +709,23 @@ def create_model(model_type, input_dim=6, device=torch.device('cpu'), plgaformer
     创建不同类型的模型 - 唯一入口，与 COMPARISON_MODELS 一致。
     统一走 models.model_factory.create_registered_model。
     """
+    model_type = str(model_type).lower().strip()
     supported = set(get_supported_model_types())
     if model_type not in supported:
         raise ValueError(
             f"Unsupported model_type for SOTA comparison: {model_type}. "
             f"Supported: {sorted(supported)}"
         )
+    if model_type in {'transformer', 'dlinear', 'patchtst', 'itransformer'}:
+        tslib_root = os.getenv("HGV_TSLIB_ROOT", "").strip()
+        if not tslib_root:
+            raise RuntimeError(
+                "Paper-facing public baselines require the pinned TSLib checkout. "
+                "Pass --tslib-root or set HGV_TSLIB_ROOT before creating the model."
+            )
+        public_kwargs = dict(plgaformer_kwargs or {})
+        public_kwargs.update({"source": "tslib", "tslib_root": tslib_root})
+        plgaformer_kwargs = public_kwargs
     return create_registered_model(
         model_type=model_type,
         input_dim=input_dim,
@@ -720,9 +749,14 @@ def _plgaformer_physical_kwargs(input_scaler, output_scaler) -> dict:
 
 
 def _model_reconstruction_kwargs(model_type, input_scaler, output_scaler):
-    if model_type not in {'plgaformer', 'kinematic', 'rotating_3dof', 'af_ciln'}:
-        return None
-    return _plgaformer_physical_kwargs(input_scaler, output_scaler)
+    kwargs = {}
+    if model_type in {'plgaformer', 'kinematic', 'rotating_3dof', 'af_ciln'}:
+        kwargs.update(_plgaformer_physical_kwargs(input_scaler, output_scaler))
+    if model_type in {'transformer', 'dlinear', 'patchtst', 'itransformer'}:
+        tslib_root = os.getenv("HGV_TSLIB_ROOT", "").strip()
+        if tslib_root:
+            kwargs.update({"source": "tslib", "tslib_root": tslib_root})
+    return kwargs or None
 
 def get_model_save_path(model_type, models_save_dir):
     """
@@ -996,11 +1030,14 @@ ONESHOT_MODELS = [
     'Informer', 'Autoformer', 'FEDformer', 'TimesNet', 'iTransformer',
         'PatchTST', 'PIT', 'SphericalKinematicBaseline', 'DLinear',
         'AFCILNExternalAdapter', 'RotatingEarth3DOFBaseline',
+        'TSLibForecastAdapter',
 ]
 
 def is_oneshot_model(model):
     """判断模型是否使用一次性预测（而非自回归）"""
-    return hasattr(model, '__class__') and model.__class__.__name__ in ONESHOT_MODELS
+    return bool(getattr(model, "is_oneshot", False)) or (
+        hasattr(model, '__class__') and model.__class__.__name__ in ONESHOT_MODELS
+    )
 
 
 def build_eval_seed(y_true_scaled: torch.Tensor, model, device) -> torch.Tensor | None:
@@ -1087,7 +1124,8 @@ def unified_predict(
     if is_oneshot_model(model):
         # SOTA模型：一次性预测全部序列
         if protocol == "official_like_decoder" and model.__class__.__name__ in {
-            "Informer", "FEDformer", "TimesNet", "iTransformer", "PatchTST"
+            "Informer", "FEDformer", "TimesNet", "iTransformer", "PatchTST",
+            "TSLibForecastAdapter"
         }:
             return model(x, target_length=target_length, decoder_context=decoder_context)
         return model(x, target_length=target_length)

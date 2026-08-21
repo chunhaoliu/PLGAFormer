@@ -50,6 +50,7 @@ from models import (
     create_baseline_model,
     create_sota_model,
     create_pit_model,
+    create_registered_model,
     HGVConfig,
 )
 from utils.repro import set_global_seed
@@ -613,7 +614,20 @@ def create_model_for_physics(
         return create_pit_model(input_dim=input_dim, device=device)
 
     # 传统 Transformer / Kalman 等基线模型
-    if model_type in ['transformer', 'kalman']:
+    if model_type == 'transformer':
+        tslib_root = os.getenv("HGV_TSLIB_ROOT", "").strip()
+        if not tslib_root:
+            raise RuntimeError(
+                "Physics-consistency Transformer comparison requires the pinned TSLib checkout. "
+                "Set HGV_TSLIB_ROOT before running this diagnostic."
+            )
+        return create_registered_model(
+            'transformer',
+            input_dim=input_dim,
+            device=device,
+            plgaformer_kwargs={"source": "tslib", "tslib_root": tslib_root},
+        )
+    if model_type == 'kalman':
         return create_baseline_model(model_type, input_dim=input_dim, device=device)
 
     # 其它 SOTA 时序模型（Informer, PatchTST, FEDformer, TimesNet, iTransformer 等）

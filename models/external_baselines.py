@@ -16,6 +16,7 @@ import torch.nn as nn
 
 AF_CILN_OFFICIAL_COMMIT = "ee39368edf833866aa472ea0ef024ebb28e92557"
 AF_CILN_MODEL_SHA256 = "d6b1871e729333dbfcbdfeff8099c6602d3b4eff0d5e7c181b48d7339c6eb8af"
+AF_CILN_OFFICIAL_REPOSITORY = "https://github.com/WEAPONCHUA/AF-CILN"
 
 
 def _sha256(path: Path) -> str:
@@ -79,10 +80,15 @@ def resolve_af_ciln_source() -> dict[str, str]:
             f"AF-CILN source hash mismatch: expected {expected_hash}, found {actual_hash}."
         )
     return {
+        "kind": "AF-CILN",
+        "repository": AF_CILN_OFFICIAL_REPOSITORY,
         "root": str(root),
+        "source_root": str(root),
         "model_file": str(model_file),
         "commit": actual_commit,
+        "commit_hash": actual_commit,
         "model_sha256": actual_hash,
+        "source_hash": actual_hash,
         "license_status": "no_license_file_in_upstream_checkout",
     }
 
@@ -121,6 +127,7 @@ class AFCILNExternalAdapter(nn.Module):
                 "pred_len=256, and six input channels."
             )
         source = resolve_af_ciln_source()
+        source["observation_protocol"] = "complete_observation_all_ones_mask"
         config = SimpleNamespace(
             task_name="long_term_forecast",
             seq_len=int(seq_len),
@@ -188,5 +195,6 @@ __all__ = [
     "AFCILNExternalAdapter",
     "AF_CILN_OFFICIAL_COMMIT",
     "AF_CILN_MODEL_SHA256",
+    "AF_CILN_OFFICIAL_REPOSITORY",
     "resolve_af_ciln_source",
 ]

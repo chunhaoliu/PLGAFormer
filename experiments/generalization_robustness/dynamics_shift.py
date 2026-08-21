@@ -6,6 +6,7 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import os
 import sys
 from pathlib import Path
 
@@ -85,6 +86,7 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--registry", type=Path, default=REGISTRY_PATH)
     parser.add_argument("--batch-size", type=int, default=64)
     parser.add_argument("--device", default="cuda" if torch.cuda.is_available() else "cpu")
+    parser.add_argument("--tslib-root", type=Path, default=None)
     parser.add_argument("--force-regenerate", action="store_true")
     return parser.parse_args(argv)
 
@@ -180,15 +182,15 @@ def load_or_generate_shifted_trajectories(
     seq_len: int,
     pred_len: int,
 ) -> tuple[dict[str, np.ndarray], dict]:
-    raw_path = get_raw_trajectories_npz_path(PROJECT_ROOT)
     dataset_path = get_dataset_npz_path(PROJECT_ROOT)
+    raw_path = dataset_path
     with np.load(dataset_path, allow_pickle=False) as dataset:
         central_rows, test_ids = central_window_rows(dataset["trajectory_ids_test"])
         window_starts = np.asarray(dataset["window_starts_test"][central_rows], dtype=np.int64)
         processed_x = np.asarray(dataset["X_test"][central_rows], dtype=np.float32)
         processed_y = np.asarray(dataset["y_test"][central_rows], dtype=np.float32)
     with np.load(raw_path, allow_pickle=False) as raw:
-        raw_trajectories = np.asarray(raw["trajectories"], dtype=np.float32)
+        raw_trajectories = np.asarray(raw["clean_trajectories"], dtype=np.float32)
         initial_states = np.asarray(raw["initial_states"], dtype=np.float32)
         labels = np.asarray(raw["trajectory_labels"]).astype(str)
         raw_ids = np.asarray(raw["trajectory_ids"], dtype=np.int64)
@@ -430,6 +432,11 @@ def render_table(results: dict, conditions: dict[str, dict[str, float]], model_t
 def main(argv: list[str] | None = None) -> int:
     args = parse_args(argv)
     config = load_formal_config(args.config)
+    if args.tslib_root is not None:
+        tslib_root = args.tslib_root.expanduser().resolve()
+        if not tslib_root.is_dir():
+            raise FileNotFoundError(f"TSLib checkout is missing: {tslib_root}")
+        os.environ["HGV_TSLIB_ROOT"] = str(tslib_root)
     verification = validate_evidence_bundle(args.registry, config, expected_kind="main")
     if not verification["passed"]:
         codes = sorted({str(item.get("code")) for item in verification.get("blockers", [])})
@@ -475,6 +482,14 @@ def main(argv: list[str] | None = None) -> int:
                     "plgaformer",
                     "rotating_3dof",
                 } else None
+                if model_type in {"transformer", "dlinear", "patchtst", "itransformer"}:
+                    tslib_root = os.getenv("HGV_TSLIB_ROOT", "").strip()
+                    if not tslib_root:
+                        raise RuntimeError(
+                            "Robustness evaluation of public baselines requires "
+                            "--tslib-root or HGV_TSLIB_ROOT."
+                        )
+                    kwargs = {"source": "tslib", "tslib_root": tslib_root}
                 if model_type == "plgaformer":
                     kwargs.update(final_plgaformer_kwargs())
                 model = create_registered_model(

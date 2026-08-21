@@ -1,0 +1,7 @@
+# Install this file when running the paper-facing public baselines.
+-r requirements.txt
+
+# Dependencies imported by the pinned TSLib attention/layer stack.
+einops==0.8.1
+local-attention==1.11.2
+reformer-pytorch==1.4.4

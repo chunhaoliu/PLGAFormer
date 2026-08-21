@@ -102,14 +102,14 @@ dataset requires an explicit protocol-change decision.
 
 ### Results and artifacts
 
-- Keep lightweight JSON, PNG, PDF, and release-safe tables under version control when they are intended as reproducibility artifacts.
+- Keep path-free compact evidence under `PublicRelease/evidence`. Local per-run records, trajectory arrays, training histories, and checkpoint-bound manifests stay out of public Git.
 - Do not commit large transient caches, trained weights, or generated datasets unless the user explicitly asks.
 - Keep `experiments/exp5_missing_data/run_missing_data.py` and `experiments/exp6_efficiency/run_benchmark.py` as compatibility wrappers only; the canonical implementations are `missing_data_experiment.py` and `efficiency_experiment.py`.
 - Prefer `main(argv=None)` for experiment scripts that are called from `run.py`, so the root CLI can pass `--quick` safely.
 
 ### Experiment status conventions
 
-- Treat Exp1-Exp4 committed outputs as historical unless their run identity
+- Treat historical Exp1-Exp4 outputs as non-current unless their run identity
   matches the active v2.1 dataset hash.
 - Treat historical Exp1 outputs as older-protocol evidence only. Do not claim
   v2.1 performance until matched multi-seed Main Results and ablations exist.

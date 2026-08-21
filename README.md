@@ -20,6 +20,8 @@ Install dependencies from the repository root:
 
 ```bash
 pip install -r requirements.txt
+# Required for the paper-facing public baseline matrix:
+pip install -r requirements-public-baselines.txt
 ```
 
 ## Current Paper Mainline
@@ -32,12 +34,12 @@ python run.py formal validate-data
 python run.py formal audit --json
 ```
 
-These commands inspect the frozen formal-v3 evidence chain and do not launch
+These commands inspect the frozen formal evidence chain and do not launch
 training. Running `python run.py` without a command prints help and performs no
 experiment.
 
 The numbered `python run.py --task ...` workflow remains available for existing
-experiments and compatibility. It is separate from the paper-facing formal-v3
+experiments and compatibility. It is separate from the paper-facing formal
 evidence route; its future status will be decided after the project structure
 review.
 
@@ -65,7 +67,7 @@ existing artifact:
 python run.py formal validate-data
 ```
 
-Do not use numbered experiment outputs in the manuscript unless the formal-v3
+Do not use numbered experiment outputs in the manuscript unless the formal
 audit accepts their dataset, protocol, checkpoint, seed, and metric identity.
 
 ## Layout
@@ -79,7 +81,7 @@ audit accepts their dataset, protocol, checkpoint, seed, and metric identity.
 - `models/`: model implementations and architecture defaults
 - `tests/`: protocol and artifact validation
 - `docs/`: audits, planning notes, and manuscript/release readiness records
-- `PublicRelease/`: public release scope and reproducibility boundary
+- `PublicRelease/`: release boundary and path-free machine-readable evidence
 
 ## Experiment Status
 
@@ -122,16 +124,16 @@ combined with this protocol.
 
 See `docs/EXPERIMENT_PROTOCOL_REGISTRY.md` before running or assembling tables.
 
-## Formal-v3 Evidence Commands
+## Formal Evidence Commands
 
-The paper-facing route is the explicit formal-v3 command family. It targets
+The paper-facing route is the explicit formal command family. It targets
 physics-aware long-horizon prediction of complete simulated HGV trajectories and
 never launches full training implicitly:
 
 ```bash
 python run.py formal status --json
 python run.py formal validate-data
-python run.py formal main --models transformer,plgaformer,pit,dlinear,patchtst,itransformer,af_ciln
+python run.py formal main --tslib-root "PATH/TO/Time-Series-Library" --models transformer,plgaformer,kinematic,rotating_3dof,dlinear,patchtst,itransformer
 python run.py formal mechanism
 python run.py formal robustness --dry-run
 python run.py formal efficiency --dry-run
@@ -146,7 +148,7 @@ python run.py formal paper --robustness PATH.json --efficiency PATH.json
 `status`, the four study `--dry-run` routes, `audit --dry-run`, and
 `aggregate --dry-run` are read-only. `aggregate` writes
 `main_run_set_manifest.json` and `ablation_run_set_manifest.json` beside the
-formal-v3 run records; incomplete manifests remain explicitly
+formal run records; incomplete manifests remain explicitly
 `paper_eligible=false`. `paper` accepts only eligible Main Results and matched
 phase4 ablation bundles. Optional robustness and efficiency evidence is accepted
 only through the explicit flags above and is revalidated by the secondary
@@ -156,18 +158,25 @@ statistical settings.
 A missing seed, protocol/hash mismatch, checkpoint mismatch, or missing required
 metric blocks paper artifact generation.
 
-AF-CILN is accepted only when `--af-ciln-root` points to the audited external
-checkout; its run record must retain the source root and any available source or
-commit hash. External metrics are not promoted from an unaudited copy.
+The paper-facing main matrix uses the MIT-licensed TSLib checkout for the
+Transformer, DLinear, PatchTST, and iTransformer baselines. Pass its pinned
+checkout with `--tslib-root` (or set `HGV_TSLIB_ROOT`); every run record stores
+the repository, commit, model/layer hashes, and adapter protocol. The local
+reimplementations remain compatibility paths only.
+
+PIT and AF-CILN are not part of the paper-facing main matrix. PIT remains
+available only for explicit isolated analysis. AF-CILN is accepted only when
+`--af-ciln-root` points to the audited external checkout; its run record must
+retain the source root, commit, source hash, and observation protocol.
 
 Recovery is explicit and resumable: run `formal status`, then pass only the
 missing model/seed units to `formal main --models ... --seeds ...` or
 `formal ablation --phase phase4_final_mechanism_controls --seeds ...`. Completed
-formal-v3 units remain untouched; run `formal aggregate` only after the matrix
+formal units remain untouched; run `formal aggregate` only after the matrix
 has been re-audited.
 
 `experiments/generate_paper_artifacts_v2.py` remains a historical diagnostic
-compatibility generator. It is not the active formal-v3 source for paper
+compatibility generator. It is not the active formal source for paper
 numbers and must not be used to promote current claims.
 
 ## Agent-Facing Files
@@ -189,3 +198,11 @@ That document defines:
 - what is intended to be public
 - what is intentionally excluded
 - what a reproducer should expect to rebuild locally
+- which path-free CSV tables and hashes support the current paper
+
+The compact evidence snapshot is under `PublicRelease/evidence`. Regenerate it
+from a complete local experiment workspace with:
+
+```bash
+python scripts/generate_release_evidence.py
+```

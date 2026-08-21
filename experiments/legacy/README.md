@@ -13,5 +13,5 @@ second paper route.
 | `exp5_ood_dynamics/` | Preserved robustness result root, not an active source directory |
 
 No historical source or result is deleted during the source migration. A move
-to `D:\Research\HGV_Code\Archive` requires a fresh zero-reference audit and a
+to an external archive directory requires a fresh zero-reference audit and a
 separate review of tests, summaries, visualizers, and manifests.

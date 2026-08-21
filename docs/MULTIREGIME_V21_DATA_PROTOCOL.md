@@ -45,9 +45,7 @@ Input-length sensitivity and horizon-specific diagnostics are derived from the
 stored complete trajectories; they do not regenerate the simulator artifact.
 Every derived view preserves complete-trajectory IDs and split membership and
 records the frozen parent SHA-256. The paper-facing input sensitivity is
-`64/128/256 -> 256`. Separately trained `256 -> 64/128/256` runs are internal
-diagnostics unless they materially change the conclusion. See
-`docs/LENGTH_PROTOCOL_DIAGNOSTICS.md` for the commands and evidence boundary.
+`64/128/256 -> 256`. Separately trained `256 -> 64/128/256` runs remain internal diagnostics and are not part of the current paper evidence.
 
 ## Formal evidence
 

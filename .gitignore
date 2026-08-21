@@ -48,18 +48,10 @@ checkpoints/
 *.pth
 *.pt
 
-# Generated experiment outputs. Keep only lightweight formal-v3 records.
+# Generated experiment outputs stay local. The path-free compact evidence
+# snapshot is maintained separately under PublicRelease/evidence.
 experiments/**/results/*
-!experiments/exp1_sota/results/formal_v3/
-!experiments/exp1_sota/results/formal_v3/**/
-!experiments/exp1_sota/results/formal_v3/**/*.json
-!experiments/exp1_sota/results/formal_v3/**/*.csv
-!experiments/exp1_sota/results/formal_v3/**/*.md
-!experiments/exp2_ablation/results/formal_v3/
-!experiments/exp2_ablation/results/formal_v3/**/
-!experiments/exp2_ablation/results/formal_v3/**/*.json
-!experiments/exp2_ablation/results/formal_v3/**/*.csv
-!experiments/exp2_ablation/results/formal_v3/**/*.md
+
 
 # Historical/generated paper artifacts are not core source.
 experiments/paper_artifacts/

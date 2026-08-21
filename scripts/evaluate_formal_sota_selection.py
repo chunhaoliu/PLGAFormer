@@ -24,11 +24,17 @@ from scripts.run_formal_sota_unit import (  # noqa: E402
     _flatten_metric_rows,
     _trajectory_ids_for_eval,
     append_metric_rows,
-    apply_plgaformer_candidate_overrides,
     build_protocol_identity,
     find_existing_selection_record,
     select_model_configs_by_key,
     sha256_file,
+    validate_final_plgaformer_contract,
+)
+from utils.formal_runtime import formal_runtime_defaults, validate_formal_runtime  # noqa: E402
+from utils.mainline_contract import (  # noqa: E402
+    ACTIVE_CONFIG_PATH,
+    ACTIVE_PLGAFORMER_FLAGS,
+    load_mainline_config,
 )
 
 
@@ -57,17 +63,6 @@ def find_existing_frozen_evaluation(
     return None
 
 
-def _configure_external_checkout(path_value: str | None) -> None:
-    if not path_value:
-        return
-    path = Path(path_value)
-    if not path.is_absolute():
-        path = PROJECT_ROOT / path
-    if not path.is_dir():
-        raise FileNotFoundError(f"AF-CILN checkout is missing: {path}")
-    os.environ["HGV_AF_CILN_ROOT"] = str(path.resolve())
-
-
 def _configure_tslib_checkout(path_value: str | None) -> None:
     raw = str(path_value or os.getenv("HGV_TSLIB_ROOT", "")).strip()
     if not raw:
@@ -80,11 +75,25 @@ def _configure_tslib_checkout(path_value: str | None) -> None:
     os.environ["HGV_TSLIB_ROOT"] = str(path.resolve())
 
 
+def _validate_source_plgaformer_config(model_config: dict[str, Any]) -> None:
+    """Reject frozen checkpoints whose recorded active flags have drifted."""
+    for field, expected in ACTIVE_PLGAFORMER_FLAGS.items():
+        actual = model_config.get(field)
+        if type(actual) is not type(expected) or actual != expected:
+            raise ValueError(
+                f"Frozen PLGAFormer source {field} conflicts with active value "
+                f"{expected!r}; got {actual!r}"
+            )
+
+
 def evaluate_frozen_selections(args: argparse.Namespace) -> dict[str, Any]:
+    formal_config = load_mainline_config()
+    runtime_args = argparse.Namespace(**vars(args), selection_only=False)
+    validate_formal_runtime(runtime_args, formal_config)
+
     from utils.console import ensure_utf8_console
 
     ensure_utf8_console()
-    _configure_external_checkout(args.af_ciln_root)
     _configure_tslib_checkout(args.tslib_root)
 
     from data_generation.data_paths import (
@@ -253,23 +262,22 @@ def evaluate_frozen_selections(args: argparse.Namespace) -> dict[str, Any]:
                 continue
 
             model_config = dict(source_payload.get("model_config", default_model_config))
+            if model_config.get("model_type") == "plgaformer":
+                _validate_source_plgaformer_config(model_config)
             source_provenance = source_payload.get("external_source_provenance")
             if isinstance(source_provenance, dict):
                 model_config["external_source_provenance"] = dict(source_provenance)
             reconstruction_kwargs = exp1._model_reconstruction_kwargs(
                 model_config["model_type"], scaler, output_scaler
             ) or {}
-            reconstruction_kwargs.update(
-                apply_plgaformer_candidate_overrides(
-                    model_config, source_payload.get("config", {}).get("candidate_file")
-                )
-            )
             model = exp1.create_model(
                 model_config["model_type"],
                 input_dim=6,
                 device=device,
                 plgaformer_kwargs=reconstruction_kwargs,
             )
+            if model_config["model_type"] == "plgaformer":
+                validate_final_plgaformer_contract(model)
             if checkpoint is not None:
                 try:
                     state_dict = torch.load(
@@ -354,41 +362,66 @@ def evaluate_frozen_selections(args: argparse.Namespace) -> dict[str, Any]:
 
 
 def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
+    defaults = formal_runtime_defaults(load_mainline_config())
     parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--config", type=str, default=str(ACTIVE_CONFIG_PATH))
     parser.add_argument("--selection-dir", type=str, default=None)
     parser.add_argument("--output-dir", type=str, default=None)
     parser.add_argument("--dataset-path", type=str, default=None)
-    parser.add_argument("--candidate-file", type=str, default=None)
-    parser.add_argument("--af-ciln-root", type=str, default=None)
     parser.add_argument("--tslib-root", type=str, default=None)
     parser.add_argument(
         "--models",
         type=str,
         default="transformer,plgaformer,dlinear,patchtst,itransformer",
     )
-    parser.add_argument("--seeds", type=str, default="42,123,456")
+    parser.add_argument("--seeds", type=str, default=defaults["seeds"])
     parser.add_argument("--subset-ratio", type=float, default=1.0)
-    parser.add_argument("--epochs", type=int, default=50)
-    parser.add_argument("--batch-size", type=int, default=128)
-    parser.add_argument("--prediction-length", type=int, default=256)
-    parser.add_argument("--prediction-horizons", type=str, default="32,64,128,256")
+    parser.add_argument("--epochs", type=int, default=defaults["epochs"])
+    parser.add_argument("--batch-size", type=int, default=defaults["batch_size"])
+    parser.add_argument(
+        "--prediction-length", type=int, default=defaults["prediction_length"]
+    )
+    parser.add_argument(
+        "--prediction-horizons", type=str, default=defaults["prediction_horizons"]
+    )
     parser.add_argument(
         "--train-supervision-protocol",
         type=str,
-        default="source_context_pred_window",
+        default=defaults["train_supervision_protocol"],
     )
     parser.add_argument(
-        "--eval-protocol", type=str, default="source_context_decoder"
+        "--eval-protocol", type=str, default=defaults["eval_protocol"]
     )
-    parser.add_argument("--eval-ar-seed-mode", type=str, default="zero")
-    parser.add_argument("--label-len", type=int, default=128)
-    parser.add_argument("--learning-rate", type=float, default=1e-3)
-    parser.add_argument("--weight-decay", type=float, default=5e-5)
-    parser.add_argument("--warmup-epochs", type=int, default=5)
-    parser.add_argument("--patience", type=int, default=15)
-    parser.add_argument("--gradient-clip-norm", type=float, default=1.0)
-    parser.add_argument("--workers", type=int, default=8)
-    parser.add_argument("--amp", action="store_true")
+    parser.add_argument(
+        "--eval-ar-seed-mode", type=str, default=defaults["eval_ar_seed_mode"]
+    )
+    parser.add_argument("--label-len", type=int, default=defaults["label_len"])
+    parser.add_argument(
+        "--learning-rate", type=float, default=defaults["learning_rate"]
+    )
+    parser.add_argument("--weight-decay", type=float, default=defaults["weight_decay"])
+    parser.add_argument("--warmup-epochs", type=int, default=defaults["warmup_epochs"])
+    parser.add_argument("--patience", type=int, default=defaults["patience"])
+    parser.add_argument(
+        "--gradient-clip-norm", type=float, default=defaults["gradient_clip_norm"]
+    )
+    parser.add_argument("--workers", type=int, default=defaults["workers"])
+    parser.add_argument(
+        "--amp", action=argparse.BooleanOptionalAction, default=defaults["amp"]
+    )
+    parser.add_argument(
+        "--amp-dtype", choices=("bfloat16", "float16"), default="bfloat16"
+    )
+    parser.add_argument(
+        "--cache-physics-prior",
+        action=argparse.BooleanOptionalAction,
+        default=defaults["cache_physics_prior"],
+    )
+    parser.add_argument(
+        "--physics-prior-cache-batch-size",
+        type=int,
+        default=defaults["physics_prior_cache_batch_size"],
+    )
     return parser.parse_args(argv)
 
 

@@ -204,7 +204,9 @@ class SotaProtocolIntegrationTests(unittest.TestCase):
     def test_exp1_oneshot_source_context_training_uses_pred_len_and_decoder_context(self):
         from experiments.exp1_sota import SOTA_comparison as exp1
 
-        class Autoformer(torch.nn.Module):
+        class ActiveOneShotAdapter(torch.nn.Module):
+            is_oneshot = True
+
             def __init__(self):
                 super().__init__()
                 self.target_length = None
@@ -215,7 +217,7 @@ class SotaProtocolIntegrationTests(unittest.TestCase):
                 self.decoder_context = decoder_context
                 return torch.zeros(src.size(0), target_length, 3)
 
-        model = Autoformer()
+        model = ActiveOneShotAdapter()
         src = torch.randn(2, 12, 6)
         decoder_input = torch.randn(2, 20, 3)
 

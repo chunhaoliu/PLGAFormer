@@ -48,7 +48,7 @@ PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent
 sys.path.insert(0, str(PROJECT_ROOT))
 
 from models import (
-    ECEFTrajectoryLoss, HGVPhysicsLoss, PITPhysicsLoss, HGVConfig,
+    ECEFTrajectoryLoss, HGVPhysicsLoss, HGVConfig,
     create_registered_model, get_supported_model_types
 )
 from utils.repro import set_global_seed, seed_worker, build_torch_generator
@@ -114,7 +114,6 @@ PHYSICS_CONFIG = HGVConfig.get_physics_config()
 #   - SOTA需要更高统计可信度（5次运行）
 #
 # 顶刊参考：
-#   - Informer/Autoformer: 100 epochs, patience=10
 #   - PatchTST/iTransformer: 100 epochs, patience=10-15
 #   - 本实验: epochs/patience/warmup 从 get_train_config() 读取（与 __init__.py 一致）
 
@@ -152,9 +151,6 @@ TRAIN_SUPERVISION_PROTOCOL = _base_train_config.get('train_supervision_protocol'
 OPTIMIZER_PROFILE = _base_train_config.get('optimizer_profile', 'enhanced')
 # 严格复现模式：True 时启用严格 deterministic（可能影响部分模型可训练性）
 STRICT_REPRO_MODE = _base_train_config.get('strict_repro_mode', False)
-# 对已知不稳定模型启用更保守训练策略，避免 CUDA illegal memory access 污染整轮实验。
-AMP_DISABLED_MODEL_TYPES = {'pit', 'af_ciln'}
-
 # 指标与单位说明（正文主表一致）：MSE/MAE 见 REPORT_MSE_ON_SCALED；FDE/ADE 恒为笛卡尔位移误差，单位米 (m)
 
 VERBOSE = _base_train_config.get('verbose', False)
@@ -184,8 +180,7 @@ info(f"Attention Heads: {MODEL_CONFIG['nhead']}")
 info(f"Physics Loss Weight: {PHYSICS_CONFIG['alpha']}")
 info(f"{'='*60}\n")
 
-# 对比模型注册表：默认 paper-facing 子集由 _selected_comparison_models() 选择；
-# PIT/AF-CILN 及其他未审计实现仅保留为显式兼容/隔离入口。
+# Paper-facing comparison matrix.
 COMPARISON_MODELS = OrderedDict([
     ("Transformer (baseline)", {
         'model_type': 'transformer',
@@ -200,18 +195,6 @@ COMPARISON_MODELS = OrderedDict([
         'innovations': [
             'C: identified rotating-Earth 3-DOF prior with state-adaptive bounded fusion',
         ]
-    }),
-    ("PIT", {
-        'model_type': 'pit',
-        'description': 'Physics-Informed Transformer (same-task SOTA)',
-        'physics_loss_weight': PHYSICS_CONFIG.get('alpha', 0.0001),
-        'innovations': []
-    }),
-    ("Kalman", {
-        'model_type': 'kalman',
-        'description': 'Fixed-parameter Kalman filter baseline (no training)',
-        'physics_loss_weight': 0.0,
-        'innovations': []
     }),
     ("Spherical kinematics", {
         'model_type': 'kinematic',
@@ -231,37 +214,12 @@ COMPARISON_MODELS = OrderedDict([
         'physics_loss_weight': 0.0,
         'innovations': []
     }),
-    ("AF-CILN", {
-        'model_type': 'af_ciln',
-        'description': 'Exact official AF-CILN release loaded from an audited external checkout',
-        'physics_loss_weight': 0.0,
-        'innovations': [],
-    }),
-    ("Informer", {
-        'model_type': 'informer',
-        'description': 'Informer with ProbSparse attention (AAAI 2021)',
-        'physics_loss_weight': 0.0,
-        'innovations': []
-    }),
-    ("Autoformer", {
-        'model_type': 'autoformer',
-        'description': 'Autoformer with decomposition and auto-correlation (NeurIPS 2021)',
-        'physics_loss_weight': 0.0,
-        'innovations': []
-    }),
     ("PatchTST", {
         'model_type': 'patchtst',
         'description': 'PatchTST (ICLR 2023)',
         'physics_loss_weight': 0.0,
         'innovations': []
     }),
-    ("FEDformer", {
-        'model_type': 'fedformer',
-        'description': 'FEDformer frequency-enhanced (ICML 2022)',
-        'physics_loss_weight': 0.0,
-        'innovations': []
-    }),
-    # TimesNet 运行时间较长，暂时不纳入主对比
     ("iTransformer", {
         'model_type': 'itransformer',
         'description': 'iTransformer inverted (ICLR 2024)',
@@ -290,25 +248,13 @@ def _model_aliases(model_name: str, model_config: dict) -> set[str]:
     model_type = str(model_config.get("model_type", "")).lower()
     compact_type = model_type.replace("-", "").replace("_", "").replace(" ", "")
     aliases = {compact_name, model_type, compact_type}
-    if model_type == "transformer":
-        aliases.update({"baseline", "transformerbaseline"})
-    if model_type == "plgaformer":
-        aliases.update({"full", "proposed", "plgaformerproposed"})
     return aliases
 
 
 def _selected_comparison_models() -> OrderedDict:
     raw = os.getenv("HGV_SOTA_MODELS")
     if raw is None or raw.strip() == "":
-        formal_types = {
-            'transformer', 'plgaformer', 'kinematic', 'rotating_3dof',
-            'dlinear', 'patchtst', 'itransformer',
-        }
-        return OrderedDict(
-            (name, config)
-            for name, config in COMPARISON_MODELS.items()
-            if config['model_type'] in formal_types
-        )
+        return OrderedDict(COMPARISON_MODELS)
 
     requested = {
         item.strip().lower().replace(" ", "").replace("-", "").replace("_", "")
@@ -316,13 +262,19 @@ def _selected_comparison_models() -> OrderedDict:
         if item.strip()
     }
     selected = OrderedDict()
+    matched = set()
     for model_name, model_config in COMPARISON_MODELS.items():
-        if requested & _model_aliases(model_name, model_config):
+        aliases = _model_aliases(model_name, model_config)
+        matches = requested & aliases
+        if matches:
             selected[model_name] = model_config
+            matched.update(matches)
 
-    if not selected:
+    unmatched = requested - matched
+    if unmatched:
         raise ValueError(
             f"HGV_SOTA_MODELS did not match any comparison model: {raw}. "
+            f"Unmatched selections: {sorted(unmatched)}. "
             f"Available model_types: {[cfg['model_type'] for cfg in COMPARISON_MODELS.values()]}"
         )
     return selected
@@ -353,7 +305,6 @@ def _current_run_signature() -> str:
         "plgaformer": PROJECT_ROOT / "models" / "plgaformer.py",
         "model_factory": PROJECT_ROOT / "models" / "model_factory.py",
         "baseline_models": PROJECT_ROOT / "models" / "baseline_models.py",
-        "sota_models": PROJECT_ROOT / "models" / "sota_models.py",
         "generator": PROJECT_ROOT / "data_generation" / "data_generator.py",
         "experiment": Path(__file__).resolve(),
     }
@@ -361,15 +312,6 @@ def _current_run_signature() -> str:
         str(config.get("model_type", "")).lower()
         for config in _selected_comparison_models().values()
     }
-    if "pit" in selected_model_types:
-        tracked_files["pit"] = PROJECT_ROOT / "models" / "PIT.py"
-    if "af_ciln" in selected_model_types:
-        tracked_files["external_baselines"] = PROJECT_ROOT / "models" / "external_baselines.py"
-    af_ciln_root = os.getenv("HGV_AF_CILN_ROOT", "").strip()
-    if "af_ciln" in selected_model_types and af_ciln_root:
-        af_ciln_file = Path(af_ciln_root).expanduser().resolve() / "models" / "AF_CILN.py"
-        if af_ciln_file.is_file():
-            tracked_files["af_ciln_official_model"] = af_ciln_file
     tslib_types = selected_model_types & {"transformer", "dlinear", "patchtst", "itransformer"}
     tslib_root = os.getenv("HGV_TSLIB_ROOT", "").strip()
     TSLIB_OFFICIAL_COMMIT = None
@@ -487,7 +429,7 @@ from scipy import stats
 
 def set_random_seed(seed):
     """每轮运行开始时唯一调用的种子设置入口，确保可复现性；DataLoader 使用同一 seed 的 generator。
-    注意：使用 warn_only=True 允许某些操作（如 upsample_linear1d）的非确定性实现，避免 FEDformer/TimesNet/iTransformer 训练失败。
+    注意：使用 warn_only=True 允许某些操作（如 upsample_linear1d）的非确定性实现。
     """
     # 使用统一入口，避免各实验脚本出现细微差异。
     set_global_seed(seed, deterministic=True, strict_deterministic=STRICT_REPRO_MODE)
@@ -750,7 +692,7 @@ def _plgaformer_physical_kwargs(input_scaler, output_scaler) -> dict:
 
 def _model_reconstruction_kwargs(model_type, input_scaler, output_scaler):
     kwargs = {}
-    if model_type in {'plgaformer', 'kinematic', 'rotating_3dof', 'af_ciln'}:
+    if model_type in {'plgaformer', 'kinematic', 'rotating_3dof'}:
         kwargs.update(_plgaformer_physical_kwargs(input_scaler, output_scaler))
     if model_type in {'transformer', 'dlinear', 'patchtst', 'itransformer'}:
         tslib_root = os.getenv("HGV_TSLIB_ROOT", "").strip()
@@ -763,7 +705,7 @@ def get_model_save_path(model_type, models_save_dir):
     获取模型保存路径 - 统一路径命名逻辑
     
     Args:
-        model_type: 模型类型 (如 'plgaformer', 'transformer', 'informer' 等)
+        model_type: 模型类型 (如 'plgaformer', 'transformer', 'patchtst' 等)
         models_save_dir: 模型保存目录
     
     Returns:
@@ -771,24 +713,17 @@ def get_model_save_path(model_type, models_save_dir):
     """
     path_mapping = {
         'plgaformer': 'best_plgaformer_sota.pth',
-        'full_plgaformer': 'best_plgaformer_sota.pth',
         'transformer': 'best_transformer_sota.pth',
-        'pit': 'best_pit_sota.pth',
-        'informer': 'best_informer_sota.pth',
-        'autoformer': 'best_autoformer_sota.pth',
         'patchtst': 'best_patchtst_sota.pth',
-        'fedformer': 'best_fedformer_sota.pth',
-        'timesnet': 'best_timesnet_sota.pth',
         'itransformer': 'best_itransformer_sota.pth',
         'dlinear': 'best_dlinear_sota.pth',
-        'kalman': None,  # Kalman滤波器不保存
         'kinematic': None,
         'rotating_3dof': None,
     }
     
     filename = path_mapping.get(model_type)
     if filename is None:
-        if model_type in {'kalman', 'kinematic', 'rotating_3dof'}:
+        if model_type in {'kinematic', 'rotating_3dof'}:
             return None
         return os.path.join(models_save_dir, f"best_{model_type}_sota.pth")
     
@@ -1027,10 +962,8 @@ def generate_causal_mask(size, device):
 
 # 定义使用一次性预测的SOTA模型类名列表
 ONESHOT_MODELS = [
-    'Informer', 'Autoformer', 'FEDformer', 'TimesNet', 'iTransformer',
-        'PatchTST', 'PIT', 'SphericalKinematicBaseline', 'DLinear',
-        'AFCILNExternalAdapter', 'RotatingEarth3DOFBaseline',
-        'TSLibForecastAdapter',
+    'SphericalKinematicBaseline', 'RotatingEarth3DOFBaseline',
+    'TSLibForecastAdapter',
 ]
 
 def is_oneshot_model(model):
@@ -1123,10 +1056,7 @@ def unified_predict(
         return model(x, target_length=target_length)
     if is_oneshot_model(model):
         # SOTA模型：一次性预测全部序列
-        if protocol == "official_like_decoder" and model.__class__.__name__ in {
-            "Informer", "FEDformer", "TimesNet", "iTransformer", "PatchTST",
-            "TSLibForecastAdapter"
-        }:
+        if protocol == "official_like_decoder" and model.__class__.__name__ == "TSLibForecastAdapter":
             return model(x, target_length=target_length, decoder_context=decoder_context)
         return model(x, target_length=target_length)
     else:
@@ -1690,9 +1620,9 @@ def train_model(model_name, model_config, train_loader, val_loader, scaler_mean,
     
     model = model_override.to(device)
     
-    # Kalman 固定参数模型：跳过训练，直接返回（顶刊常见做法）
+    # Analytical fixed-parameter models skip optimization.
     model_type = model_config.get('model_type')
-    if model_type in {'kalman', 'kinematic', 'rotating_3dof'}:
+    if model_type in {'kinematic', 'rotating_3dof'}:
         print(f"ℹ️  {model_type} 为固定参数模型，无需训练，直接使用")
         model.eval()
         # 快速验证：运行一次前向传播确保模型可用。
@@ -1762,10 +1692,11 @@ def train_model(model_name, model_config, train_loader, val_loader, scaler_mean,
         # 传入 scaler 使物理约束在反标准化后的物理空间计算（与顶刊/消融一致）
         scaler_mean_np = scaler_mean.cpu().numpy() if hasattr(scaler_mean, 'cpu') else scaler_mean
         scaler_std_np = scaler_scale.cpu().numpy() if hasattr(scaler_scale, 'cpu') else scaler_scale
-        if model_type == 'pit':
-            physics_criterion = PITPhysicsLoss(alpha=physics_loss_weight, scaler_mean=scaler_mean_np, scaler_std=scaler_std_np)
-        else:
-            physics_criterion = HGVPhysicsLoss(alpha=physics_loss_weight, scaler_mean=scaler_mean_np, scaler_std=scaler_std_np)
+        physics_criterion = HGVPhysicsLoss(
+            alpha=physics_loss_weight,
+            scaler_mean=scaler_mean_np,
+            scaler_std=scaler_std_np,
+        )
         # 确保 criterion 在正确设备上（register_buffer 会自动跟随）
         physics_criterion = physics_criterion.to(device)
     
@@ -1792,8 +1723,6 @@ def train_model(model_name, model_config, train_loader, val_loader, scaler_mean,
     # 梯度缩放器（混合精度训练）
     device_obj = torch.device(device) if isinstance(device, str) else device
     use_mixed_precision = _base_train_config.get('use_mixed_precision', True)
-    if model_type in AMP_DISABLED_MODEL_TYPES:
-        use_mixed_precision = False
     mixed_precision_dtype_name = str(
         _base_train_config.get('mixed_precision_dtype', 'bfloat16')
     ).lower()
@@ -2387,7 +2316,9 @@ def main():
     )
     
     # 打印统计摘要
-    print_statistical_summary(stats_results, test_results, baseline_name="Transformer (baseline)")
+    print_statistical_summary(
+        stats_results, test_results, baseline_name="Transformer (baseline)"
+    )
     
     # 为了兼容后续代码，创建final_results（使用均值）
     final_results = OrderedDict()
@@ -2627,7 +2558,7 @@ def main():
                 get_model_save_path(model_config['model_type'], models_save_dir),
             )
             
-            is_fixed_model = model_config['model_type'] in {'kalman', 'kinematic', 'rotating_3dof'}
+            is_fixed_model = model_config['model_type'] in {'kinematic', 'rotating_3dof'}
             if is_fixed_model or (model_path and os.path.exists(model_path)):
                 print(f"\n评估 {model_name} 的per-maneuver性能...")
                 
@@ -2690,7 +2621,7 @@ def main():
             get_model_save_path(model_config['model_type'], models_save_dir),
         )
         
-        is_fixed_model = model_config['model_type'] in {'kalman', 'kinematic', 'rotating_3dof'}
+        is_fixed_model = model_config['model_type'] in {'kinematic', 'rotating_3dof'}
         if is_fixed_model or (model_path and os.path.exists(model_path)):
             print(f"\n测试 {model_name} 的计算效率...")
             

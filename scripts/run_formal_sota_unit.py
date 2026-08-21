@@ -8,11 +8,9 @@ import argparse
 import csv
 import hashlib
 import json
-import math
 import os
 import sys
 from collections import OrderedDict
-from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
 from typing import Any
@@ -27,23 +25,20 @@ from utils.mainline_contract import ACTIVE_PLGAFORMER_FLAGS, load_mainline_confi
 
 
 MODEL_KEY_TO_NAME = {
-    "baseline": "Transformer (baseline)",
     "transformer": "Transformer (baseline)",
-    "full": "PLGAFormer (proposed)",
-    "proposed": "PLGAFormer (proposed)",
     "plgaformer": "PLGAFormer (proposed)",
-    "pit": "PIT",
-    "kalman": "Kalman",
     "kinematic": "Spherical kinematics",
     "rotating_3dof": "Rotating-Earth 3-DOF",
     "dlinear": "DLinear",
-    "af_ciln": "AF-CILN",
-    "informer": "Informer",
-    "autoformer": "Autoformer",
     "patchtst": "PatchTST",
-    "fedformer": "FEDformer",
-    "timesnet": "TimesNet",
     "itransformer": "iTransformer",
+}
+FORMAL_CONFIG_KEY_TO_ACTIVE_KEY = {
+    "baseline": "transformer",
+    "full": "plgaformer",
+    "dlinear": "dlinear",
+    "patchtst": "patchtst",
+    "itransformer": "itransformer",
 }
 
 
@@ -84,7 +79,7 @@ def _canonical_model_key(model_name: str, model_type: str | None = None) -> str:
     if mt == "plgaformer":
         return "full"
     for key, name in MODEL_KEY_TO_NAME.items():
-        if name == model_name and key not in {"baseline", "proposed"}:
+        if name == model_name:
             return key
     return mt or model_name.lower().replace(" ", "_").replace("/", "_")
 
@@ -100,15 +95,7 @@ def select_model_configs_by_key(
         comparison_models = exp1.COMPARISON_MODELS
     requested = [item.strip().lower() for item in str(model_keys).split(",") if item.strip()]
     if not requested:
-        requested = [
-            "transformer",
-            "plgaformer",
-            "kinematic",
-            "rotating_3dof",
-            "dlinear",
-            "patchtst",
-            "itransformer",
-        ]
+        requested = list(_formal_trainable_model_keys(load_mainline_config()))
     elif "all" in requested:
         return OrderedDict(
             (name, dict(config)) for name, config in comparison_models.items()
@@ -116,7 +103,7 @@ def select_model_configs_by_key(
     selected: OrderedDict[str, dict[str, Any]] = OrderedDict()
     for key in requested:
         if key not in MODEL_KEY_TO_NAME:
-            raise ValueError(f"Unknown SOTA model key: {key}")
+            raise ValueError(f"Unknown active model key: {key}")
         model_name = MODEL_KEY_TO_NAME[key]
         if model_name not in comparison_models:
             raise ValueError(f"Model config not available for key {key}: {model_name}")
@@ -146,130 +133,11 @@ def append_metric_rows(path: str | Path, rows: list[dict[str, Any]]) -> Path:
     return out_path
 
 
-@dataclass(frozen=True)
-class PLGAFormerCandidateSnapshot:
-    source_path: str
-    sha256: str
-    physics_loss_weight: float | None
-    constructor_overrides: tuple[tuple[str, bool | float], ...]
-
-
-def load_plgaformer_candidate_snapshot(
-    candidate_file: str | Path | None,
-) -> PLGAFormerCandidateSnapshot | None:
-    """Read and fully validate an explicit candidate exactly once."""
-    if not candidate_file:
-        return None
-    path = Path(candidate_file)
-    if not path.is_absolute():
-        path = PROJECT_ROOT / path
-    path = path.resolve()
-    if not path.is_file():
-        raise FileNotFoundError(f"PLGAFormer candidate file is missing: {path}")
-    try:
-        source_bytes = path.read_bytes()
-        payload = json.loads(source_bytes.decode("utf-8"))
-    except (OSError, UnicodeDecodeError, json.JSONDecodeError) as exc:
-        raise ValueError(f"Cannot read PLGAFormer candidate JSON: {path}") from exc
-    if not isinstance(payload, dict):
-        raise ValueError("PLGAFormer candidate JSON root must be an object")
-    candidate = payload.get("best_candidate", payload)
-    if not isinstance(candidate, dict):
-        raise ValueError("PLGAFormer candidate best_candidate must be an object")
-    innovations = candidate.get("innovations", {})
-    if not isinstance(innovations, dict):
-        raise ValueError("PLGAFormer candidate innovations must be an object")
-
-    def candidate_real(field: str) -> float:
-        value = candidate[field]
-        if type(value) not in (int, float) or not math.isfinite(float(value)):
-            raise ValueError(f"PLGAFormer candidate {field} must be a finite number")
-        normalized = float(value)
-        if field == "alpha" and normalized < 0.0:
-            raise ValueError("PLGAFormer candidate alpha must be non-negative")
-        if field == "dropout" and not 0.0 <= normalized <= 1.0:
-            raise ValueError("PLGAFormer candidate dropout must be in [0, 1]")
-        return normalized
-
-    innovation_fields = (
-        "use_sparse_attention",
-        "use_physics_corrector",
-        "use_multi_head_output",
+def _formal_trainable_model_keys(formal_config: dict[str, Any]) -> tuple[str, ...]:
+    return tuple(
+        FORMAL_CONFIG_KEY_TO_ACTIVE_KEY[key]
+        for key in formal_config["main_results"]["trainable_model_keys"]
     )
-    for field in innovation_fields:
-        if field in innovations and type(innovations[field]) is not bool:
-            raise ValueError(f"PLGAFormer candidate innovations.{field} must be bool")
-
-    alpha = candidate_real("alpha") if "alpha" in candidate else None
-    dropout = candidate_real("dropout") if "dropout" in candidate else None
-    constructor_overrides = {
-        "dropout": dropout,
-        "use_sparse_attention": innovations.get("use_sparse_attention", False),
-        "use_physics_corrector": innovations.get("use_physics_corrector", False),
-        "use_multi_head_output": innovations.get("use_multi_head_output", True),
-        "use_adaptive_fusion": True,
-    }
-    return PLGAFormerCandidateSnapshot(
-        source_path=str(path),
-        sha256=hashlib.sha256(source_bytes).hexdigest(),
-        physics_loss_weight=alpha,
-        constructor_overrides=tuple(
-            (key, value)
-            for key, value in constructor_overrides.items()
-            if value is not None
-        ),
-    )
-
-
-def apply_plgaformer_candidate_snapshot(
-    model_config: dict[str, Any],
-    snapshot: PLGAFormerCandidateSnapshot | None,
-) -> dict[str, bool | float]:
-    """Apply a validated snapshot without file I/O and return fresh kwargs."""
-    if snapshot is None or str(model_config.get("model_type", "")).lower() != "plgaformer":
-        return {}
-    if snapshot.physics_loss_weight is not None:
-        model_config["physics_loss_weight"] = snapshot.physics_loss_weight
-    return dict(snapshot.constructor_overrides)
-
-
-def apply_plgaformer_candidate_overrides(
-    model_config: dict[str, Any], candidate_file: str | Path | None
-) -> dict[str, bool | float]:
-    """Compatibility adapter; new runners must load one snapshot up front."""
-    snapshot = load_plgaformer_candidate_snapshot(candidate_file)
-    return apply_plgaformer_candidate_snapshot(model_config, snapshot)
-
-
-def validate_sota_authority(args: argparse.Namespace) -> None:
-    """Keep candidate overrides out of canonical final evidence."""
-    if getattr(args, "candidate_file", None) and not bool(args.selection_only):
-        raise ValueError(
-            "--candidate-file is allowed only with --selection-only diagnostics."
-        )
-    if getattr(args, "candidate_file", None) and bool(args.skip_existing):
-        raise ValueError(
-            "--candidate-file cannot be combined with --skip-existing; "
-            "explicit candidate diagnostics must run without resume."
-        )
-
-
-def validate_candidate_model_selection(args: argparse.Namespace) -> None:
-    """Require explicit candidate diagnostics to include PLGAFormer."""
-    if not getattr(args, "candidate_file", None):
-        return
-    requested = {
-        item.strip().lower()
-        for item in str(getattr(args, "models", "")).split(",")
-        if item.strip()
-    }
-    if not requested or "all" in requested:
-        return
-    if requested.isdisjoint({"plgaformer", "full", "proposed"}):
-        raise ValueError(
-            "--candidate-file diagnostics must explicitly include PLGAFormer "
-            "via --models plgaformer, full, proposed, or all."
-        )
 
 
 def _resolved_plgaformer_record_config(
@@ -419,7 +287,6 @@ def build_protocol_identity(
     horizons: list[int],
     run_signature: str,
     dataset_identity: dict[str, Any] | None = None,
-    candidate_snapshot: PLGAFormerCandidateSnapshot | None = None,
 ) -> dict[str, Any]:
     """Build the exact validation-selection identity used for safe resumption."""
     dataset_identity = dataset_identity or _default_formal_dataset_identity()
@@ -457,8 +324,6 @@ def build_protocol_identity(
             else 0
         ),
     }
-    if candidate_snapshot is not None:
-        identity["candidate_file_sha256"] = candidate_snapshot.sha256
     return identity
 
 
@@ -468,7 +333,6 @@ def selection_record_matches(
     seed: int,
     model_key: str,
     expected_identity: dict[str, Any],
-    allow_legacy_identity: bool = True,
 ) -> bool:
     """Return True only for a complete, validation-only record of this unit."""
     if int(payload.get("seed", -1)) != int(seed):
@@ -498,9 +362,34 @@ def selection_record_matches(
     if recorded_identity:
         return recorded_identity == expected_identity
     # Records without the signed identity are historical pilots. They remain
-    # readable but cannot be resumed by the formal-v3 runner, even when the
-    # caller explicitly asks for a legacy-compatible scan.
+    # readable but cannot be resumed by the formal-v3 runner.
     return False
+
+
+def _select_models_and_analytical_policies(
+    model_keys: str,
+    formal_config: dict[str, Any],
+    comparison_models: OrderedDict[str, dict[str, Any]] | None = None,
+) -> tuple[OrderedDict[str, dict[str, Any]], dict[str, dict[str, Any]]]:
+    """Select active models and attach the frozen analytical anchor policies."""
+    selected_models = select_model_configs_by_key(model_keys, comparison_models)
+    default_trainable_keys = _formal_trainable_model_keys(formal_config)
+    requested_keys = tuple(
+        item.strip().lower() for item in str(model_keys).split(",") if item.strip()
+    )
+    if requested_keys == default_trainable_keys:
+        for model_key in formal_config["main_results"]["analytical_models"]:
+            selected_models.update(
+                select_model_configs_by_key(model_key, comparison_models)
+            )
+
+    policies = {}
+    configured = formal_config["main_results"]["analytical_models"]
+    for model_name, model_config in selected_models.items():
+        model_key = _canonical_model_key(model_name, model_config.get("model_type"))
+        if model_key in configured:
+            policies[model_key] = dict(configured[model_key])
+    return selected_models, policies
 
 
 def find_existing_selection_record(
@@ -590,9 +479,6 @@ def _flatten_metric_rows(
 
 def run_formal_sota_units(args: argparse.Namespace) -> dict[str, Any]:
     validate_formal_runtime(args, load_mainline_config())
-    validate_sota_authority(args)
-    validate_candidate_model_selection(args)
-    candidate_snapshot = load_plgaformer_candidate_snapshot(args.candidate_file)
 
     from utils.console import ensure_utf8_console
 
@@ -606,13 +492,6 @@ def run_formal_sota_units(args: argparse.Namespace) -> dict[str, Any]:
         str(PROJECT_ROOT / "configs" / "formal_v3.json"),
     )
     formal_config = load_formal_config(formal_config_path)
-    if args.af_ciln_root:
-        af_ciln_root = Path(args.af_ciln_root)
-        if not af_ciln_root.is_absolute():
-            af_ciln_root = PROJECT_ROOT / af_ciln_root
-        if not af_ciln_root.is_dir():
-            raise FileNotFoundError(f"AF-CILN checkout is missing: {af_ciln_root}")
-        os.environ["HGV_AF_CILN_ROOT"] = str(af_ciln_root.resolve())
     _configure_tslib_checkout(getattr(args, "tslib_root", None))
 
     from data_generation.data_paths import (
@@ -655,7 +534,9 @@ def run_formal_sota_units(args: argparse.Namespace) -> dict[str, Any]:
     import torch
     from experiments.overall_prediction import main_results as exp1
     seeds, horizons = _configure_exp1(exp1, args)
-    selected_models = select_model_configs_by_key(args.models, exp1.COMPARISON_MODELS)
+    selected_models, analytical_policies = _select_models_and_analytical_policies(
+        args.models, formal_config, exp1.COMPARISON_MODELS
+    )
     public_types = {"transformer", "dlinear", "patchtst", "itransformer"}
     selected_public_types = {
         str(config.get("model_type", "")).lower()
@@ -699,7 +580,6 @@ def run_formal_sota_units(args: argparse.Namespace) -> dict[str, Any]:
         horizons,
         run_signature,
         dataset_identity,
-        candidate_snapshot,
     )
     output_scaler_mean = torch.from_numpy(
         output_scaler.mean_.astype(np.float32)
@@ -717,6 +597,9 @@ def run_formal_sota_units(args: argparse.Namespace) -> dict[str, Any]:
 
         for model_name, model_config in selected_models.items():
             model_key = _canonical_model_key(model_name, model_config.get("model_type"))
+            analytical_policy = analytical_policies.get(model_key)
+            if analytical_policy is not None and seed != int(analytical_policy["anchor_seed"]):
+                continue
             if args.selection_only and args.skip_existing:
                 existing = find_existing_selection_record(
                     formal_dir,
@@ -744,9 +627,6 @@ def run_formal_sota_units(args: argparse.Namespace) -> dict[str, Any]:
             plgaformer_kwargs = exp1._model_reconstruction_kwargs(
                 model_config["model_type"], scaler, output_scaler
             ) or {}
-            plgaformer_kwargs.update(
-                apply_plgaformer_candidate_snapshot(model_config, candidate_snapshot)
-            )
             model = exp1.create_model(
                 model_config["model_type"],
                 input_dim=6,
@@ -757,7 +637,7 @@ def run_formal_sota_units(args: argparse.Namespace) -> dict[str, Any]:
                 validate_final_plgaformer_contract(model)
             external_source_provenance = None
             model_type = str(model_config.get("model_type", "")).lower()
-            if model_key == "af_ciln" or model_type in public_types:
+            if model_type in public_types:
                 source_audit = getattr(model, "source_audit", None)
                 if not isinstance(source_audit, dict) or not source_audit.get("root"):
                     raise RuntimeError(
@@ -834,11 +714,6 @@ def run_formal_sota_units(args: argparse.Namespace) -> dict[str, Any]:
             }
             if external_source_provenance is not None:
                 payload["external_source_provenance"] = external_source_provenance
-            if candidate_snapshot is not None and model_type == "plgaformer":
-                payload["candidate_provenance"] = {
-                    "source_path": candidate_snapshot.source_path,
-                    "sha256": candidate_snapshot.sha256,
-                }
             run_json.write_text(json.dumps(payload, indent=2, ensure_ascii=False), encoding="utf-8")
             completed.append({"run_id": run_id, "json": str(run_json), "checkpoint": str(checkpoint)})
             print(f"[formal-sota] wrote {run_json}")
@@ -859,7 +734,6 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
         default=str(PROJECT_ROOT / "configs" / "formal_v3.json"),
         help="Frozen formal-v3 orchestration configuration.",
     )
-    parser.add_argument("--candidate-file", type=str, default=None)
     parser.add_argument(
         "--dataset-path",
         type=str,
@@ -870,12 +744,6 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
         ),
     )
     parser.add_argument(
-        "--af-ciln-root",
-        type=str,
-        default=None,
-        help="Audited official AF-CILN checkout used by the external adapter.",
-    )
-    parser.add_argument(
         "--tslib-root",
         type=str,
         default=None,
@@ -884,10 +752,7 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser.add_argument(
         "--models",
         type=str,
-        default=(
-            "transformer,plgaformer,kinematic,rotating_3dof,"
-            "dlinear,patchtst,itransformer"
-        ),
+        default=",".join(_formal_trainable_model_keys(load_mainline_config())),
     )
     parser.add_argument("--seeds", type=str, default=defaults["seeds"])
     parser.add_argument("--subset-ratio", type=float, default=1.0)

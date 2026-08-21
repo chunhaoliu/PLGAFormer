@@ -9,13 +9,13 @@ from utils.model_provenance import (
 
 class ModelProvenanceTests(unittest.TestCase):
     def test_get_model_provenance_known_and_unknown(self):
-        known = get_model_provenance("informer")
-        self.assertEqual(known["reference_family"], "informer")
+        known = get_model_provenance("patchtst")
+        self.assertEqual(known["reference_family"], "patchtst")
         self.assertNotEqual(known["source_type"], "unknown")
 
-        autoformer = get_model_provenance("autoformer")
-        self.assertEqual(autoformer["reference_family"], "autoformer")
-        self.assertEqual(autoformer["source_type"], "reimplemented")
+        historical = get_model_provenance("autoformer")
+        self.assertEqual(historical["reference_family"], "autoformer")
+        self.assertEqual(historical["source_type"], "reimplemented")
 
         unknown = get_model_provenance("does_not_exist")
         self.assertEqual(unknown["source_type"], "unknown")
@@ -23,7 +23,7 @@ class ModelProvenanceTests(unittest.TestCase):
 
     def test_validate_comparison_model_types(self):
         comparison_models = {
-            "Informer": {"model_type": "informer"},
+            "Transformer": {"model_type": "transformer"},
             "UnknownModel": {"model_type": "abc_xyz"},
             "EmptyModel": {},
         }
@@ -33,14 +33,14 @@ class ModelProvenanceTests(unittest.TestCase):
 
     def test_build_comparison_model_provenance(self):
         comparison_models = {
-            "Informer": {"model_type": "informer"},
-            "Autoformer": {"model_type": "autoformer"},
+            "Transformer": {"model_type": "transformer"},
+            "PLGAFormer": {"model_type": "plgaformer"},
             "PatchTST": {"model_type": "patchtst"},
         }
         provenance = build_comparison_model_provenance(comparison_models)
-        self.assertEqual(set(provenance.keys()), {"Informer", "Autoformer", "PatchTST"})
-        self.assertEqual(provenance["Informer"]["reference_family"], "informer")
-        self.assertEqual(provenance["Autoformer"]["reference_family"], "autoformer")
+        self.assertEqual(set(provenance.keys()), {"Transformer", "PLGAFormer", "PatchTST"})
+        self.assertEqual(provenance["Transformer"]["reference_family"], "vanilla_transformer")
+        self.assertEqual(provenance["PLGAFormer"]["reference_family"], "plgaformer")
         self.assertEqual(provenance["PatchTST"]["reference_family"], "patchtst")
 
 

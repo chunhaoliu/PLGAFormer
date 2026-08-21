@@ -6,18 +6,111 @@ HGV Trajectory Prediction Models Package
 This package provides:
 - PLGAFormerTransformer: Main proposed model with bounded rotating-Earth prior fusion
 - HGVPhysicsLoss: Physics-informed loss function
-- create_baseline_model: Factory for baseline models (Informer, PatchTST, etc.)
-- create_sota_model: Factory for SOTA models
+- create_registered_model: Factory for the active paper-mainline models
+- create_baseline_model: Active baseline/analytical implementation factory
+- create_sota_model/create_pit_model: Legacy import shims gated by the active registry
 - HGVConfig: Unified configuration center for all models and experiments
 """
 
 import os
+from pathlib import Path
+
 import torch
 from .plgaformer import PLGAFormerTransformer, HGVPhysicsLoss, ECEFTrajectoryLoss
 from .baseline_models import create_baseline_model
-from .sota_models import create_sota_model
-from .PIT import PIT, PITPhysicsLoss, create_pit_model
 from .model_factory import create_registered_model, get_supported_model_types
+
+
+_PHYSICAL_SCALER_KWARGS = {
+    'input_scaler_mean',
+    'input_scaler_scale',
+    'output_scaler_mean',
+    'output_scaler_scale',
+    'sampling_interval_s',
+    'require_physical_scaler',
+}
+_PUBLIC_SOURCE_KWARGS = {'source', 'source_root', 'tslib_root'}
+
+
+def _unsupported_active_model(model_type):
+    normalized = str(model_type).lower().strip()
+    supported = get_supported_model_types()
+    if normalized not in supported:
+        raise ValueError(
+            f"Unsupported active model type: {normalized}; supported={supported}"
+        )
+    return normalized
+
+
+def _normalize_public_source_kwargs(kwargs):
+    unknown = set(kwargs) - _PUBLIC_SOURCE_KWARGS
+    if unknown:
+        names = ", ".join(sorted(unknown))
+        raise TypeError(f"Unsupported create_sota_model keyword(s): {names}")
+
+    normalized = dict(kwargs)
+    source_root = normalized.pop('source_root', None)
+    tslib_root = normalized.get('tslib_root')
+    if source_root is not None and tslib_root is not None:
+        source_path = Path(source_root).expanduser().resolve()
+        tslib_path = Path(tslib_root).expanduser().resolve()
+        if source_path != tslib_path:
+            raise ValueError("source_root conflicts with tslib_root")
+    if source_root is not None:
+        normalized['tslib_root'] = source_root
+
+    if normalized.get('source') is not None:
+        source = str(normalized['source']).lower().strip()
+        if source != 'tslib':
+            raise ValueError("create_sota_model source must be 'tslib'")
+        normalized['source'] = source
+    elif normalized.get('tslib_root') is not None:
+        normalized['source'] = 'tslib'
+    return normalized or None
+
+
+def create_sota_model(
+    model_type,
+    input_dim=6,
+    device=torch.device('cpu'),
+    **kwargs,
+):
+    """Legacy import shim gated by the exact active registry and constructors."""
+    normalized = _unsupported_active_model(model_type)
+    if normalized in {'transformer', 'dlinear', 'patchtst', 'itransformer'}:
+        active_kwargs = _normalize_public_source_kwargs(kwargs)
+    elif normalized in {'plgaformer', 'kinematic', 'rotating_3dof'}:
+        unknown = set(kwargs) - _PHYSICAL_SCALER_KWARGS
+        if unknown:
+            names = ", ".join(sorted(unknown))
+            if normalized == 'plgaformer':
+                raise TypeError(
+                    "PLGAFormer compatibility shim does not accept architecture "
+                    f"or active-flag overrides: {names}"
+                )
+            raise TypeError(f"Unsupported create_sota_model keyword(s): {names}")
+        active_kwargs = dict(kwargs) or None
+    else:  # pragma: no cover - guarded by the exact active registry above
+        active_kwargs = None
+    return create_registered_model(
+        model_type=normalized,
+        input_dim=input_dim,
+        device=device,
+        plgaformer_kwargs=active_kwargs,
+    )
+
+
+def create_pit_model(
+    input_dim=6,
+    device=torch.device('cpu'),
+    **kwargs,
+):
+    """Legacy import shim; PIT is not an active constructible model."""
+    return create_registered_model(
+        model_type='pit',
+        input_dim=input_dim,
+        device=device,
+    )
 
 
 class HGVConfig:
@@ -166,26 +259,13 @@ class HGVConfig:
         'physics_prior_cache_batch_size': 512,
         'early_stopping_patience': 15,  # 早停耐心参数
         'patience': 10,
-        'warmup_epochs': 5,   # 顶刊常用 5–10（如 Informer/PatchTST）；0 表示无 warmup
+        'warmup_epochs': 5,   # 顶刊常用 5–10；0 表示无 warmup
         'min_delta': 1e-6,    # 早停最小改善阈值（避免微小波动重置patience）
     }
     
     # ===== 特定模型参数 =====
     SPECIFIC_PARAMS = {
-        'informer': {'factor': 5},
-        'autoformer': {'moving_avg': 25, 'factor': 3},
         'patchtst': {'patch_len': 16, 'stride': 8},
-        'fedformer': {'modes': 32},
-        'timesnet': {'top_k': 5},
-        'pit': {
-            'd_model': 256,
-            'nhead': 8,
-            'num_encoder_layers': 3,
-            'num_decoder_layers': 2,
-            'dim_feedforward': 1024,
-            'dropout': 0.1,
-            'top_r': 8
-        },
     }
     
     @classmethod
@@ -220,7 +300,7 @@ class HGVConfig:
         """获取指定模型的完整配置
         
         Args:
-            model_type: 模型类型 ('plgaformer', 'informer', 'patchtst', 等)
+            model_type: 模型类型 ('plgaformer', 'transformer', 'patchtst', 等)
             
         Returns:
             dict: 包含所有必要参数的配置字典
@@ -412,8 +492,6 @@ __all__ = [
     'ECEFTrajectoryLoss',
     'create_baseline_model',
     'create_sota_model',
-    'PIT',
-    'PITPhysicsLoss',
     'create_pit_model',
     'create_registered_model',
     'get_supported_model_types',

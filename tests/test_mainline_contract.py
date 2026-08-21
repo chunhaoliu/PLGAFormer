@@ -1,5 +1,7 @@
 import json
 from pathlib import Path
+import subprocess
+import sys
 
 import pytest
 
@@ -18,6 +20,27 @@ from utils.mainline_contract import (
     load_mainline_config,
 )
 
+ACTIVE_MODEL_TYPES = (
+    "transformer",
+    "kinematic",
+    "rotating_3dof",
+    "dlinear",
+    "plgaformer",
+    "patchtst",
+    "itransformer",
+)
+INACTIVE_MODEL_TYPES = (
+    "baseline",
+    "pit",
+    "af_ciln",
+    "autoformer",
+    "informer",
+    "fedformer",
+    "timesnet",
+    "kalman",
+    "legacy_sota",
+)
+
 
 EXPECTED_FLAGS = {
     "use_sparse_attention": False,
@@ -28,6 +51,166 @@ EXPECTED_FLAGS = {
     "prior_type": "rotating_3dof",
     "prior_blend_mode": "adaptive",
 }
+
+
+def test_active_model_registry_is_exact():
+    assert model_factory.get_supported_model_types() == ACTIVE_MODEL_TYPES
+
+
+@pytest.mark.parametrize("model_type", INACTIVE_MODEL_TYPES)
+def test_inactive_model_types_are_not_constructible(model_type):
+    with pytest.raises(
+        ValueError,
+        match=(
+            "^Unsupported active model type: "
+            + model_type
+            + r"; supported=\("
+        ),
+    ):
+        create_registered_model(model_type, input_dim=6, device="cpu")
+
+
+def test_legacy_factory_names_import_and_active_sota_delegates():
+    from models import (
+        create_baseline_model,
+        create_pit_model,
+        create_sota_model,
+    )
+
+    assert callable(create_baseline_model)
+    assert callable(create_pit_model)
+    model = create_sota_model("transformer", input_dim=6, device="cpu")
+    assert model.__class__.__name__ == "StandardTransformer"
+    assert model_factory.get_supported_model_types() == ACTIVE_MODEL_TYPES
+
+
+def test_legacy_sota_shim_constructs_exact_active_plgaformer(monkeypatch):
+    import models
+
+    captured = {}
+
+    def capture_registered_model(**kwargs):
+        captured.update(kwargs)
+        return object()
+
+    monkeypatch.setattr(models, "create_registered_model", capture_registered_model)
+
+    models.create_sota_model("plgaformer", input_dim=6, device="cpu")
+
+    assert captured == {
+        "model_type": "plgaformer",
+        "input_dim": 6,
+        "device": "cpu",
+        "plgaformer_kwargs": None,
+    }
+
+
+@pytest.mark.parametrize(
+    ("field", "value"),
+    [
+        ("use_prior_fusion", False),
+        ("dropout", 0.2),
+        ("num_encoder_layers", 1),
+        ("d_model", 64),
+    ],
+)
+def test_legacy_sota_shim_rejects_plgaformer_architecture_overrides(field, value):
+    from models import create_sota_model
+
+    with pytest.raises(TypeError, match="PLGAFormer compatibility shim"):
+        create_sota_model("plgaformer", input_dim=6, device="cpu", **{field: value})
+
+
+def test_legacy_sota_shim_maps_source_root_to_tslib_root(monkeypatch):
+    import models
+
+    captured = {}
+
+    def capture_registered_model(**kwargs):
+        captured.update(kwargs)
+        return object()
+
+    monkeypatch.setattr(models, "create_registered_model", capture_registered_model)
+
+    models.create_sota_model(
+        "patchtst", input_dim=6, device="cpu", source_root="official-tslib"
+    )
+
+    assert captured["plgaformer_kwargs"] == {
+        "source": "tslib",
+        "tslib_root": "official-tslib",
+    }
+
+
+def test_legacy_sota_shim_rejects_conflicting_source_roots():
+    from models import create_sota_model
+
+    with pytest.raises(ValueError, match="source_root.*tslib_root"):
+        create_sota_model(
+            "itransformer",
+            source_root="first",
+            tslib_root="second",
+        )
+
+
+def test_legacy_sota_shim_rejects_unknown_kwargs():
+    from models import create_sota_model
+
+    with pytest.raises(TypeError, match="Unsupported create_sota_model keyword"):
+        create_sota_model("dlinear", arbitrary_override=True)
+
+
+@pytest.mark.parametrize("model_type", INACTIVE_MODEL_TYPES)
+def test_legacy_sota_shim_rejects_inactive_model_types(model_type):
+    from models import create_sota_model
+
+    with pytest.raises(
+        ValueError,
+        match=(
+            "^Unsupported active model type: "
+            + model_type
+            + r"; supported=\("
+        ),
+    ):
+        create_sota_model(model_type, input_dim=6, device="cpu")
+
+
+def test_legacy_pit_shim_is_explicitly_unsupported():
+    from models import create_pit_model
+
+    with pytest.raises(
+        ValueError,
+        match=r"^Unsupported active model type: pit; supported=\(",
+    ):
+        create_pit_model(input_dim=6, device="cpu")
+
+
+def test_legacy_factory_imports_do_not_load_inactive_modules():
+    code = """
+import sys
+from models import create_baseline_model, create_pit_model, create_sota_model
+for construct in (
+    lambda: create_sota_model('autoformer'),
+    lambda: create_pit_model(),
+):
+    try:
+        construct()
+    except ValueError:
+        pass
+    else:
+        raise AssertionError('inactive compatibility shim unexpectedly constructed a model')
+inactive = {'models.sota_models', 'models.PIT', 'models.external_baselines'}
+loaded = inactive.intersection(sys.modules)
+assert not loaded, loaded
+"""
+    completed = subprocess.run(
+        [sys.executable, "-c", code],
+        cwd=PROJECT_ROOT,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    assert completed.returncode == 0, completed.stderr
 
 
 def test_active_mainline_contract_matches_formal_v3():

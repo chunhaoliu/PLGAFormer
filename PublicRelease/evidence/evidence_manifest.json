@@ -1,0 +1,28 @@
+{
+  "schema_version": 1,
+  "artifact_kind": "public_release_evidence",
+  "claim_boundary": "complete simulated HGV trajectories; simulation-only evidence",
+  "dataset_protocol": "hgv_multiregime_state_v2_1",
+  "dataset_sha256": "526d50d05b14ed17f9093249cbb5a382f526468e36723457c08c790d449112e7",
+  "config_sha256": "967310425a89d5a0acdb098c77939647aa22548335719846cdf274a8dcf04165",
+  "paper_bundle_id": "ebbcec4b2321dafeb825878b873eddf710ade15d5a242673ee170a494f8585a6",
+  "main_bundle_id": "ff4a707476fa98c8270880bbc2f7be23c9a73b8ad89462c18cf8a6a434d208ac",
+  "ablation_bundle_id": "afa2867d0a7a5d0f9e0d38e6b3691268e5cbdae836642053192029637bd6026f",
+  "paired_analysis_id": "2453b0a7c1c01a8b8d3e6bd826542d872fbd8cde8aa8332e6ca7773775bc16b8",
+  "generator_sha256": "35aa0b0da6bfd9ecfd17655ecab249774b8bd30639955d0b5b582d6040826e6e",
+  "source_artifact_sha256": {
+    "paper_artifact_manifest": "766a96b8c0914f32c2a01d04230bf6c7e907fc84f9483f71e514fa1f3520eb30",
+    "robustness": "fc26ddfc783f2cb55ad8205b5ad341dbabcb63b4d174dd756f06b333bb5ea249",
+    "efficiency": "0c9a3e226bc5679dbaa44375f1dfeab4073aab2283ff61f264499b15d1eaea54",
+    "paired_gate": "27645993847cded0443032ef996a85336e5ccd4b511b26516a38f959b67c583d"
+  },
+  "files": {
+    "main_results.csv": "d935c6be1dcfdc954a833a86bf9c3480bca8d4a743d729eeea13c1f7a296935a",
+    "maneuver_results_256s.csv": "f9c4e841f2c2e0538789cac825a0ede666cff17ee5f1e661901b14f39924c636",
+    "strongest_comparator.csv": "6e133c5914247d75605cd1daedb554bb8d0182ae7f00d540a47beff1b554780c",
+    "ablation_256s.csv": "4c88701f70c5a9bbc17a3d2e571ace73c63b892e7e735c19739f7ccc1fe9fbe2",
+    "robustness.csv": "1b436934f224740bcbf0bb4a8a551b7cf663dd79f712c0ec4f6c4045c38767ed",
+    "efficiency.csv": "bceaf2ab41b468a8c2ddfd9b4966e7c571fe9a0280a82792014241c4bfc2fa59",
+    "adaptive_gate_paired.csv": "f1c1009695ad886c55f53f507e95be0cf5284d2efa8386032f6ec3e68cef176b"
+  }
+}

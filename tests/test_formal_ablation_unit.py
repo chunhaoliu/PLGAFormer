@@ -236,5 +236,41 @@ class FormalAblationUnitTests(unittest.TestCase):
             )
 
 
+    def test_learned_only_capacity_control_disables_physics_paths(self):
+        from experiments.mechanism_analysis.ablation_study import (
+            ABLATION_LEARNED_ONLY_CAPACITY_CONTROL,
+        )
+        from scripts.run_formal_ablation_unit import select_model_configs_by_key
+
+        selected = select_model_configs_by_key(
+            ABLATION_LEARNED_ONLY_CAPACITY_CONTROL,
+            "learned_only",
+        )
+        self.assertEqual(list(selected), ["PLGAFormer learned-only backbone"])
+        innovations = next(iter(selected.values()))["innovations"]
+        self.assertFalse(innovations["use_sparse_attention"])
+        self.assertFalse(innovations["use_physics_corrector"])
+        self.assertFalse(innovations["use_multi_head_output"])
+        self.assertFalse(innovations["use_prior_fusion"])
+        self.assertFalse(innovations["use_channel_residual"])
+
+    def test_custom_output_dirs_must_be_provided_as_a_pair(self):
+        from scripts.run_formal_ablation_unit import resolve_custom_output_dirs
+
+        with self.assertRaisesRegex(ValueError, "must be provided together"):
+            resolve_custom_output_dirs(
+                Namespace(output_dir="results", checkpoint_dir=None)
+            )
+        with tempfile.TemporaryDirectory() as tmp:
+            result = resolve_custom_output_dirs(
+                Namespace(
+                    output_dir=str(Path(tmp) / "results"),
+                    checkpoint_dir=str(Path(tmp) / "checkpoints"),
+                )
+            )
+            self.assertIsNotNone(result)
+            self.assertTrue(result[0].is_dir())
+            self.assertTrue(result[1].is_dir())
+
 if __name__ == "__main__":
     unittest.main()

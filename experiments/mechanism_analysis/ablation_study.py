@@ -533,6 +533,25 @@ ABLATION_FINAL_MECHANISM_CONTROLS = OrderedDict([
     }),
 ])
 
+ABLATION_LEARNED_ONLY_CAPACITY_CONTROL = OrderedDict([
+    ("PLGAFormer learned-only backbone", {
+        'model_type': 'plgaformer',
+        'description': (
+            'Architecture-matched PLGAFormer Transformer backbone without '
+            'analytical prior, physics attention, physics correction, or residual heads'
+        ),
+        'physics_loss_weight': 0.0,
+        'warmup_epochs': _ABLATION_WARMUP_EPOCHS,
+        'dropout': _ABLATION_DROPOUT,
+        'innovations': {
+            'use_sparse_attention': False,
+            'use_physics_corrector': False,
+            'use_multi_head_output': False,
+            'use_prior_fusion': False,
+            'use_channel_residual': False,
+        },
+    }),
+])
 ABLATION_PHASES = OrderedDict([
     ("phase1_structural", {
         'num_runs': NUM_RUNS,
@@ -553,6 +572,11 @@ ABLATION_PHASES = OrderedDict([
         'num_runs': NUM_RUNS,
         'random_seeds': RANDOM_SEEDS,
         'models': ABLATION_FINAL_MECHANISM_CONTROLS,
+    }),
+    ("learned_only_capacity_control", {
+        'num_runs': NUM_RUNS,
+        'random_seeds': RANDOM_SEEDS,
+        'models': ABLATION_LEARNED_ONLY_CAPACITY_CONTROL,
     }),
 ])
 

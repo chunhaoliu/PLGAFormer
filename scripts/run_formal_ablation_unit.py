@@ -43,6 +43,7 @@ MODEL_KEY_TO_NAME = {
     "without_geometry": "A w/o geometry",
     "spherical_prior": "PLGAFormer spherical-prior fusion",
     "schedule_only": "PLGAFormer rotating-prior schedule only",
+    "learned_only": "PLGAFormer learned-only backbone",
     # Legacy aliases remain readable for old result summaries and tests.
     "full": "PLGAFormer (A+B+C)",
     "wo_a": "PLGAFormer w/o A",
@@ -188,6 +189,22 @@ def resolve_evidence_tier(selection_only: bool) -> str:
     return "convergence_pilot" if selection_only else "final"
 
 
+def resolve_custom_output_dirs(
+    args: argparse.Namespace,
+) -> tuple[Path, Path] | None:
+    """Resolve an explicitly isolated result/checkpoint pair for supplemental runs."""
+    output_dir = getattr(args, "output_dir", None)
+    checkpoint_dir = getattr(args, "checkpoint_dir", None)
+    if bool(output_dir) != bool(checkpoint_dir):
+        raise ValueError("--output-dir and --checkpoint-dir must be provided together.")
+    if not output_dir:
+        return None
+    results_path = Path(output_dir).expanduser().resolve()
+    checkpoints_path = Path(checkpoint_dir).expanduser().resolve()
+    results_path.mkdir(parents=True, exist_ok=True)
+    checkpoints_path.mkdir(parents=True, exist_ok=True)
+    return results_path, checkpoints_path
+
 def build_ablation_protocol_identity(
     args: argparse.Namespace,
     horizons: list[int],
@@ -303,9 +320,15 @@ def completed_units(path: Path, args: argparse.Namespace) -> set[tuple[str, int,
         grouped.setdefault(key, set()).add(
             (str(row.get("horizon", "")), str(row.get("metric", "")))
         )
+    from scripts.run_best_candidate_ablation import parse_prediction_horizons
+
+    requested_horizons = parse_prediction_horizons(
+        args.prediction_horizons,
+        fallback=int(getattr(args, "prediction_length", 256)),
+    )
     required = {
         (str(horizon), metric)
-        for horizon in (32, 64, 128, 256)
+        for horizon in requested_horizons
         for metric in ("ade", "fde")
     }
     return {key for key, available in grouped.items() if required.issubset(available)}
@@ -512,12 +535,16 @@ def run_formal_ablation_units(args: argparse.Namespace) -> dict[str, Any]:
     )
 
     evidence_tier = resolve_evidence_tier(bool(args.selection_only))
-    formal_dir, formal_models_dir = get_formal_protocol_dirs(
-        PROJECT_ROOT,
-        "exp2_ablation",
-        str(dataset_identity["dataset_protocol"]),
-        evidence_tier,
-    )
+    custom_output_dirs = resolve_custom_output_dirs(args)
+    if custom_output_dirs is None:
+        formal_dir, formal_models_dir = get_formal_protocol_dirs(
+            PROJECT_ROOT,
+            "exp2_ablation",
+            str(dataset_identity["dataset_protocol"]),
+            evidence_tier,
+        )
+    else:
+        formal_dir, formal_models_dir = custom_output_dirs
     metrics_csv = formal_dir / "formal_ablation_runs.csv"
     protocol_identity = build_ablation_protocol_identity(
         args, horizons, dataset_identity
@@ -813,6 +840,8 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
         ),
     )
     parser.add_argument("--phase", type=str, default="phase4_final_mechanism_controls")
+    parser.add_argument("--output-dir", type=str, default=None)
+    parser.add_argument("--checkpoint-dir", type=str, default=None)
     parser.add_argument("--models", type=str, default="all")
     parser.add_argument("--seeds", type=str, default="42,123,456")
     parser.add_argument("--subset-ratio", type=float, default=1.0)

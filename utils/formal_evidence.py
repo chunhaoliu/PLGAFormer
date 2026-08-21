@@ -17,6 +17,8 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Iterable
 
+from utils.mainline_contract import ACTIVE_PLGAFORMER_FLAGS
+
 
 CONFIG_REQUIRED_FIELDS = {
     "schema_version",
@@ -37,15 +39,7 @@ FORMAL_STUDY_KEYS = ("main", "mechanism", "robustness", "efficiency")
 REQUIRED_HORIZONS = (32, 64, 128, 256)
 REQUIRED_METRICS = ("ade", "fde", "rmse_cart_m")
 ANALYTICAL_MODEL_KEYS = {"kinematic", "rotating_3dof"}
-FINAL_MODEL_FLAGS = {
-    "use_sparse_attention": False,
-    "use_physics_corrector": False,
-    "use_multi_head_output": True,
-    "use_prior_fusion": True,
-    "use_channel_residual": False,
-    "prior_type": "rotating_3dof",
-    "prior_blend_mode": "adaptive",
-}
+FINAL_MODEL_FLAGS = ACTIVE_PLGAFORMER_FLAGS
 DISPLAY_NAMES = {
     "baseline": "Transformer (baseline)",
     "full": "PLGAFormer (proposed)",

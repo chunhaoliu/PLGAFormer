@@ -14,6 +14,7 @@ from utils.formal_evidence import (
     sha256_file,
     validate_evidence_bundle,
 )
+from utils.mainline_contract import ACTIVE_MODEL_KEY, ACTIVE_PLGAFORMER_FLAGS
 
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
@@ -30,7 +31,7 @@ MAIN_BUNDLE_PATH = FORMAL_MAIN_RESULTS_DIR / "main_run_set_manifest.json"
 LEGACY_FORMAL_ABLATION_DIR = (
     PROJECT_ROOT / "experiments" / "exp2_ablation" / "results" / "formal_v2"
 )
-FINAL_MODEL_KEY = "full"
+FINAL_MODEL_KEY = ACTIVE_MODEL_KEY
 FINAL_ARCHITECTURE = (
     "rotating-Earth 3-DOF prior with adaptive bounded fusion and no channel residual"
 )
@@ -39,15 +40,7 @@ FINAL_SEEDS = (42, 123, 456)
 
 def final_plgaformer_kwargs() -> dict[str, Any]:
     """Return the resolved constructor flags for the paper-facing architecture."""
-    return {
-        "use_sparse_attention": False,
-        "use_physics_corrector": False,
-        "use_multi_head_output": True,
-        "use_prior_fusion": True,
-        "use_channel_residual": False,
-        "prior_type": "rotating_3dof",
-        "prior_blend_mode": "adaptive",
-    }
+    return dict(ACTIVE_PLGAFORMER_FLAGS)
 
 
 def _load_source_payload(record: dict[str, Any]) -> dict[str, Any]:

@@ -35,9 +35,28 @@ def test_ablation_table_includes_final_mechanism_controls():
 
     table = render_ablation_table(lookup)
 
+    assert "Transformer" not in table
     assert "Spherical prior + adaptive fusion" in table
     assert "Rotating-Earth prior + fixed schedule" in table
     assert r"\textbf{PLGAFormer (rotating-Earth prior + adaptive fusion)}" in table
+
+
+def test_ablation_table_can_include_hash_bound_capacity_control():
+    lookup = {}
+    for phase, model_key, _ in ABLATION_ROWS:
+        for metric in ("ade", "fde"):
+            lookup[(phase, model_key, 256, metric)] = {
+                "mean": 1000.0,
+                "std": 100.0,
+            }
+    capacity = {
+        "ade": {"mean": 2000.0, "std": 200.0},
+        "fde": {"mean": 3000.0, "std": 300.0},
+    }
+
+    table = render_ablation_table(lookup, capacity)
+
+    assert "PLGAFormer learned-only backbone" in table
 
 
 def test_efficiency_table_covers_all_formal_models_and_cost_fields():
@@ -60,5 +79,7 @@ def test_efficiency_table_covers_all_formal_models_and_cost_fields():
 
     for name in EFFICIENCY_MODELS:
         assert name in table
+    assert "Spherical kinematics" not in table
+    assert "Rotating-Earth 3-DOF" not in table
     assert "MFLOPs" in table
     assert "Peak memory (MB)" in table

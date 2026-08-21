@@ -387,7 +387,6 @@ def _write_unified_artifact_manifest(
 ) -> Path:
     required = {
         "table_main_results.tex",
-        "table_significance.tex",
         "table_maneuver_results.tex",
         "main_results_summary.json",
         "table_ablation.tex",

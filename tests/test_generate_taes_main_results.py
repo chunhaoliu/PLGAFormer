@@ -36,7 +36,7 @@ def test_table_format_omits_fake_uncertainty_for_deterministic_methods():
     assert _format_result(1500.0, 0.0, 1, deterministic=True) == r"\underline{1.500}"
 
 
-def test_main_table_uses_horizon_metric_rows_and_includes_physical_rmse():
+def test_main_table_uses_horizon_metric_rows_and_only_learned_comparators():
     metrics = ("ade", "fde", "rmse_cart_m")
     stats = {
         model: {
@@ -55,7 +55,9 @@ def test_main_table_uses_horizon_metric_rows_and_includes_physical_rmse():
 
     assert r"\multirow{3}{*}{32 s}" in table
     assert "RMSE" in table
-    assert r"Rot.\ 3-DOF" in table
+    assert r"Rot.\ 3-DOF" not in table
+    assert "Spherical" not in table
+    assert "iTransformer" in table
     assert r"\multirow{3}{*}{256 s}" in table
 
 

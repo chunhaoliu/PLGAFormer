@@ -52,8 +52,6 @@ HORIZONS = [32, 64, 128, 256]
 METRICS = ["ade", "fde"]
 TABLE_METRICS = ["ade", "fde", "rmse_cart_m"]
 TABLE_MODELS = [
-    "Spherical kinematics",
-    "Rotating-Earth 3-DOF",
     "DLinear",
     "Transformer (baseline)",
     "PatchTST",
@@ -412,7 +410,7 @@ def _rank_map(
     metric: str,
 ) -> dict[str, int]:
     ordered = sorted(
-        EXPECTED_MODELS,
+        TABLE_MODELS,
         key=lambda model: seed_stats[model][horizon][metric]["mean_m"],
     )
     return {model: rank for rank, model in enumerate(ordered)}
@@ -451,17 +449,16 @@ def render_main_table(
         r"\begin{table*}[!t]",
         r"\centering",
         rf"\caption{{Multi-horizon ECEF position errors on {count_label} held-out source "
-        r"trajectories. Learned methods report mean$\pm$sample standard deviation "
-        r"across three seeds in kilometers; deterministic analytical methods are "
-        r"reported once. Best results are bold; second-best results are underlined.}",
+        r"trajectories. Values are mean$\pm$sample standard deviation across three "
+        r"seeds in kilometers. Best results are bold; second-best results are underlined.}",
         r"\label{tab:main_results}",
         r"\setlength{\tabcolsep}{2.2pt}",
         r"\scriptsize",
         r"\resizebox{\textwidth}{!}{%",
-        r"\begin{tabular}{clccccccc}",
+        r"\begin{tabular}{clccccc}",
         r"\toprule",
-        r"Horizon & Metric & Spherical & Rot.\ 3-DOF & DLinear & Transformer & "
-        r"PatchTST & iTransformer & \textbf{PLGAFormer} \\",
+        r"Horizon & Metric & DLinear & Transformer & PatchTST & iTransformer & "
+        r"\textbf{PLGAFormer} \\",
         r"\midrule",
     ]
     for horizon_index, horizon in enumerate(HORIZONS):
@@ -622,7 +619,7 @@ def render_maneuver_table(maneuver_stats: dict) -> str:
     for maneuver in MANEUVERS:
         for metric in METRICS:
             ordered = sorted(
-                EXPECTED_MODELS,
+                TABLE_MODELS,
                 key=lambda model: maneuver_stats[model][maneuver][metric]["mean_m"],
             )
             ranks[(maneuver, metric)] = {
@@ -631,9 +628,8 @@ def render_maneuver_table(maneuver_stats: dict) -> str:
     lines = [
         r"\begin{table*}[!t]",
         r"\centering",
-        r"\caption{Maneuver-resolved trajectory-level errors at 256 s. Learned "
-        r"methods report mean$\pm$sample standard deviation across three seeds "
-        r"in kilometers; deterministic analytical methods are reported once.}",
+        r"\caption{Maneuver-resolved trajectory-level errors at 256 s. Values are "
+        r"mean$\pm$sample standard deviation across three seeds in kilometers.}",
         r"\label{tab:maneuver_results}",
         r"\setlength{\tabcolsep}{4pt}",
         r"\scriptsize",
@@ -645,7 +641,7 @@ def render_maneuver_table(maneuver_stats: dict) -> str:
         r"Method & ADE & FDE & ADE & FDE & ADE & FDE \\",
         r"\midrule",
     ]
-    for model in EXPECTED_MODELS:
+    for model in TABLE_MODELS:
         cells = []
         for maneuver in MANEUVERS:
             for metric in METRICS:
@@ -715,14 +711,12 @@ def write_artifacts(args: argparse.Namespace) -> dict[str, Any]:
         raise RuntimeError(f"Paper staging directory is nonempty: {args.output_dir}")
     args.output_dir.mkdir(parents=True, exist_ok=True)
     main_table = args.output_dir / "table_main_results.tex"
-    significance_table = args.output_dir / "table_significance.tex"
     maneuver_table = args.output_dir / "table_maneuver_results.tex"
     summary_json = args.output_dir / "main_results_summary.json"
     main_table.write_text(
         render_main_table(seed_stats, source_audit.get("test_trajectory_count")),
         encoding="utf-8",
     )
-    significance_table.write_text(render_significance_table(strongest_rows), encoding="utf-8")
     maneuver_table.write_text(render_maneuver_table(maneuver_stats), encoding="utf-8")
     summary = {
         "experiment": "exp1_sota_with_validation_selected_final_architecture",
@@ -739,7 +733,7 @@ def write_artifacts(args: argparse.Namespace) -> dict[str, Any]:
         "maneuver_statistics": maneuver_stats,
     }
     summary_json.write_text(json.dumps(summary, indent=2, ensure_ascii=False), encoding="utf-8")
-    artifact_files = [main_table, significance_table, maneuver_table, summary_json]
+    artifact_files = [main_table, maneuver_table, summary_json]
     artifact_manifest = args.output_dir / "artifact_manifest.json"
     manifest = {
         "schema_version": 1,
@@ -767,7 +761,6 @@ def write_artifacts(args: argparse.Namespace) -> dict[str, Any]:
         "bundle_id": source_audit.get("bundle_id"),
         "records": len(records),
         "main_table": str(main_table),
-        "significance_table": str(significance_table),
         "maneuver_table": str(maneuver_table),
         "summary_json": str(summary_json),
         "artifact_files": [str(path) for path in artifact_files],

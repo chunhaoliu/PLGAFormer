@@ -391,7 +391,6 @@ def test_formal_paper_synthetic_success_stages_complete_bundle(monkeypatch, tmp_
     assert result == 0
     required = {
         "table_main_results.tex",
-        "table_significance.tex",
         "table_maneuver_results.tex",
         "main_results_summary.json",
         "table_ablation.tex",

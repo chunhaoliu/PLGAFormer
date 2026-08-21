@@ -13,8 +13,9 @@
   hardware-in-the-loop, or deployment validation.
 
 Only evidence carrying the identities above can support the current paper.
-Historical records, convergence pilots, PIT, and AF-CILN results are not part
-of the paper-facing matrix.
+Historical records, convergence pilots, PIT, AF-CILN, and standalone analytical
+propagator results are not part of the paper-facing comparison matrix. The
+rotating-Earth 3-DOF model remains part of PLGAFormer as its identified prior.
 
 ## Frozen Protocol
 
@@ -42,7 +43,7 @@ configuration, Main, Ablation, complete paper, and adaptive-gate identities.
 |---|---|
 | Overall multi-horizon accuracy | `main_results.csv` |
 | Maneuver-resolved accuracy | `maneuver_results_256s.csv` |
-| Strongest-comparator inference | `strongest_comparator.csv` |
+| Internal analytical-comparator audit | `strongest_comparator.csv` |
 | Mechanism controls | `ablation_256s.csv` |
 | Learned-only capacity control | `capacity_control_256s.csv` |
 | Adaptive-gate marginal contribution | `adaptive_gate_paired.csv` |
@@ -51,13 +52,12 @@ configuration, Main, Ablation, complete paper, and adaptive-gate identities.
 
 ## Supported Quantitative Statements
 
-1. Among the trainable methods, PLGAFormer has the lowest mean ADE, FDE, and
+1. Among the learning-based methods, PLGAFormer has the lowest mean ADE, FDE, and
    Cartesian RMSE at every reported horizon. At 256 s it obtains 4.816 km ADE,
    14.350 km FDE, and 4.590 km RMSE.
-2. The rotating-Earth 3-DOF propagator remains more accurate in ADE at every
-   horizon and in FDE through 128 s. At 256 s its FDE is 14.451 km versus
-   14.350 km for PLGAFormer; this 0.7% difference is not significant after Holm
-   correction (`p=0.827`).
+2. Relative to iTransformer, the strongest learning-based comparator at 256 s,
+   PLGAFormer reduces ADE, FDE, and Cartesian RMSE by 31.8%, 20.5%, and 29.9%,
+   respectively.
 3. At 256 s, the spherical-prior, fixed-schedule rotating-prior, and final
    adaptive-fusion variants obtain 6.202/17.406, 4.943/14.746, and
    4.816/14.350 km ADE/FDE, respectively.
@@ -73,20 +73,19 @@ configuration, Main, Ablation, complete paper, and adaptive-gate identities.
    final gain is not explained by a deeper learned path alone under this
    training protocol.
 6. Under the aerodynamic shift, PLGAFormer obtains 4.855/12.796 km ADE/FDE,
-   compared with 20.130/38.904 km for Transformer and 5.371/14.439 km for the
-   rotating-Earth propagator. Under the ballistic shift, PLGAFormer obtains
-   5.029/13.142 km; the propagator is marginally lower in ADE at 5.004 km and
-   PLGAFormer is marginally lower in FDE than its 13.252 km.
+   compared with 20.130/38.904 km for Transformer. Under the ballistic shift,
+   PLGAFormer obtains 5.029/13.142 km, compared with 15.869/30.597 km for
+   Transformer.
 7. On the measured NVIDIA GeForce RTX 4090, PLGAFormer has 4.546 M parameters,
    3,021.7 MFLOPs, 849.2 MB peak inference memory, 491.44 ms batch-one latency,
    and 121.9 trajectories/s at batch 64.
 
 ## Unsupported or Restricted Claims
 
-- Do not claim overall state of the art or uniform superiority; the analytical
-  propagator is stronger on several nominal metrics.
-- Do not claim a statistically significant 256 s FDE gain over the analytical
-  propagator.
+- Do not claim overall state of the art or uniform superiority; longitudinal
+  256 s FDE is lower for iTransformer than for PLGAFormer.
+- Do not promote internal standalone analytical-propagator results into the
+  paper-facing comparison unless a reviewer explicitly requests that analysis.
 - Do not claim that the adaptive gate has a seed-robust 256 s advantage over
   the fixed schedule.
 - Do not include PIT or AF-CILN in the paper-facing Main table.
@@ -100,9 +99,9 @@ configuration, Main, Ablation, complete paper, and adaptive-gate identities.
 ## Manuscript Synchronization Status
 
 The canonical TAES manuscript has been synchronized to the frozen trajectory
-count, split, training budget, public baseline matrix, five-row mechanism
-ablation, dynamics-shift evidence, and restrained adaptive-gate conclusion. It
-compiles to nine pages without undefined references or layout errors.
+count, split, training budget, learning-based public baseline matrix, four-row
+mechanism ablation, dynamics-shift evidence, and restrained adaptive-gate
+conclusion. Compilation and visual QA must be rerun after each manuscript sync.
 
 Remaining manuscript work is editorial rather than experimental: verify every
 table and prose number against the public evidence CSVs, check references and

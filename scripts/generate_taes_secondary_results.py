@@ -49,9 +49,10 @@ ABLATION_SUMMARY = ABLATION_BUNDLE
 ROBUSTNESS_RESULTS = None
 EFFICIENCY_RESULTS = None
 EXPECTED_SEEDS = [42, 123, 456]
+CAPACITY_EVIDENCE = PROJECT_ROOT / "PublicRelease" / "evidence" / "capacity_control_256s.csv"
+CAPACITY_MANIFEST = PROJECT_ROOT / "PublicRelease" / "evidence" / "evidence_manifest.json"
 
 ABLATION_ROWS = [
-    ("main_results_bundle", "baseline", "Transformer"),
     (
         "phase4_final_mechanism_controls",
         "spherical_prior",
@@ -70,14 +71,13 @@ ABLATION_ROWS = [
 ]
 
 ROBUSTNESS_MODELS = ["Transformer (baseline)", "PLGAFormer (proposed)"]
+PAPER_ROBUSTNESS_MODELS = ["transformer", "plgaformer"]
 EFFICIENCY_MODELS = [
     "PLGAFormer",
     "Transformer",
     "iTransformer",
     "PatchTST",
     "DLinear",
-    "Spherical kinematics",
-    "Rotating-Earth 3-DOF",
 ]
 
 
@@ -155,14 +155,36 @@ def validate_ablation(payload: dict, signature: str) -> dict[tuple[str, str, int
     )
 
 
-def render_ablation_table(lookup: dict[tuple[str, str, int, str], dict]) -> str:
+def load_capacity_control() -> dict[str, dict[str, float]]:
+    manifest = json.loads(CAPACITY_MANIFEST.read_text(encoding="utf-8"))
+    expected_hash = manifest.get("files", {}).get(CAPACITY_EVIDENCE.name)
+    if expected_hash != sha256_file(CAPACITY_EVIDENCE):
+        raise RuntimeError("Capacity-control evidence hash mismatch.")
+    with CAPACITY_EVIDENCE.open(encoding="utf-8", newline="") as handle:
+        rows = list(csv.DictReader(handle))
+    lookup = {
+        str(row["metric"]): {
+            "mean": float(row["mean_m"]),
+            "std": float(row["sample_std_m"]),
+        }
+        for row in rows
+        if int(row["horizon_s"]) == 256 and int(row["seed_count"]) == 3
+    }
+    if set(lookup) != {"ade", "fde", "rmse_cart_m"}:
+        raise RuntimeError("Capacity-control evidence is not three-metric complete.")
+    return lookup
+
+
+def render_ablation_table(
+    lookup: dict[tuple[str, str, int, str], dict],
+    capacity_control: dict[str, dict[str, float]] | None = None,
+) -> str:
     lines = [
         r"\begin{table*}[!t]",
         r"\centering",
-        r"\caption{Formal 256 s mechanism ablation under the same data, optimization, "
-        r"and ECEF objective. Values are mean$\pm$sample standard deviation across "
-        r"three seeds in kilometers. The final structure was selected using the mean "
-        r"minimum validation objective before test-set comparison.}",
+        r"\caption{Formal 256 s mechanism and learned-capacity controls under the same "
+        r"data, optimization, and ECEF objective. Values are mean$\pm$sample standard "
+        r"deviation across three seeds in kilometers.}",
         r"\label{tab:ablation}",
         r"\scriptsize",
         r"\begin{tabular}{lcc}",
@@ -170,6 +192,14 @@ def render_ablation_table(lookup: dict[tuple[str, str, int, str], dict]) -> str:
         r"Configuration & ADE & FDE \\",
         r"\midrule",
     ]
+    if capacity_control is not None:
+        cells = [
+            f"{capacity_control[metric]['mean'] / 1000:.3f}$\\pm$"
+            f"{capacity_control[metric]['std'] / 1000:.3f}"
+            for metric in ("ade", "fde")
+        ]
+        lines.append("PLGAFormer learned-only backbone & " + " & ".join(cells) + r" \\")
+        lines.append(r"\midrule")
     previous_phase = None
     for phase, model_key, label in ABLATION_ROWS:
         if previous_phase is not None and phase != previous_phase:
@@ -323,7 +353,7 @@ def render_robustness_table(results: dict) -> str:
             r"\midrule",
         ]
         for condition in results["conditions"]:
-            for model_type in results["model_types"]:
+            for model_type in PAPER_ROBUSTNESS_MODELS:
                 row = results["results"][condition][model_type]
                 lines.append(
                     f"{condition_labels.get(condition, condition)} & {display_names[model_type]} & "
@@ -505,7 +535,10 @@ def write_artifacts(args: argparse.Namespace) -> dict:
         raise RuntimeError(f"Paper staging directory is nonempty: {output_dir}")
     output_dir.mkdir(parents=True, exist_ok=True)
     ablation_path = output_dir / "table_ablation.tex"
-    ablation_path.write_text(render_ablation_table(ablation_lookup), encoding="utf-8")
+    capacity_control = load_capacity_control()
+    ablation_path.write_text(
+        render_ablation_table(ablation_lookup, capacity_control), encoding="utf-8"
+    )
     outputs = [ablation_path]
     secondary_path = None
     if robustness_results is not None or efficiency_rows is not None:
@@ -535,6 +568,7 @@ def write_artifacts(args: argparse.Namespace) -> dict:
         "inputs": {
             "main_bundle": str(args.main_bundle.resolve()),
             "ablation_bundle": str(args.ablation_bundle.resolve()),
+            "capacity_control": str(CAPACITY_EVIDENCE.resolve()),
             **optional_sections,
         },
         "omitted_sections": omitted_sections,

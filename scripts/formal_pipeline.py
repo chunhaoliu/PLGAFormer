@@ -1,15 +1,17 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""Internal coordinator for the HGV formal-v3 evidence command family."""
+"""Internal coordinator for the active HGV formal evidence command family."""
 
 from __future__ import annotations
 
 import argparse
+import io
 import json
 import os
 import shutil
 import tempfile
 import sys
+from contextlib import redirect_stdout
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
@@ -121,7 +123,11 @@ def build_parser() -> argparse.ArgumentParser:
     validate_data.add_argument("--json", action="store_true", help="Emit the validation report as JSON.")
 
     def add_runner_command(name: str, help_text: str, runner_help: str) -> argparse.ArgumentParser:
-        command_parser = subparsers.add_parser(name, help=help_text)
+        command_parser = subparsers.add_parser(
+            name,
+            help=help_text,
+            add_help=False,
+        )
         _add_config_argument(command_parser)
         command_parser.add_argument(
             "--dry-run",
@@ -129,8 +135,10 @@ def build_parser() -> argparse.ArgumentParser:
             help="Describe the formal route without importing a training/evaluation runner.",
         )
         command_parser.add_argument(
-            "runner_args",
-            nargs=argparse.REMAINDER,
+            "-h",
+            "--help",
+            dest="runner_help",
+            action="store_true",
             help=runner_help,
         )
         return command_parser
@@ -139,16 +147,6 @@ def build_parser() -> argparse.ArgumentParser:
         "main",
         "Run the registered Overall Prediction formal Main Results study.",
         "Arguments forwarded to run_formal_sota_unit.py.",
-    )
-    add_runner_command(
-        "sota",
-        "Explicit compatibility alias for formal main.",
-        "Arguments forwarded to run_formal_sota_unit.py.",
-    )
-    add_runner_command(
-        "ablation",
-        "Explicit compatibility alias for the phase4 mechanism-control study.",
-        "Arguments forwarded to run_formal_ablation_unit.py.",
     )
     add_runner_command(
         "mechanism",
@@ -201,35 +199,45 @@ def build_parser() -> argparse.ArgumentParser:
     return parser
 
 
-def _runner_args(args: argparse.Namespace) -> list[str]:
-    values = list(getattr(args, "runner_args", []) or [])
+def _runner_args(values: list[str] | tuple[str, ...]) -> list[str]:
+    values = list(values)
     if values and values[0] == "--":
         values = values[1:]
     return values
 
 
-def _run_main(args: argparse.Namespace, config) -> int:
-    from scripts.run_formal_sota_unit import main as run_main
-
-    forwarded = _runner_args(args)
+def _run_main(args: argparse.Namespace, config, runner_args: list[str]) -> int:
+    forwarded = _runner_args(runner_args)
+    if getattr(args, "runner_help", False):
+        forwarded = ["--help"]
     if getattr(args, "dry_run", False):
         print(json.dumps(_study_dry_run_report(config, "main"), indent=2, ensure_ascii=False))
         return 0
-    if "--config" not in forwarded:
+    if not getattr(args, "runner_help", False) and "--config" not in forwarded:
         forwarded = ["--config", str(config.path), *forwarded]
+    from scripts.run_formal_sota_unit import main as run_main
+
     return int(run_main(forwarded))
 
 
-def _run_ablation(args: argparse.Namespace, config, *, study_name: str = "mechanism") -> int:
-    from scripts.run_formal_ablation_unit import main as run_ablation
-
-    forwarded = _runner_args(args)
+def _run_ablation(
+    args: argparse.Namespace,
+    config,
+    runner_args: list[str],
+    *,
+    study_name: str = "mechanism",
+) -> int:
+    forwarded = _runner_args(runner_args)
+    if getattr(args, "runner_help", False):
+        forwarded = ["--help"]
     if getattr(args, "dry_run", False):
         return _run_bundle_study_dry_run(config, study_name)
-    if "--config" not in forwarded:
+    if not getattr(args, "runner_help", False) and "--config" not in forwarded:
         forwarded = ["--config", str(config.path), *forwarded]
-    if "--phase" not in forwarded:
+    if not getattr(args, "runner_help", False) and "--phase" not in forwarded:
         forwarded = ["--phase", str(get_formal_study(config, "mechanism")["phase"]), *forwarded]
+    from scripts.run_formal_ablation_unit import main as run_ablation
+
     return int(run_ablation(forwarded))
 
 
@@ -589,35 +597,108 @@ def _paper(config, args: argparse.Namespace) -> int:
     return 0
 
 
+def _captured_json(stdout: str) -> Any | None:
+    payload = stdout.strip()
+    if not payload:
+        return None
+    try:
+        return json.loads(payload)
+    except json.JSONDecodeError:
+        return None
+
+
 def _validate_data(config, as_json: bool) -> int:
     from data_provider.validation import validate_hgv_dataset
     from scripts.validate_multiregime_dataset import main as validate_multiregime
 
-    report = validate_hgv_dataset(require_trajectory_level=True)
-    if as_json:
-        print(json.dumps(report, indent=2, ensure_ascii=False))
-    else:
-        print(json.dumps(report, indent=2, ensure_ascii=False))
-    if not report.get("passed"):
+    dataset_path = config.resolve(config["dataset"]["relative_path"])
+    envelope: dict[str, Any] = {
+        "command": "formal validate-data",
+        "config_path": str(config.path),
+        "config_sha256": config.config_sha256,
+        "dataset": {
+            "path": str(dataset_path),
+            "protocol": config["dataset"]["protocol"],
+            "expected_sha256": config["dataset"]["sha256"],
+        },
+        "trajectory_validation": None,
+        "multiregime_validation": None,
+        "passed": False,
+    }
+
+    trajectory_stdout = io.StringIO()
+    try:
+        with redirect_stdout(trajectory_stdout):
+            trajectory_report = validate_hgv_dataset(require_trajectory_level=True)
+        trajectory_passed = bool(trajectory_report.get("passed"))
+        trajectory_entry: dict[str, Any] = {
+            "exit_code": 0 if trajectory_passed else 1,
+            "report": trajectory_report,
+        }
+    except Exception as exc:
+        trajectory_passed = False
+        trajectory_entry = {
+            "exit_code": 1,
+            "error_type": type(exc).__name__,
+            "error": str(exc),
+        }
+    captured = trajectory_stdout.getvalue().strip()
+    if captured:
+        trajectory_entry["captured_stdout"] = captured
+    envelope["trajectory_validation"] = trajectory_entry
+
+    if not trajectory_passed:
+        envelope["multiregime_validation"] = {
+            "skipped": True,
+            "reason": "trajectory validation did not pass",
+        }
+        print(json.dumps(envelope, indent=2, ensure_ascii=False))
         return 1
-    dataset_path = resolve_config_path(config, "main_results_records")
-    del dataset_path
-    return int(
-        validate_multiregime(
-            [
-                "--dataset",
-                str(config.resolve(config["dataset"]["relative_path"])),
-                "--no-write",
-                "--require-formal-count",
-            ]
+
+    multiregime_stdout = io.StringIO()
+    try:
+        with redirect_stdout(multiregime_stdout):
+            multiregime_code = int(
+                validate_multiregime(
+                    [
+                        "--dataset",
+                        str(dataset_path),
+                        "--no-write",
+                        "--require-formal-count",
+                    ]
+                )
+            )
+        multiregime_text = multiregime_stdout.getvalue()
+        multiregime_report = _captured_json(multiregime_text)
+        multiregime_entry: dict[str, Any] = {
+            "exit_code": multiregime_code,
+            "report": multiregime_report,
+        }
+        if multiregime_report is None and multiregime_text.strip():
+            multiregime_entry["captured_stdout"] = multiregime_text.strip()
+        report_passed = (
+            bool(multiregime_report.get("passed"))
+            if isinstance(multiregime_report, dict) and "passed" in multiregime_report
+            else True
         )
-    )
+        multiregime_passed = multiregime_code == 0 and report_passed
+    except Exception as exc:
+        multiregime_passed = False
+        multiregime_entry = {
+            "exit_code": 1,
+            "error_type": type(exc).__name__,
+            "error": str(exc),
+        }
+    envelope["multiregime_validation"] = multiregime_entry
+    envelope["passed"] = bool(trajectory_passed and multiregime_passed)
+    print(json.dumps(envelope, indent=2, ensure_ascii=False))
+    return 0 if envelope["passed"] else 1
 
 
 def main(argv: list[str] | None = None) -> int:
     parser = build_parser()
     parsed, unknown = parser.parse_known_args(argv)
-    if unknown and parsed.command not in {"main", "sota", "ablation", "mechanism"}:
+    if unknown and parsed.command not in {"main", "mechanism"}:
         parser.error(f"unrecognized arguments: {' '.join(unknown)}")
     config = _config_from_args(parsed)
     if parsed.command == "status":
@@ -625,14 +706,10 @@ def main(argv: list[str] | None = None) -> int:
         return 0
     if parsed.command == "validate-data":
         return _validate_data(config, bool(parsed.json))
-    if parsed.command in {"main", "sota"}:
-        if unknown:
-            parsed.runner_args.extend(unknown)
-        return _run_main(parsed, config)
-    if parsed.command in {"ablation", "mechanism"}:
-        if unknown:
-            parsed.runner_args.extend(unknown)
-        return _run_ablation(parsed, config, study_name="mechanism")
+    if parsed.command == "main":
+        return _run_main(parsed, config, unknown)
+    if parsed.command == "mechanism":
+        return _run_ablation(parsed, config, unknown, study_name="mechanism")
     if parsed.command == "robustness":
         try:
             return _run_robustness(parsed, config)
@@ -649,8 +726,18 @@ def main(argv: list[str] | None = None) -> int:
         if parsed.dry_run:
             report = build_status(config)
             report["command"] = "formal aggregate --dry-run"
+            dataset_eligible = bool(report["dataset"]["passed"])
+            main_eligible = bool(report["main_results"]["paper_eligible"])
+            ablation_eligible = bool(report["ablation"]["paper_eligible"])
+            requested_eligible = {
+                "main": dataset_eligible and main_eligible,
+                "ablation": dataset_eligible and main_eligible and ablation_eligible,
+                "all": dataset_eligible and main_eligible and ablation_eligible,
+            }[parsed.kind]
+            report["requested_kind"] = parsed.kind
+            report["requested_eligible"] = requested_eligible
             _print_report(report, as_json=True)
-            return 0
+            return 0 if requested_eligible else 1
         print(json.dumps(_aggregate(config, parsed.kind, parsed.force), indent=2, ensure_ascii=False))
         return 0
     if parsed.command == "audit":

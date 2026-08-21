@@ -2,8 +2,56 @@ import tempfile
 import unittest
 import json
 from argparse import Namespace
+from copy import deepcopy
 from pathlib import Path
 from types import SimpleNamespace
+from unittest.mock import patch
+
+
+def _write_final_ablation_record(root, mutate=None):
+    from scripts.run_formal_ablation_unit import sha256_file
+
+    root = Path(root)
+    checkpoint = root / "checkpoint.pth"
+    checkpoint.write_bytes(b"formal weights")
+    phase = "phase4_final_mechanism_controls"
+    seed = 42
+    model_key = "schedule_only"
+    protocol_identity = {
+        "run_signature": "exact",
+        "prediction_length": 256,
+        "strict_flag": True,
+    }
+    model_config = {
+        "model_type": "plgaformer",
+        "innovations": {"use_prior_fusion": True},
+    }
+    formal_config_sha256 = "a" * 64
+    payload = {
+        "schema_version": 2,
+        "formal_config_sha256": formal_config_sha256,
+        "evidence_tier": "final",
+        "test_evaluation_performed": True,
+        "phase": phase,
+        "seed": seed,
+        "model_key": model_key,
+        "protocol_identity": deepcopy(protocol_identity),
+        "model_config": deepcopy(model_config),
+        "horizons": [32, 64, 128, 256],
+        "eval_results": {
+            str(horizon): {"ade": 1.0, "fde": 2.0, "rmse_cart_m": 3.0}
+            for horizon in (32, 64, 128, 256)
+        },
+        "checkpoint": str(checkpoint),
+        "checkpoint_sha256": sha256_file(checkpoint),
+        "history": {"epochs_completed": 50, "best_epoch": 12},
+        "run_id": "formal-final",
+    }
+    if mutate is not None:
+        mutate(payload, checkpoint)
+    record = root / f"formal_{phase}_seed{seed}_{model_key}_1.json"
+    record.write_text(json.dumps(payload), encoding="utf-8")
+    return record, protocol_identity, model_config, formal_config_sha256
 
 
 class FormalAblationUnitTests(unittest.TestCase):
@@ -60,6 +108,34 @@ class FormalAblationUnitTests(unittest.TestCase):
                 "PLGAFormer spherical-prior fusion",
             ],
         )
+
+    def test_ablation_record_config_uses_actual_plgaformer_values(self):
+        from scripts.run_formal_ablation_unit import (
+            _resolved_ablation_record_config,
+        )
+
+        requested = {
+            "model_type": "plgaformer",
+            "dropout": 0.1,
+            "innovations": {
+                "use_prior_fusion": True,
+                "prior_type": "rotating_3dof",
+            },
+        }
+        model = SimpleNamespace(
+            dropout=0.25,
+            use_prior_fusion=False,
+            prior_type="spherical_kinematic",
+        )
+
+        recorded = _resolved_ablation_record_config(model, requested)
+
+        self.assertEqual(recorded["dropout"], 0.25)
+        self.assertFalse(recorded["innovations"]["use_prior_fusion"])
+        self.assertEqual(
+            recorded["innovations"]["prior_type"], "spherical_kinematic"
+        )
+        self.assertTrue(requested["innovations"]["use_prior_fusion"])
 
     def test_append_metric_rows_writes_header_once(self):
         from scripts.run_formal_ablation_unit import append_metric_rows
@@ -151,13 +227,100 @@ class FormalAblationUnitTests(unittest.TestCase):
         from scripts.run_formal_ablation_unit import parse_args
 
         args = parse_args([])
+        self.assertEqual(args.seeds, "42,123,456")
         self.assertEqual(args.epochs, 50)
+        self.assertEqual(args.batch_size, 128)
+        self.assertEqual(args.prediction_length, 256)
+        self.assertEqual(args.prediction_horizons, "32,64,128,256")
+        self.assertEqual(args.label_len, 128)
+        self.assertEqual(args.learning_rate, 0.001)
+        self.assertEqual(args.weight_decay, 0.00005)
+        self.assertEqual(args.patience, 15)
+        self.assertEqual(args.workers, 0)
         self.assertEqual(args.warmup_epochs, 5)
         self.assertFalse(args.amp)
         self.assertEqual(args.amp_dtype, "bfloat16")
         self.assertTrue(args.cache_physics_prior)
         self.assertEqual(args.physics_prior_cache_batch_size, 512)
         self.assertFalse(args.reuse_exp1_controls)
+
+    def test_runtime_drift_is_rejected_before_training_imports(self):
+        import builtins
+
+        from scripts.run_formal_ablation_unit import (
+            parse_args,
+            run_formal_ablation_units,
+        )
+
+        original_import = builtins.__import__
+        training_imports = []
+
+        def guarded_import(name, *args, **kwargs):
+            if name == "data_generation" or name.startswith("data_generation."):
+                training_imports.append(name)
+                raise AssertionError(f"training import reached: {name}")
+            if name == "experiments" or name.startswith("experiments."):
+                training_imports.append(name)
+                raise AssertionError(f"training import reached: {name}")
+            return original_import(name, *args, **kwargs)
+
+        with patch("builtins.__import__", side_effect=guarded_import):
+            with self.assertRaisesRegex(ValueError, r"prediction_length.*256"):
+                run_formal_ablation_units(
+                    parse_args(["--prediction-length", "128"])
+                )
+
+        self.assertEqual(training_imports, [])
+
+    def test_reduced_final_subset_is_rejected_before_training_imports(self):
+        import builtins
+
+        from scripts.run_formal_ablation_unit import (
+            parse_args,
+            run_formal_ablation_units,
+        )
+
+        original_import = builtins.__import__
+        training_imports = []
+
+        def guarded_import(name, *args, **kwargs):
+            if name.startswith(("data_generation", "experiments")):
+                training_imports.append(name)
+                raise AssertionError(f"training import reached: {name}")
+            return original_import(name, *args, **kwargs)
+
+        with patch("builtins.__import__", side_effect=guarded_import):
+            with self.assertRaisesRegex(ValueError, r"subset_ratio.*1\.0"):
+                run_formal_ablation_units(parse_args(["--subset-ratio", "0.2"]))
+        self.assertEqual(training_imports, [])
+
+    def test_custom_config_is_rejected_before_training_imports(self):
+        import builtins
+
+        from scripts.run_formal_ablation_unit import (
+            parse_args,
+            run_formal_ablation_units,
+        )
+
+        original_import = builtins.__import__
+        training_imports = []
+
+        def guarded_import(name, *args, **kwargs):
+            if name.startswith(("data_generation", "experiments")):
+                training_imports.append(name)
+                raise AssertionError(f"training import reached: {name}")
+            return original_import(name, *args, **kwargs)
+
+        with patch("builtins.__import__", side_effect=guarded_import):
+            with self.assertRaisesRegex(ValueError, "config"):
+                run_formal_ablation_units(parse_args(["--config", "other.json"]))
+        self.assertEqual(training_imports, [])
+
+    def test_default_config_is_the_canonical_contract(self):
+        from scripts.run_formal_ablation_unit import parse_args
+        from utils.mainline_contract import ACTIVE_CONFIG_PATH
+
+        self.assertEqual(Path(parse_args([]).config).resolve(), ACTIVE_CONFIG_PATH)
 
     def test_pit_sampling_interval_updates_model_and_physics_dt(self):
         from scripts.run_formal_ablation_unit import _configure_exp2, parse_args
@@ -234,6 +397,207 @@ class FormalAblationUnitTests(unittest.TestCase):
                     checkpoint_sha256="checkpoint",
                 )
             )
+
+    def test_final_ablation_resume_accepts_only_exact_complete_json(self):
+        from scripts.run_formal_ablation_unit import find_existing_final_ablation
+
+        with tempfile.TemporaryDirectory() as tmp:
+            (
+                record,
+                protocol_identity,
+                model_config,
+                formal_config_sha256,
+            ) = _write_final_ablation_record(tmp)
+            found = find_existing_final_ablation(
+                tmp,
+                phase="phase4_final_mechanism_controls",
+                seed=42,
+                model_key="schedule_only",
+                protocol_identity=protocol_identity,
+                model_config=model_config,
+                horizons=[32, 64, 128, 256],
+                formal_config_sha256=formal_config_sha256,
+            )
+
+            self.assertIsNotNone(found)
+            self.assertEqual(found[0], record)
+
+    def test_final_ablation_resume_rejects_missing_json(self):
+        from scripts.run_formal_ablation_unit import find_existing_final_ablation
+
+        with tempfile.TemporaryDirectory() as tmp:
+            self.assertIsNone(
+                find_existing_final_ablation(
+                    tmp,
+                    phase="phase4_final_mechanism_controls",
+                    seed=42,
+                    model_key="schedule_only",
+                    protocol_identity={"run_signature": "exact"},
+                    model_config={"model_type": "plgaformer"},
+                    horizons=[32, 64, 128, 256],
+                    formal_config_sha256="a" * 64,
+                )
+            )
+
+    def test_final_ablation_resume_rejects_malformed_json_records(self):
+        from scripts.run_formal_ablation_unit import find_existing_final_ablation
+
+        for content in ("{bad json", "[]"):
+            with self.subTest(content=content), tempfile.TemporaryDirectory() as tmp:
+                record = Path(tmp) / (
+                    "formal_phase4_final_mechanism_controls_"
+                    "seed42_schedule_only_1.json"
+                )
+                record.write_text(content, encoding="utf-8")
+                self.assertIsNone(
+                    find_existing_final_ablation(
+                        tmp,
+                        phase="phase4_final_mechanism_controls",
+                        seed=42,
+                        model_key="schedule_only",
+                        protocol_identity={"run_signature": "exact"},
+                        model_config={"model_type": "plgaformer"},
+                        horizons=[32, 64, 128, 256],
+                        formal_config_sha256="a" * 64,
+                    )
+                )
+
+    def test_final_ablation_resume_rejects_inexact_records(self):
+        from scripts.run_formal_ablation_unit import find_existing_final_ablation
+
+        def checkpoint_missing(payload, checkpoint):
+            payload["checkpoint"] = str(checkpoint.with_name("missing.pth"))
+
+        def hash_missing(payload, _checkpoint):
+            payload.pop("checkpoint_sha256")
+
+        def hash_mismatch(payload, _checkpoint):
+            payload["checkpoint_sha256"] = "0" * 64
+
+        def formal_config_hash_missing(payload, _checkpoint):
+            payload.pop("formal_config_sha256")
+
+        def formal_config_hash_mismatch(payload, _checkpoint):
+            payload["formal_config_sha256"] = "b" * 64
+
+        def schema_version_missing(payload, _checkpoint):
+            payload.pop("schema_version")
+
+        def protocol_mismatch(payload, _checkpoint):
+            payload["protocol_identity"] = {"run_signature": "changed"}
+
+        def protocol_bool_int_mismatch(payload, _checkpoint):
+            payload["protocol_identity"]["strict_flag"] = 1
+
+        def config_mismatch(payload, _checkpoint):
+            payload["model_config"] = {"model_type": "changed"}
+
+        def config_bool_int_mismatch(payload, _checkpoint):
+            payload["model_config"]["innovations"]["use_prior_fusion"] = 1
+
+        def metrics_incomplete(payload, _checkpoint):
+            payload["eval_results"]["256"].pop("rmse_cart_m")
+
+        def metric_is_bool(payload, _checkpoint):
+            payload["eval_results"]["256"]["ade"] = True
+
+        def declared_horizons_incomplete(payload, _checkpoint):
+            payload["horizons"] = [32, 64, 128]
+
+        def history_incomplete(payload, _checkpoint):
+            payload["history"].pop("best_epoch")
+
+        def history_best_epoch_out_of_range(payload, _checkpoint):
+            payload["history"]["best_epoch"] = 51
+
+        def run_id_missing(payload, _checkpoint):
+            payload.pop("run_id")
+
+        def identity_mismatch(payload, _checkpoint):
+            payload["seed"] = 123
+
+        cases = {
+            "checkpoint missing": checkpoint_missing,
+            "hash missing": hash_missing,
+            "hash mismatch": hash_mismatch,
+            "formal config hash missing": formal_config_hash_missing,
+            "formal config hash mismatch": formal_config_hash_mismatch,
+            "schema version missing": schema_version_missing,
+            "protocol mismatch": protocol_mismatch,
+            "protocol bool-int mismatch": protocol_bool_int_mismatch,
+            "config mismatch": config_mismatch,
+            "config bool-int mismatch": config_bool_int_mismatch,
+            "metrics incomplete": metrics_incomplete,
+            "metric is bool": metric_is_bool,
+            "declared horizons incomplete": declared_horizons_incomplete,
+            "history incomplete": history_incomplete,
+            "history best epoch out of range": history_best_epoch_out_of_range,
+            "run id missing": run_id_missing,
+            "identity mismatch": identity_mismatch,
+        }
+        for name, mutate in cases.items():
+            with self.subTest(name=name), tempfile.TemporaryDirectory() as tmp:
+                (
+                    _,
+                    protocol_identity,
+                    model_config,
+                    formal_config_sha256,
+                ) = _write_final_ablation_record(tmp, mutate)
+                self.assertIsNone(
+                    find_existing_final_ablation(
+                        tmp,
+                        phase="phase4_final_mechanism_controls",
+                        seed=42,
+                        model_key="schedule_only",
+                        protocol_identity=protocol_identity,
+                        model_config=model_config,
+                        horizons=[32, 64, 128, 256],
+                        formal_config_sha256=formal_config_sha256,
+                    )
+                )
+
+    def test_all_exact_final_records_avoid_training_data_load(self):
+        from scripts.run_formal_ablation_unit import (
+            _requires_ablation_training,
+        )
+
+        models = {
+            "PLGAFormer rotating-prior schedule only": {
+                "model_type": "plgaformer"
+            }
+        }
+        reusable = {
+            ("phase4_final_mechanism_controls", 42, "schedule_only")
+        }
+        self.assertFalse(
+            _requires_ablation_training(
+                "phase4_final_mechanism_controls", [42], models, reusable
+            )
+        )
+
+    def test_missing_final_control_requires_training_without_exp1_reuse(self):
+        from scripts.run_formal_ablation_unit import _requires_ablation_training
+
+        models = {"Transformer (baseline)": {"model_type": "baseline"}}
+
+        self.assertTrue(
+            _requires_ablation_training(
+                "phase1_structural",
+                [42],
+                models,
+                set(),
+                reuse_exp1_controls=False,
+            )
+        )
+        self.assertFalse(
+            _requires_ablation_training(
+                "phase1_structural",
+                [42],
+                models,
+                set(),
+                reuse_exp1_controls=True,
+            )
+        )
 
 
     def test_learned_only_capacity_control_disables_physics_paths(self):

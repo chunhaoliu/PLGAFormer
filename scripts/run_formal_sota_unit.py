@@ -8,9 +8,11 @@ import argparse
 import csv
 import hashlib
 import json
+import math
 import os
 import sys
 from collections import OrderedDict
+from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
 from typing import Any
@@ -20,7 +22,8 @@ PROJECT_ROOT = Path(__file__).resolve().parent.parent
 if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 
-from utils.formal_evidence import FINAL_MODEL_FLAGS
+from utils.formal_runtime import formal_runtime_defaults, validate_formal_runtime
+from utils.mainline_contract import ACTIVE_PLGAFORMER_FLAGS, load_mainline_config
 
 
 MODEL_KEY_TO_NAME = {
@@ -106,6 +109,10 @@ def select_model_configs_by_key(
             "patchtst",
             "itransformer",
         ]
+    elif "all" in requested:
+        return OrderedDict(
+            (name, dict(config)) for name, config in comparison_models.items()
+        )
     selected: OrderedDict[str, dict[str, Any]] = OrderedDict()
     for key in requested:
         if key not in MODEL_KEY_TO_NAME:
@@ -139,32 +146,152 @@ def append_metric_rows(path: str | Path, rows: list[dict[str, Any]]) -> Path:
     return out_path
 
 
-def apply_plgaformer_candidate_overrides(
-    model_config: dict[str, Any], candidate_file: str | Path | None
-) -> dict[str, Any]:
-    """Apply the selected PLGAFormer candidate to the SOTA proposed model config."""
+@dataclass(frozen=True)
+class PLGAFormerCandidateSnapshot:
+    source_path: str
+    sha256: str
+    physics_loss_weight: float | None
+    constructor_overrides: tuple[tuple[str, bool | float], ...]
+
+
+def load_plgaformer_candidate_snapshot(
+    candidate_file: str | Path | None,
+) -> PLGAFormerCandidateSnapshot | None:
+    """Read and fully validate an explicit candidate exactly once."""
     if not candidate_file:
-        return {}
+        return None
     path = Path(candidate_file)
     if not path.is_absolute():
         path = PROJECT_ROOT / path
-    if not path.exists() or str(model_config.get("model_type", "")).lower() != "plgaformer":
-        return {}
-    payload = json.loads(path.read_text(encoding="utf-8"))
+    path = path.resolve()
+    if not path.is_file():
+        raise FileNotFoundError(f"PLGAFormer candidate file is missing: {path}")
+    try:
+        source_bytes = path.read_bytes()
+        payload = json.loads(source_bytes.decode("utf-8"))
+    except (OSError, UnicodeDecodeError, json.JSONDecodeError) as exc:
+        raise ValueError(f"Cannot read PLGAFormer candidate JSON: {path}") from exc
+    if not isinstance(payload, dict):
+        raise ValueError("PLGAFormer candidate JSON root must be an object")
     candidate = payload.get("best_candidate", payload)
     if not isinstance(candidate, dict):
-        return {}
-    if "alpha" in candidate:
-        model_config["physics_loss_weight"] = float(candidate.get("alpha") or 0.0)
-    innovations = candidate.get("innovations", {}) if isinstance(candidate.get("innovations", {}), dict) else {}
-    kwargs = {
-        "dropout": float(candidate["dropout"]) if "dropout" in candidate else None,
-        "use_sparse_attention": bool(innovations.get("use_sparse_attention", False)),
-        "use_physics_corrector": bool(innovations.get("use_physics_corrector", False)),
-        "use_multi_head_output": bool(innovations.get("use_multi_head_output", True)),
+        raise ValueError("PLGAFormer candidate best_candidate must be an object")
+    innovations = candidate.get("innovations", {})
+    if not isinstance(innovations, dict):
+        raise ValueError("PLGAFormer candidate innovations must be an object")
+
+    def candidate_real(field: str) -> float:
+        value = candidate[field]
+        if type(value) not in (int, float) or not math.isfinite(float(value)):
+            raise ValueError(f"PLGAFormer candidate {field} must be a finite number")
+        normalized = float(value)
+        if field == "alpha" and normalized < 0.0:
+            raise ValueError("PLGAFormer candidate alpha must be non-negative")
+        if field == "dropout" and not 0.0 <= normalized <= 1.0:
+            raise ValueError("PLGAFormer candidate dropout must be in [0, 1]")
+        return normalized
+
+    innovation_fields = (
+        "use_sparse_attention",
+        "use_physics_corrector",
+        "use_multi_head_output",
+    )
+    for field in innovation_fields:
+        if field in innovations and type(innovations[field]) is not bool:
+            raise ValueError(f"PLGAFormer candidate innovations.{field} must be bool")
+
+    alpha = candidate_real("alpha") if "alpha" in candidate else None
+    dropout = candidate_real("dropout") if "dropout" in candidate else None
+    constructor_overrides = {
+        "dropout": dropout,
+        "use_sparse_attention": innovations.get("use_sparse_attention", False),
+        "use_physics_corrector": innovations.get("use_physics_corrector", False),
+        "use_multi_head_output": innovations.get("use_multi_head_output", True),
         "use_adaptive_fusion": True,
     }
-    return {key: value for key, value in kwargs.items() if value is not None}
+    return PLGAFormerCandidateSnapshot(
+        source_path=str(path),
+        sha256=hashlib.sha256(source_bytes).hexdigest(),
+        physics_loss_weight=alpha,
+        constructor_overrides=tuple(
+            (key, value)
+            for key, value in constructor_overrides.items()
+            if value is not None
+        ),
+    )
+
+
+def apply_plgaformer_candidate_snapshot(
+    model_config: dict[str, Any],
+    snapshot: PLGAFormerCandidateSnapshot | None,
+) -> dict[str, bool | float]:
+    """Apply a validated snapshot without file I/O and return fresh kwargs."""
+    if snapshot is None or str(model_config.get("model_type", "")).lower() != "plgaformer":
+        return {}
+    if snapshot.physics_loss_weight is not None:
+        model_config["physics_loss_weight"] = snapshot.physics_loss_weight
+    return dict(snapshot.constructor_overrides)
+
+
+def apply_plgaformer_candidate_overrides(
+    model_config: dict[str, Any], candidate_file: str | Path | None
+) -> dict[str, bool | float]:
+    """Compatibility adapter; new runners must load one snapshot up front."""
+    snapshot = load_plgaformer_candidate_snapshot(candidate_file)
+    return apply_plgaformer_candidate_snapshot(model_config, snapshot)
+
+
+def validate_sota_authority(args: argparse.Namespace) -> None:
+    """Keep candidate overrides out of canonical final evidence."""
+    if getattr(args, "candidate_file", None) and not bool(args.selection_only):
+        raise ValueError(
+            "--candidate-file is allowed only with --selection-only diagnostics."
+        )
+    if getattr(args, "candidate_file", None) and bool(args.skip_existing):
+        raise ValueError(
+            "--candidate-file cannot be combined with --skip-existing; "
+            "explicit candidate diagnostics must run without resume."
+        )
+
+
+def validate_candidate_model_selection(args: argparse.Namespace) -> None:
+    """Require explicit candidate diagnostics to include PLGAFormer."""
+    if not getattr(args, "candidate_file", None):
+        return
+    requested = {
+        item.strip().lower()
+        for item in str(getattr(args, "models", "")).split(",")
+        if item.strip()
+    }
+    if not requested or "all" in requested:
+        return
+    if requested.isdisjoint({"plgaformer", "full", "proposed"}):
+        raise ValueError(
+            "--candidate-file diagnostics must explicitly include PLGAFormer "
+            "via --models plgaformer, full, proposed, or all."
+        )
+
+
+def _resolved_plgaformer_record_config(
+    model: Any, requested_config: dict[str, Any]
+) -> dict[str, Any]:
+    """Persist constructor values resolved by the created PLGAFormer instance."""
+    resolved = dict(requested_config)
+    for field in (*ACTIVE_PLGAFORMER_FLAGS, "use_adaptive_fusion", "dropout"):
+        if hasattr(model, field):
+            resolved[field] = getattr(model, field)
+    return resolved
+
+
+def validate_final_plgaformer_contract(model: Any) -> None:
+    """Fail before training when the created final model drifts from authority."""
+    for field, expected in ACTIVE_PLGAFORMER_FLAGS.items():
+        actual = getattr(model, field, None)
+        if type(actual) is not type(expected) or actual != expected:
+            raise ValueError(
+                f"Final PLGAFormer {field} conflicts with active value "
+                f"{expected!r}; got {actual!r}"
+            )
 
 
 def _parse_seeds(value: str) -> list[int]:
@@ -247,7 +374,9 @@ def resolve_evidence_tier(subset_ratio: float, selection_only: bool) -> str:
     """Route validation-only pilots away from paper-facing test evidence."""
     if selection_only:
         return "convergence_pilot"
-    return "final" if float(subset_ratio) >= 1.0 else "screening"
+    if subset_ratio != 1.0:
+        raise ValueError("subset_ratio must equal 1.0 for final evidence")
+    return "final"
 
 
 def sha256_file(path: str | Path) -> str:
@@ -290,11 +419,12 @@ def build_protocol_identity(
     horizons: list[int],
     run_signature: str,
     dataset_identity: dict[str, Any] | None = None,
+    candidate_snapshot: PLGAFormerCandidateSnapshot | None = None,
 ) -> dict[str, Any]:
     """Build the exact validation-selection identity used for safe resumption."""
     dataset_identity = dataset_identity or _default_formal_dataset_identity()
     sampling_interval_s = float(dataset_identity.get("sampling_interval_s", 1.0))
-    return {
+    identity = {
         "dataset_protocol": str(dataset_identity["dataset_protocol"]),
         "dataset_sha256": str(dataset_identity.get("dataset_sha256", "")),
         "sampling_interval_s": sampling_interval_s,
@@ -327,6 +457,9 @@ def build_protocol_identity(
             else 0
         ),
     }
+    if candidate_snapshot is not None:
+        identity["candidate_file_sha256"] = candidate_snapshot.sha256
+    return identity
 
 
 def selection_record_matches(
@@ -456,6 +589,11 @@ def _flatten_metric_rows(
 
 
 def run_formal_sota_units(args: argparse.Namespace) -> dict[str, Any]:
+    validate_formal_runtime(args, load_mainline_config())
+    validate_sota_authority(args)
+    validate_candidate_model_selection(args)
+    candidate_snapshot = load_plgaformer_candidate_snapshot(args.candidate_file)
+
     from utils.console import ensure_utf8_console
 
     ensure_utf8_console()
@@ -557,7 +695,11 @@ def run_formal_sota_units(args: argparse.Namespace) -> dict[str, Any]:
         raise RuntimeError("data loading failed")
     run_signature = exp1._current_run_signature()
     protocol_identity = build_protocol_identity(
-        args, horizons, run_signature, dataset_identity
+        args,
+        horizons,
+        run_signature,
+        dataset_identity,
+        candidate_snapshot,
     )
     output_scaler_mean = torch.from_numpy(
         output_scaler.mean_.astype(np.float32)
@@ -603,7 +745,7 @@ def run_formal_sota_units(args: argparse.Namespace) -> dict[str, Any]:
                 model_config["model_type"], scaler, output_scaler
             ) or {}
             plgaformer_kwargs.update(
-                apply_plgaformer_candidate_overrides(model_config, args.candidate_file)
+                apply_plgaformer_candidate_snapshot(model_config, candidate_snapshot)
             )
             model = exp1.create_model(
                 model_config["model_type"],
@@ -611,6 +753,8 @@ def run_formal_sota_units(args: argparse.Namespace) -> dict[str, Any]:
                 device=device,
                 plgaformer_kwargs=plgaformer_kwargs,
             )
+            if model_key == "full" and not args.selection_only:
+                validate_final_plgaformer_contract(model)
             external_source_provenance = None
             model_type = str(model_config.get("model_type", "")).lower()
             if model_key == "af_ciln" or model_type in public_types:
@@ -657,9 +801,11 @@ def run_formal_sota_units(args: argparse.Namespace) -> dict[str, Any]:
                 )
                 metrics_csv = append_metric_rows(metrics_csv, rows)
             run_json = formal_dir / f"{run_id}.json"
-            record_model_config = dict(model_config)
-            if model_key == "full":
-                record_model_config.update(FINAL_MODEL_FLAGS)
+            record_model_config = (
+                _resolved_plgaformer_record_config(model, model_config)
+                if model_type == "plgaformer"
+                else dict(model_config)
+            )
             if external_source_provenance is not None:
                 if model_type in public_types:
                     record_model_config["source"] = "tslib"
@@ -688,6 +834,11 @@ def run_formal_sota_units(args: argparse.Namespace) -> dict[str, Any]:
             }
             if external_source_provenance is not None:
                 payload["external_source_provenance"] = external_source_provenance
+            if candidate_snapshot is not None and model_type == "plgaformer":
+                payload["candidate_provenance"] = {
+                    "source_path": candidate_snapshot.source_path,
+                    "sha256": candidate_snapshot.sha256,
+                }
             run_json.write_text(json.dumps(payload, indent=2, ensure_ascii=False), encoding="utf-8")
             completed.append({"run_id": run_id, "json": str(run_json), "checkpoint": str(checkpoint)})
             print(f"[formal-sota] wrote {run_json}")
@@ -700,6 +851,7 @@ def run_formal_sota_units(args: argparse.Namespace) -> dict[str, Any]:
 
 
 def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
+    defaults = formal_runtime_defaults(load_mainline_config())
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
         "--config",
@@ -737,31 +889,53 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
             "dlinear,patchtst,itransformer"
         ),
     )
-    parser.add_argument("--seeds", type=str, default="42,123,456")
+    parser.add_argument("--seeds", type=str, default=defaults["seeds"])
     parser.add_argument("--subset-ratio", type=float, default=1.0)
-    parser.add_argument("--epochs", type=int, default=50)
-    parser.add_argument("--batch-size", type=int, default=128)
-    parser.add_argument("--prediction-length", type=int, default=256)
-    parser.add_argument("--prediction-horizons", type=str, default="32,64,128,256")
-    parser.add_argument("--train-supervision-protocol", type=str, default="source_context_pred_window")
-    parser.add_argument("--eval-protocol", type=str, default="source_context_decoder")
-    parser.add_argument("--eval-ar-seed-mode", type=str, default="zero")
-    parser.add_argument("--label-len", type=int, default=128)
-    parser.add_argument("--learning-rate", type=float, default=1e-3)
-    parser.add_argument("--weight-decay", type=float, default=5e-5)
-    parser.add_argument("--warmup-epochs", type=int, default=5)
-    parser.add_argument("--patience", type=int, default=15)
-    parser.add_argument("--gradient-clip-norm", type=float, default=1.0)
+    parser.add_argument("--epochs", type=int, default=defaults["epochs"])
+    parser.add_argument("--batch-size", type=int, default=defaults["batch_size"])
+    parser.add_argument(
+        "--prediction-length", type=int, default=defaults["prediction_length"]
+    )
+    parser.add_argument(
+        "--prediction-horizons", type=str, default=defaults["prediction_horizons"]
+    )
+    parser.add_argument(
+        "--train-supervision-protocol",
+        type=str,
+        default=defaults["train_supervision_protocol"],
+    )
+    parser.add_argument(
+        "--eval-protocol", type=str, default=defaults["eval_protocol"]
+    )
+    parser.add_argument(
+        "--eval-ar-seed-mode", type=str, default=defaults["eval_ar_seed_mode"]
+    )
+    parser.add_argument("--label-len", type=int, default=defaults["label_len"])
+    parser.add_argument(
+        "--learning-rate", type=float, default=defaults["learning_rate"]
+    )
+    parser.add_argument(
+        "--weight-decay", type=float, default=defaults["weight_decay"]
+    )
+    parser.add_argument(
+        "--warmup-epochs", type=int, default=defaults["warmup_epochs"]
+    )
+    parser.add_argument("--patience", type=int, default=defaults["patience"])
+    parser.add_argument(
+        "--gradient-clip-norm", type=float, default=defaults["gradient_clip_norm"]
+    )
     parser.add_argument(
         "--workers",
         type=int,
-        default=0,
+        default=defaults["workers"],
         help=(
             "DataLoader workers. The formal tensors already reside in RAM; "
             "workers=0 avoids Windows spawn overhead and is the measured default."
         ),
     )
-    parser.add_argument("--amp", action=argparse.BooleanOptionalAction, default=False)
+    parser.add_argument(
+        "--amp", action=argparse.BooleanOptionalAction, default=defaults["amp"]
+    )
     parser.add_argument(
         "--amp-dtype",
         choices=("bfloat16", "float16"),
@@ -771,10 +945,14 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser.add_argument(
         "--cache-physics-prior",
         action=argparse.BooleanOptionalAction,
-        default=True,
+        default=defaults["cache_physics_prior"],
         help="Precompute the deterministic PLGAFormer physics prior once per split.",
     )
-    parser.add_argument("--physics-prior-cache-batch-size", type=int, default=512)
+    parser.add_argument(
+        "--physics-prior-cache-batch-size",
+        type=int,
+        default=defaults["physics_prior_cache_batch_size"],
+    )
     parser.add_argument(
         "--skip-existing",
         action="store_true",

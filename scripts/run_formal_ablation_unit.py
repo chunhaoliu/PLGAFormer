@@ -5,6 +5,7 @@
 from __future__ import annotations
 
 import argparse
+from copy import deepcopy
 import csv
 import hashlib
 import json
@@ -23,7 +24,8 @@ PROJECT_ROOT = Path(__file__).resolve().parent.parent
 if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 
-from utils.formal_evidence import FINAL_MODEL_FLAGS
+from utils.formal_runtime import formal_runtime_defaults, validate_formal_runtime
+from utils.mainline_contract import load_mainline_config
 
 
 MODEL_KEY_TO_NAME = {
@@ -89,6 +91,23 @@ def _model_key_for_name(name: str) -> str:
         if model_name == name:
             return key
     return name.lower().replace(" ", "_").replace("/", "_")
+
+
+def _resolved_ablation_record_config(
+    model: Any, requested_config: dict[str, Any]
+) -> dict[str, Any]:
+    """Persist actual values for constructor fields declared by the variant."""
+    resolved = deepcopy(requested_config)
+    if str(resolved.get("model_type", "")).lower() != "plgaformer":
+        return resolved
+    if "dropout" in resolved and hasattr(model, "dropout"):
+        resolved["dropout"] = getattr(model, "dropout")
+    innovations = resolved.get("innovations")
+    if isinstance(innovations, dict):
+        for field in tuple(innovations):
+            if hasattr(model, field):
+                innovations[field] = getattr(model, field)
+    return resolved
 
 
 def select_model_configs_by_key(
@@ -261,7 +280,7 @@ def build_ablation_protocol_identity(
 
 
 def _json_normalize(value: Any) -> Any:
-    return json.loads(json.dumps(value, sort_keys=True))
+    return json.dumps(value, sort_keys=True, separators=(",", ":"))
 
 
 def find_existing_ablation_selection(
@@ -298,6 +317,91 @@ def find_existing_ablation_selection(
             continue
         history = payload.get("history", {})
         if not history.get("epochs_completed") or history.get("best_epoch") is None:
+            continue
+        return path, payload
+    return None
+
+
+def find_existing_final_ablation(
+    formal_dir: str | Path,
+    *,
+    phase: str,
+    seed: int,
+    model_key: str,
+    protocol_identity: dict[str, Any],
+    model_config: dict[str, Any],
+    horizons: list[int],
+    formal_config_sha256: str,
+) -> tuple[Path, dict[str, Any]] | None:
+    """Find an exact complete final record; CSV rows are never authoritative."""
+    candidates = sorted(
+        Path(formal_dir).glob(
+            f"formal_{phase}_seed{int(seed)}_{model_key}_*.json"
+        ),
+        key=lambda path: path.stat().st_mtime,
+        reverse=True,
+    )
+    required_metrics = ("ade", "fde", "rmse_cart_m")
+    for path in candidates:
+        try:
+            payload = json.loads(path.read_text(encoding="utf-8"))
+        except (OSError, json.JSONDecodeError):
+            continue
+        if not isinstance(payload, dict):
+            continue
+        if (
+            type(payload.get("schema_version")) is not int
+            or payload.get("schema_version") != 2
+            or type(payload.get("formal_config_sha256")) is not str
+            or payload.get("formal_config_sha256") != formal_config_sha256
+            or type(payload.get("run_id")) is not str
+            or not payload.get("run_id")
+            or payload.get("evidence_tier") != "final"
+            or payload.get("test_evaluation_performed") is not True
+            or payload.get("phase") != phase
+            or type(payload.get("seed")) is not int
+            or payload.get("seed") != seed
+            or payload.get("model_key") != model_key
+            or _json_normalize(payload.get("protocol_identity"))
+            != _json_normalize(protocol_identity)
+            or _json_normalize(payload.get("model_config", {}))
+            != _json_normalize(model_config)
+            or payload.get("horizons") != horizons
+        ):
+            continue
+        eval_results = payload.get("eval_results")
+        if not isinstance(eval_results, dict):
+            continue
+        complete = True
+        for horizon in horizons:
+            metrics = eval_results.get(
+                str(horizon), eval_results.get(int(horizon))
+            )
+            if not isinstance(metrics, dict) or any(
+                not _is_scalar_metric(metrics.get(metric))
+                for metric in required_metrics
+            ):
+                complete = False
+                break
+        if not complete:
+            continue
+        checkpoint = Path(str(payload.get("checkpoint", "")))
+        recorded_hash = payload.get("checkpoint_sha256")
+        if (
+            not checkpoint.is_file()
+            or not isinstance(recorded_hash, str)
+            or not recorded_hash
+            or recorded_hash.lower() != sha256_file(checkpoint).lower()
+        ):
+            continue
+        history = payload.get("history")
+        if (
+            not isinstance(history, dict)
+            or type(history.get("epochs_completed")) is not int
+            or history["epochs_completed"] <= 0
+            or type(history.get("best_epoch")) is not int
+            or not 1 <= history["best_epoch"] <= history["epochs_completed"]
+        ):
             continue
         return path, payload
     return None
@@ -355,6 +459,25 @@ def _exp1_control_name(phase: str, model_key: str) -> str | None:
     }:
         return "Transformer (baseline)"
     return None
+
+
+def _requires_ablation_training(
+    phase: str,
+    seeds: list[int],
+    model_configs: dict[str, dict[str, Any]],
+    reusable_units: set[tuple[str, int, str]],
+    *,
+    reuse_exp1_controls: bool = False,
+) -> bool:
+    return any(
+        (phase, int(seed), _model_key_for_name(model_name)) not in reusable_units
+        and not (
+            reuse_exp1_controls
+            and _exp1_control_name(phase, _model_key_for_name(model_name)) is not None
+        )
+        for seed in seeds
+        for model_name in model_configs
+    )
 
 
 def _parse_seeds(value: str) -> list[int]:
@@ -471,6 +594,8 @@ def _flatten_metric_rows(
 
 
 def run_formal_ablation_units(args: argparse.Namespace) -> dict[str, Any]:
+    validate_formal_runtime(args, load_mainline_config())
+
     from utils.console import ensure_utf8_console
 
     ensure_utf8_console()
@@ -549,11 +674,26 @@ def run_formal_ablation_units(args: argparse.Namespace) -> dict[str, Any]:
     protocol_identity = build_ablation_protocol_identity(
         args, horizons, dataset_identity
     )
-    already_completed = (
-        completed_units(metrics_csv, args)
-        if args.skip_existing and not args.selection_only
-        else set()
-    )
+    reusable_final: dict[
+        tuple[str, int, str], tuple[Path, dict[str, Any]]
+    ] = {}
+    if args.skip_existing and not args.selection_only:
+        for seed in seeds:
+            for model_name, model_config in model_configs.items():
+                model_key = _model_key_for_name(model_name)
+                existing = find_existing_final_ablation(
+                    formal_dir,
+                    phase=args.phase,
+                    seed=int(seed),
+                    model_key=model_key,
+                    protocol_identity=protocol_identity,
+                    model_config=model_config,
+                    horizons=horizons,
+                    formal_config_sha256=formal_config.config_sha256,
+                )
+                if existing is not None:
+                    reusable_final[(args.phase, int(seed), model_key)] = existing
+    reusable_units = set(reusable_final)
     exp1_signature = ""
     exp1_controls: dict[tuple[int, str], dict[str, Any]] = {}
     if args.selection_only and args.reuse_exp1_controls:
@@ -574,11 +714,12 @@ def run_formal_ablation_units(args: argparse.Namespace) -> dict[str, Any]:
     scaler_mean = scaler_scale = None
     source_scaler_mean = source_scaler_scale = None
     output_scaler_mean = output_scaler_scale = None
-    requires_training = any(
-        (args.phase, int(seed), _model_key_for_name(model_name)) not in already_completed
-        and _exp1_control_name(args.phase, _model_key_for_name(model_name)) is None
-        for seed in seeds
-        for model_name in model_configs
+    requires_training = _requires_ablation_training(
+        args.phase,
+        seeds,
+        model_configs,
+        reusable_units,
+        reuse_exp1_controls=bool(args.reuse_exp1_controls),
     )
     if requires_training:
         exp2.set_random_seed(seeds[0])
@@ -631,10 +772,19 @@ def run_formal_ablation_units(args: argparse.Namespace) -> dict[str, Any]:
                         f"{existing_path}"
                     )
                     continue
-            if unit_key in already_completed:
+            if unit_key in reusable_final:
+                existing_path, existing_payload = reusable_final[unit_key]
+                completed.append(
+                    {
+                        "run_id": existing_payload["run_id"],
+                        "json": str(existing_path),
+                        "checkpoint": str(existing_payload["checkpoint"]),
+                        "reused": True,
+                    }
+                )
                 print(
-                    "[formal-ablation] skipping completed unit "
-                    f"phase={args.phase} seed={seed} model={model_key}"
+                    "[formal-ablation] reuse exact final record "
+                    f"{existing_path}"
                 )
                 continue
             timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
@@ -711,7 +861,6 @@ def run_formal_ablation_units(args: argparse.Namespace) -> dict[str, Any]:
                         "checkpoint": str(checkpoint),
                     }
                 )
-                already_completed.add(unit_key)
                 print(f"[formal-ablation] reused signed Exp1 control -> {run_json}")
                 continue
 
@@ -782,10 +931,9 @@ def run_formal_ablation_units(args: argparse.Namespace) -> dict[str, Any]:
                 )
                 metrics_csv = append_metric_rows(metrics_csv, rows)
             run_json = formal_dir / f"{run_id}.json"
-            record_model_key = _model_key_for_name(model_name)
-            record_model_config = dict(model_config)
-            if record_model_key in {"full", "proposed"}:
-                record_model_config.update(FINAL_MODEL_FLAGS)
+            record_model_config = _resolved_ablation_record_config(
+                model, model_config
+            )
             payload = {
                 "schema_version": 2,
                 "formal_config_sha256": formal_config.config_sha256,
@@ -812,7 +960,6 @@ def run_formal_ablation_units(args: argparse.Namespace) -> dict[str, Any]:
             }
             run_json.write_text(json.dumps(payload, indent=2, ensure_ascii=False), encoding="utf-8")
             completed.append({"run_id": run_id, "json": str(run_json), "checkpoint": str(checkpoint)})
-            already_completed.add(unit_key)
             print(f"[formal-ablation] wrote {run_json}")
     return {
         "metrics_csv": str(metrics_csv),
@@ -823,6 +970,7 @@ def run_formal_ablation_units(args: argparse.Namespace) -> dict[str, Any]:
 
 
 def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
+    defaults = formal_runtime_defaults(load_mainline_config())
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
         "--config",
@@ -843,23 +991,45 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--output-dir", type=str, default=None)
     parser.add_argument("--checkpoint-dir", type=str, default=None)
     parser.add_argument("--models", type=str, default="all")
-    parser.add_argument("--seeds", type=str, default="42,123,456")
+    parser.add_argument("--seeds", type=str, default=defaults["seeds"])
     parser.add_argument("--subset-ratio", type=float, default=1.0)
-    parser.add_argument("--epochs", type=int, default=50)
-    parser.add_argument("--batch-size", type=int, default=128)
-    parser.add_argument("--prediction-length", type=int, default=256)
-    parser.add_argument("--prediction-horizons", type=str, default="32,64,128,256")
-    parser.add_argument("--train-supervision-protocol", type=str, default="source_context_pred_window")
-    parser.add_argument("--eval-protocol", type=str, default="source_context_decoder")
-    parser.add_argument("--eval-ar-seed-mode", type=str, default="zero")
-    parser.add_argument("--label-len", type=int, default=128)
-    parser.add_argument("--learning-rate", type=float, default=1e-3)
-    parser.add_argument("--weight-decay", type=float, default=5e-5)
-    parser.add_argument("--warmup-epochs", type=int, default=5)
-    parser.add_argument("--patience", type=int, default=15)
-    parser.add_argument("--gradient-clip-norm", type=float, default=1.0)
-    parser.add_argument("--workers", type=int, default=0)
-    parser.add_argument("--amp", action=argparse.BooleanOptionalAction, default=False)
+    parser.add_argument("--epochs", type=int, default=defaults["epochs"])
+    parser.add_argument("--batch-size", type=int, default=defaults["batch_size"])
+    parser.add_argument(
+        "--prediction-length", type=int, default=defaults["prediction_length"]
+    )
+    parser.add_argument(
+        "--prediction-horizons", type=str, default=defaults["prediction_horizons"]
+    )
+    parser.add_argument(
+        "--train-supervision-protocol",
+        type=str,
+        default=defaults["train_supervision_protocol"],
+    )
+    parser.add_argument(
+        "--eval-protocol", type=str, default=defaults["eval_protocol"]
+    )
+    parser.add_argument(
+        "--eval-ar-seed-mode", type=str, default=defaults["eval_ar_seed_mode"]
+    )
+    parser.add_argument("--label-len", type=int, default=defaults["label_len"])
+    parser.add_argument(
+        "--learning-rate", type=float, default=defaults["learning_rate"]
+    )
+    parser.add_argument(
+        "--weight-decay", type=float, default=defaults["weight_decay"]
+    )
+    parser.add_argument(
+        "--warmup-epochs", type=int, default=defaults["warmup_epochs"]
+    )
+    parser.add_argument("--patience", type=int, default=defaults["patience"])
+    parser.add_argument(
+        "--gradient-clip-norm", type=float, default=defaults["gradient_clip_norm"]
+    )
+    parser.add_argument("--workers", type=int, default=defaults["workers"])
+    parser.add_argument(
+        "--amp", action=argparse.BooleanOptionalAction, default=defaults["amp"]
+    )
     parser.add_argument(
         "--amp-dtype",
         choices=("bfloat16", "float16"),
@@ -869,10 +1039,14 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser.add_argument(
         "--cache-physics-prior",
         action=argparse.BooleanOptionalAction,
-        default=True,
+        default=defaults["cache_physics_prior"],
         help="Precompute the deterministic PLGAFormer physics prior once per split.",
     )
-    parser.add_argument("--physics-prior-cache-batch-size", type=int, default=512)
+    parser.add_argument(
+        "--physics-prior-cache-batch-size",
+        type=int,
+        default=defaults["physics_prior_cache_batch_size"],
+    )
     parser.add_argument(
         "--selection-only",
         action=argparse.BooleanOptionalAction,

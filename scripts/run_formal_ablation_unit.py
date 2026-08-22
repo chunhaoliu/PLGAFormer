@@ -424,7 +424,7 @@ def completed_units(path: Path, args: argparse.Namespace) -> set[tuple[str, int,
         grouped.setdefault(key, set()).add(
             (str(row.get("horizon", "")), str(row.get("metric", "")))
         )
-    from scripts.run_best_candidate_ablation import parse_prediction_horizons
+    from utils.formal_runtime import parse_prediction_horizons
 
     requested_horizons = parse_prediction_horizons(
         args.prediction_horizons,
@@ -491,7 +491,7 @@ def _configure_exp2(
     candidate: dict[str, Any],
     dataset_identity: dict[str, Any] | None = None,
 ) -> list[int]:
-    from scripts.run_best_candidate_ablation import parse_prediction_horizons
+    from utils.formal_runtime import parse_prediction_horizons
 
     horizons = parse_prediction_horizons(args.prediction_horizons, fallback=int(args.prediction_length))
     seeds = _parse_seeds(args.seeds)

@@ -3,7 +3,11 @@ from copy import deepcopy
 
 import pytest
 
-from utils.formal_runtime import formal_runtime_defaults, validate_formal_runtime
+from utils.formal_runtime import (
+    formal_runtime_defaults,
+    parse_prediction_horizons,
+    validate_formal_runtime,
+)
 from utils.mainline_contract import ACTIVE_CONFIG_PATH, load_mainline_config
 
 
@@ -29,6 +33,16 @@ def test_runtime_defaults_match_the_frozen_contract():
     assert defaults["prediction_horizons"] == "32,64,128,256"
     assert defaults["label_len"] == 128
     assert defaults["amp"] is False
+
+
+def test_prediction_horizons_are_sorted_unique_and_positive():
+    assert parse_prediction_horizons("128,32,64,64") == [32, 64, 128]
+    assert parse_prediction_horizons("", fallback=96) == [96]
+
+
+def test_prediction_horizons_reject_non_positive_values():
+    with pytest.raises(ValueError, match="positive"):
+        parse_prediction_horizons("32,0,64")
 
 
 def test_runtime_accepts_non_empty_seed_subset():

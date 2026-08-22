@@ -8,4 +8,6 @@ This directory contains the paper's single frozen-model generalization and robus
 - Inputs: an eligible Main evidence bundle and frozen checkpoints; the evaluator does not retrain models
 - Existing result roots, checkpoint identities, and artifact metadata remain unchanged during this source migration.
 
-The older `experiments/exp3_robustness/` implementation is retained only as a historical diagnostic boundary. It is not an additional paper study.
+The older `exp3_robustness` implementation is archived outside the repository
+as historical material. It is not an additional paper study or an active
+entrypoint.

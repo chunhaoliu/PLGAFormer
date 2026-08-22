@@ -244,18 +244,6 @@ def test_run_py_rejects_retired_public_routes(retired_args):
     assert result.returncode == 2
 
 
-def test_retired_batch_helpers_are_fail_fast_archival_shims():
-    for relative_path in (
-        "scripts/run_all_experiments.py",
-        "scripts/run_all_enhancements.py",
-    ):
-        source = (PROJECT_ROOT / relative_path).read_text(encoding="utf-8")
-        assert "run_pipeline" not in source
-        assert "--task" not in source
-        assert "archival" in source.lower()
-        assert "python run.py formal --help" in source
-
-
 def test_agent_instructions_teach_the_exact_public_command_surface():
     instructions = (PROJECT_ROOT / "AGENTS.md").read_text(encoding="utf-8")
     for command in (

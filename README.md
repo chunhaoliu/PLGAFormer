@@ -93,10 +93,10 @@ checkpoints, logs, candidate artifacts, and detailed histories are separate
 reproducibility material and are not manuscript claims by themselves.
 Historical material is preserved reversibly under
 `D:\Research\HGV_Code\Archive\HGVTP_PLGAformer-main`.
-The retained `scripts/run_all_experiments.py` and
-`scripts/run_all_enhancements.py` files are fail-fast archival shims; they
-perform no experiments or artifact generation and point users to the formal
-entrypoint.
+Inactive numbered launchers, candidate-search sources, predecessor model
+integrations, and their tests are removed from the active tree after being
+copied to the external archive with hash manifests. They are not public
+entrypoints; use the formal command surface above.
 
 See [docs/ACTIVE_MAINLINE.md](docs/ACTIVE_MAINLINE.md) for the complete active
 contract and [PublicRelease/README.md](PublicRelease/README.md) for release

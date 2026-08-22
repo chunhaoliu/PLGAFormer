@@ -169,8 +169,8 @@ candidates.
 Legacy numbered experiments, inactive model integrations, predecessor datasets,
 candidate searches, and temporary protocol views may remain temporarily while
 their dependencies are audited. Their presence does not make them active.
-The retained `run_all_experiments.py` and `run_all_enhancements.py` paths
-are fail-fast archival shims that execute no experiments or artifact
-generation.
-Archival movement is a later, separate, hash-attested task; this command-surface
-task does not move or delete them.
+The inactive tracked sources and tests named in the consolidation plan are
+archived outside the repository under
+`D:\Research\HGV_Code\Archive\HGVTP_PLGAformer-main\tracked_source` with a
+hash manifest. They are not public entrypoints and must not be reintroduced as
+parallel experiment routes.

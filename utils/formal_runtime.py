@@ -18,6 +18,22 @@ from utils.mainline_contract import ACTIVE_CONFIG_PATH, PROJECT_ROOT
 # empty tokens, duplicates, malformed integers, and non-contract seeds fail.
 
 
+def parse_prediction_horizons(value: str, fallback: int = 64) -> list[int]:
+    """Parse a comma-separated horizon list into sorted unique positive ints."""
+    horizons = []
+    for item in str(value or "").split(","):
+        item = item.strip()
+        if not item:
+            continue
+        horizon = int(item)
+        if horizon <= 0:
+            raise ValueError(f"Prediction horizon must be positive: {horizon}")
+        horizons.append(horizon)
+    if not horizons:
+        horizons = [int(fallback)]
+    return sorted(set(horizons))
+
+
 def _require_exact_type(
     section: dict[str, Any], field: str, expected_type: type
 ) -> Any:

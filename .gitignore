@@ -61,6 +61,7 @@ experiments/taes_submission_artifacts/generated/
 # Logs and temporary workspaces
 *.log
 tmp/
+tmp/mainline_inventory/
 temp/
 .tmp*/
 *.tmp

@@ -1,43 +1,43 @@
-model,maneuver,horizon_s,metric,mean_m,sample_std_m,seed_count
-Transformer (baseline),longitudinal,256,ade,14642.726411476295,1676.3664167274846,3
-Transformer (baseline),longitudinal,256,fde,26398.930607603266,1952.4975178853208,3
-Transformer (baseline),turning,256,ade,16622.280270209445,1788.2960644819962,3
-Transformer (baseline),turning,256,fde,33205.025541411334,1882.762222615145,3
-Transformer (baseline),weaving,256,ade,17870.210721080857,1050.4446004411125,3
-Transformer (baseline),weaving,256,fde,37575.85934647926,1532.6848836244674,3
-PLGAFormer (proposed),longitudinal,256,ade,3170.879084201719,238.98300517484483,3
-PLGAFormer (proposed),longitudinal,256,fde,8811.900173919787,1232.30833556769,3
-PLGAFormer (proposed),turning,256,ade,5308.459360980782,228.34316119566452,3
-PLGAFormer (proposed),turning,256,fde,16017.85360878548,1082.979508110012,3
-PLGAFormer (proposed),weaving,256,ade,5968.366605608863,339.6354245669672,3
-PLGAFormer (proposed),weaving,256,fde,18218.86258138349,1468.8303059321515,3
-Spherical kinematics,longitudinal,256,ade,20128.92856153034,0.0,1
-Spherical kinematics,longitudinal,256,fde,58560.29011195172,0.0,1
-Spherical kinematics,turning,256,ade,22958.238501201053,0.0,1
-Spherical kinematics,turning,256,fde,66167.78354532672,0.0,1
-Spherical kinematics,weaving,256,ade,22072.98347968951,0.0,1
-Spherical kinematics,weaving,256,fde,63364.105568955434,0.0,1
-Rotating-Earth 3-DOF,longitudinal,256,ade,1171.2087200052176,0.0,1
-Rotating-Earth 3-DOF,longitudinal,256,fde,3002.7567775655716,0.0,1
-Rotating-Earth 3-DOF,turning,256,ade,3674.9309534370027,0.0,1
-Rotating-Earth 3-DOF,turning,256,fde,12693.630410715592,0.0,1
-Rotating-Earth 3-DOF,weaving,256,ade,7893.183229195264,0.0,1
-Rotating-Earth 3-DOF,weaving,256,fde,27655.983463620556,0.0,1
-DLinear,longitudinal,256,ade,22514.41036766424,44.567386906832134,3
-DLinear,longitudinal,256,fde,56155.76314003483,235.74878826012943,3
-DLinear,turning,256,ade,29155.32408949187,39.56945790812912,3
-DLinear,turning,256,fde,72143.46349758167,290.7155410265856,3
-DLinear,weaving,256,ade,25235.500901562817,32.676162807568154,3
-DLinear,weaving,256,fde,63199.091248357996,267.23299384110163,3
-PatchTST,longitudinal,256,ade,96027.61074054694,6809.442704387504,3
-PatchTST,longitudinal,256,fde,145813.56092852753,3923.317480934481,3
-PatchTST,turning,256,ade,95304.18842603314,6256.793705690408,3
-PatchTST,turning,256,fde,145400.46510473822,4378.433255416874,3
-PatchTST,weaving,256,ade,97677.08376893059,6544.0357748779215,3
-PatchTST,weaving,256,fde,151538.88432603306,3697.7427447693763,3
-iTransformer,longitudinal,256,ade,3839.3067600315558,226.8814971337132,3
-iTransformer,longitudinal,256,fde,7817.058503093536,268.25846110370935,3
-iTransformer,turning,256,ade,7710.632731277572,108.08339374609952,3
-iTransformer,turning,256,fde,20290.89119972894,155.13940778068223,3
-iTransformer,weaving,256,ade,9626.980507547769,140.09463152497165,3
-iTransformer,weaving,256,fde,26073.69247173986,300.4753477267927,3
+"model","maneuver","horizon_s","metric","mean_m","sample_std_m","seed_count"
+"Transformer (baseline)","longitudinal","256","ade","14642.726411476295","1676.3664167274846","3"
+"Transformer (baseline)","longitudinal","256","fde","26398.930607603266","1952.4975178853208","3"
+"Transformer (baseline)","turning","256","ade","16622.280270209445","1788.2960644819962","3"
+"Transformer (baseline)","turning","256","fde","33205.025541411334","1882.762222615145","3"
+"Transformer (baseline)","weaving","256","ade","17870.210721080857","1050.4446004411125","3"
+"Transformer (baseline)","weaving","256","fde","37575.85934647926","1532.6848836244674","3"
+"PLGAFormer (proposed)","longitudinal","256","ade","2164.6053302035716","167.95866190606947","3"
+"PLGAFormer (proposed)","longitudinal","256","fde","7003.95321654461","979.9844955902449","3"
+"PLGAFormer (proposed)","turning","256","ade","4098.493313118483","134.19705056892585","3"
+"PLGAFormer (proposed)","turning","256","fde","13599.892295966021","775.9393405072931","3"
+"PLGAFormer (proposed)","weaving","256","ade","6042.377239655546","293.35162704822255","3"
+"PLGAFormer (proposed)","weaving","256","fde","19299.758989504644","1342.500824507414","3"
+"Spherical kinematics","longitudinal","256","ade","20128.92856153034","0","1"
+"Spherical kinematics","longitudinal","256","fde","58560.29011195172","0","1"
+"Spherical kinematics","turning","256","ade","22958.238501201053","0","1"
+"Spherical kinematics","turning","256","fde","66167.78354532672","0","1"
+"Spherical kinematics","weaving","256","ade","22072.98347968951","0","1"
+"Spherical kinematics","weaving","256","fde","63364.105568955434","0","1"
+"Rotating-Earth 3-DOF","longitudinal","256","ade","1171.2087200052176","0","1"
+"Rotating-Earth 3-DOF","longitudinal","256","fde","3002.7567775655716","0","1"
+"Rotating-Earth 3-DOF","turning","256","ade","3674.9309534370027","0","1"
+"Rotating-Earth 3-DOF","turning","256","fde","12693.630410715592","0","1"
+"Rotating-Earth 3-DOF","weaving","256","ade","7893.183229195264","0","1"
+"Rotating-Earth 3-DOF","weaving","256","fde","27655.983463620556","0","1"
+"DLinear","longitudinal","256","ade","22514.41036766424","44.567386906832134","3"
+"DLinear","longitudinal","256","fde","56155.76314003483","235.74878826012943","3"
+"DLinear","turning","256","ade","29155.32408949187","39.56945790812912","3"
+"DLinear","turning","256","fde","72143.46349758167","290.7155410265856","3"
+"DLinear","weaving","256","ade","25235.500901562817","32.676162807568154","3"
+"DLinear","weaving","256","fde","63199.091248357996","267.23299384110163","3"
+"PatchTST","longitudinal","256","ade","96027.61074054694","6809.442704387504","3"
+"PatchTST","longitudinal","256","fde","145813.56092852753","3923.317480934481","3"
+"PatchTST","turning","256","ade","95304.18842603314","6256.793705690408","3"
+"PatchTST","turning","256","fde","145400.46510473822","4378.433255416874","3"
+"PatchTST","weaving","256","ade","97677.08376893059","6544.0357748779215","3"
+"PatchTST","weaving","256","fde","151538.88432603306","3697.7427447693763","3"
+"iTransformer","longitudinal","256","ade","3839.3067600315558","226.8814971337132","3"
+"iTransformer","longitudinal","256","fde","7817.058503093536","268.25846110370935","3"
+"iTransformer","turning","256","ade","7710.632731277572","108.08339374609952","3"
+"iTransformer","turning","256","fde","20290.89119972894","155.13940778068223","3"
+"iTransformer","weaving","256","ade","9626.980507547769","140.09463152497165","3"
+"iTransformer","weaving","256","fde","26073.69247173986","300.4753477267927","3"

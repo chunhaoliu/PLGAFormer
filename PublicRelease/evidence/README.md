@@ -13,15 +13,15 @@ Files:
 
 - `main_results.csv`: multi-horizon ADE, FDE, and Cartesian RMSE.
 - `maneuver_results_256s.csv`: longitudinal, turning, and weaving results.
-- `strongest_comparator.csv`: paired PLGAFormer comparisons with Holm control.
+- `strongest_comparator.csv`: internal analytical-comparator audit; it is not the paper-facing learning-baseline ranking.
 - `ablation_256s.csv`: matched mechanism controls at 256 s.
 - `capacity_control_256s.csv`: three-seed learned-only PLGAFormer backbone control.
-- `adaptive_gate_paired.csv`: full versus fixed-schedule paired evidence.
+- `adaptive_gate_paired.csv`: retained diagnostic paired analysis from the earlier policy record; it is not used for the promoted paper numbers.
 - `robustness.csv`: nominal and frozen dynamics-shift results.
-- `efficiency.csv`: parameters, FLOPs, memory, latency, and throughput.
+- `efficiency.csv`: retained computational diagnostic; efficiency is not a current manuscript experiment.
 - `evidence_manifest.json`: protocol, bundle identities, and file hashes.
 
-Regenerate this snapshot only in a complete local experiment workspace:
+The checked-in snapshot is bound to the promoted Main/Ablation/robustness artifacts. Before regenerating it in a complete local workspace, verify that the discovered bundle IDs and policy match `evidence_manifest.json`:
 
 ```bash
 python scripts/generate_release_evidence.py

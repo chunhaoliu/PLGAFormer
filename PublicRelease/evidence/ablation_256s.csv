@@ -1,9 +1,9 @@
-configuration,horizon_s,metric,mean_m,sample_std_m,seed_count
-Spherical prior + adaptive fusion,256,ade,6202.282332412132,223.19147045687785,3
-Spherical prior + adaptive fusion,256,fde,17406.44559004157,612.7633655678881,3
-Rotating-Earth prior + fixed schedule,256,ade,4942.521245807351,46.82327034416978,3
-Rotating-Earth prior + fixed schedule,256,fde,14746.315133101853,209.6945259703031,3
-Transformer,256,ade,16378.405800922197,1501.800399940411,3
-Transformer,256,fde,32393.271831831284,1695.939528493068,3
-PLGAFormer,256,ade,4815.9016835971215,267.2282558637951,3
-PLGAFormer,256,fde,14349.538788029584,1259.1627472295866,3
+"configuration","horizon_s","metric","mean_m","sample_std_m","seed_count"
+"Spherical prior + adaptive fusion","256","ade","8782.433422205688","87.5736606616482","3"
+"Spherical prior + adaptive fusion","256","fde","19715.448504818592","206.39404496780753","3"
+"Rotating-Earth prior + fixed schedule","256","ade","4298.839810016888","48.3097997020348","3"
+"Rotating-Earth prior + fixed schedule","256","fde","13657.687255527211","202.98773165331806","3"
+"Transformer","256","ade","16378.405800922197","1501.800399940411","3"
+"Transformer","256","fde","32393.271831831284","1695.939528493068","3"
+"PLGAFormer","256","ade","4101.825294325867","195.66581590599617","3"
+"PLGAFormer","256","fde","13301.201500671757","1031.993946718773","3"

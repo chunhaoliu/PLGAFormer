@@ -4,6 +4,23 @@
 
 Maintain one paper and code mainline for simulation-based long-horizon hypersonic glide vehicle trajectory prediction. The method combines a Transformer proposal with an online-identified rotating-Earth three-degree-of-freedom proposal through bounded adaptive fusion.
 
+## Current Editorial Pass (2026-08-23)
+
+Synchronize the active IEEE TAES manuscript with the promoted paper-facing PLGAFormer result while preserving the frozen scientific contract. The edit is limited to reproducibility wording, claim boundaries, and manuscript-facing evidence records; it must not retrain models, regenerate data, change reported values, or alter the formal configuration.
+
+Planned changes:
+
+- expose the inference-only policy and its no-parameter-update boundary in the abstract and formal protocol table;
+- state explicitly that the performance claim is restricted to the listed public learning-based baselines;
+- refresh the path-free public evidence snapshot and evidence map to the promoted Main/Ablation/robustness artifacts; historical efficiency and paired-gate files remain separate from manuscript claims;
+- compile and audit the revised PDF and record the new manuscript hashes in a separate editorial-sync manifest.
+
+Validation:
+
+- verify the formal status remains passing and the promoted Main/Ablation bundles remain unchanged;
+- check that all main, ablation, and robustness numbers remain identical to the promoted evidence tables;
+- compile the manuscript and inspect the log for errors, undefined references, and overfull boxes.
+
 ## Frozen Scientific Contract
 
 - Dataset protocol: `hgv_multiregime_state_v2_1`.

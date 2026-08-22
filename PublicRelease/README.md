@@ -44,4 +44,4 @@ python scripts/generate_release_evidence.py
 
 ## Public Evidence
 
-`PublicRelease/evidence/evidence_manifest.json` binds the compact tables to the frozen dataset, formal configuration, Main bundle, Ablation bundle, complete paper bundle, and adaptive-gate paired analysis. The CSV files omit local paths and trajectory-level arrays while retaining the reported means, sample standard deviations, paired comparisons, robustness results, and efficiency measurements.
+`PublicRelease/evidence/evidence_manifest.json` binds the compact tables to the frozen dataset, formal configuration, Main bundle, Ablation bundle, complete paper bundle, and retained diagnostic analyses. The CSV files omit local paths and trajectory-level arrays while retaining the reported means, sample standard deviations, mechanism controls, and dynamics-shift results. The adaptive-gate paired analysis and computational-cost measurements are retained for traceability only and are not current manuscript claims.

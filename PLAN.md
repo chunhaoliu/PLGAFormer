@@ -21,6 +21,24 @@ Validation:
 - check that all main, ablation, and robustness numbers remain identical to the promoted evidence tables;
 - compile the manuscript and inspect the log for errors, undefined references, and overfull boxes.
 
+## Submission Readiness Pass (2026-08-23)
+
+Audit the active IEEE TAES manuscript for structural submission readiness after the paper-facing evidence synchronization. Reuse only figures that describe the current PLGAFormer and generate any quantitative figure from the current path-free evidence tables. Do not reuse historical comparison plots or add unsupported experiments.
+
+Completed:
+
+- verified that the prior manuscript inserted no scientific figures and screened the existing figure directory for current-model provenance;
+- inserted the verified PLGAFormer architecture figure and linked it from the method section;
+- generated the current multi-horizon learning-based performance figure with Python from `PublicRelease/evidence/main_results.csv`, retaining 60 trainable rows and excluding 24 analytical-model rows from the ranking plot;
+- compiled the final nine-page manuscript with zero overfull boxes, undefined references, or LaTeX errors;
+- recorded the updated method, figure, PDF, and figure-QA hashes in the editorial-sync manifest.
+
+Validation completed:
+
+- Python backend selected and source preflight passed with 20 checks and no warnings or failures;
+- performance figure uses three-seed mean plus sample standard deviation and makes no statistical-significance claim;
+- final PDF font audit found no text below 5.0 pt in the generated performance figure, and all 11 manifest file hashes match their current files.
+
 ## Frozen Scientific Contract
 
 - Dataset protocol: `hgv_multiregime_state_v2_1`.

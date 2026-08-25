@@ -39,6 +39,23 @@ Validation completed:
 - performance figure uses three-seed mean plus sample standard deviation and makes no statistical-significance claim;
 - final PDF font audit found no text below 5.0 pt in the generated performance figure, and all 11 manifest file hashes match their current files.
 
+## Figure Evidence Pass (2026-08-25)
+
+Add manuscript figures one at a time after a reference-paper and evidence-gap review. The first approved addition is a six-panel motion-regime figure generated from the frozen `hgv_multiregime_state_v2_1` dataset.
+
+Figure contract:
+
+- claim: the formal dataset covers distinct quasi-equilibrium and skip-glide behavior across longitudinal, turning, and weaving motion;
+- evidence: one deterministic representative from each of the six joint strata, selected without using prediction error;
+- layout: six independent Python-rendered panels assembled by LaTeX in a 2-by-3 double-column figure;
+- integrity: verify the frozen dataset hash, record representative trajectory IDs, preserve all 1,000 samples of each selected trajectory, and export a path-free QA manifest;
+- boundary: this is dataset/task evidence only and does not claim prediction superiority.
+
+Validation:
+
+- run strict Python source preflight and PDF text-size audits for every panel;
+- compile and render the active IEEE TAES manuscript;
+- require zero LaTeX errors, undefined references, and overfull boxes before completion.
 ## Frozen Scientific Contract
 
 - Dataset protocol: `hgv_multiregime_state_v2_1`.

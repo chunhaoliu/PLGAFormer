@@ -56,6 +56,26 @@ Validation:
 - run strict Python source preflight and PDF text-size audits for every panel;
 - compile and render the active IEEE TAES manuscript;
 - require zero LaTeX errors, undefined references, and overfull boxes before completion.
+## Single-Mainline Cleanup (2026-08-28)
+
+Treat the current `main` branch as the only authoritative paper and experiment mainline. Clean the working repository without changing the frozen data protocol, trained-model contents, formal result values, or manuscript claims.
+
+Scope:
+
+- create a recoverable Git tag at the current clean `main` commit;
+- derive an active-artifact whitelist from the paper-eligible Main and Ablation manifests;
+- retain the frozen dataset, protocol scalers, final result records, and every checkpoint referenced by the active manifests;
+- move inactive checkpoints, pre-promotion results, learned-only capacity-control artifacts, historical data products, and generated legacy figures into one dated archive directory;
+- delete only reproducible caches and confirmed temporary files after their exact paths are validated;
+- preserve the divergent `mainline-unification` worktree until its useful cleanup changes have been reviewed; do not merge or delete it during the artifact pass.
+
+Integrity gates:
+
+- record original path, archived path, byte size, and SHA-256 for every moved file;
+- verify all archived files after the move and require no missing active artifacts;
+- rerun `formal status --json` and `formal audit --json` after cleanup;
+- require Main and Ablation to remain paper-eligible and the dataset/config hashes to remain unchanged;
+- run the focused formal-evidence and pipeline tests before committing the cleanup tooling and documentation.
 ## Frozen Scientific Contract
 
 - Dataset protocol: `hgv_multiregime_state_v2_1`.

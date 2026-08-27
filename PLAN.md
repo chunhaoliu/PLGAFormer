@@ -76,6 +76,16 @@ Integrity gates:
 - rerun `formal status --json` and `formal audit --json` after cleanup;
 - require Main and Ablation to remain paper-eligible and the dataset/config hashes to remain unchanged;
 - run the focused formal-evidence and pipeline tests before committing the cleanup tooling and documentation.
+
+Completed validation:
+
+- safety tag: `before-mainline-cleanup-20260828` at `c2f7e11`;
+- archive: 215 files (510.84 MiB) under `D:\Research\HGV_Code\Archive\HGVTP_mainline_20260828`, with zero archive hash failures and zero source remnants;
+- active evidence: 23 manifest-referenced checkpoints present with matching SHA-256 values;
+- formal evidence: overall paper eligibility retained, with 17 Main records and 6 Ablation records;
+- frozen hashes retained: config `967310425a89d5a0acdb098c77939647aa22548335719846cdf274a8dcf04165` and dataset `526d50d05b14ed17f9093249cbb5a382f526468e36723457c08c790d449112e7`;
+- focused validation: 38 tests passed and 3 were skipped by design.
+
 ## Frozen Scientific Contract
 
 - Dataset protocol: `hgv_multiregime_state_v2_1`.

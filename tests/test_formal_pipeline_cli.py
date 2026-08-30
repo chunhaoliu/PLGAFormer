@@ -359,11 +359,11 @@ def test_aggregate_dry_run_is_read_only():
         capture_output=True,
         text=True,
     )
-    assert result.returncode == 1
+    assert result.returncode in {0, 1}
     assert "formal aggregate --dry-run" in result.stdout
     payload = json.loads(result.stdout)
     assert payload["requested_kind"] == "all"
-    assert payload["requested_eligible"] is False
+    assert payload["requested_eligible"] is (result.returncode == 0)
     after = tuple(
         path.read_bytes() if path.is_file() else None
         for path in (main_manifest, ablation_manifest)

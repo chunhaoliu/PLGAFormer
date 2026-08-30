@@ -154,7 +154,7 @@ Acceptance criteria:
 Completed validation:
 
 - removed 9.813 GiB in the manifest-protected first batch and 872.51 MiB from the remaining Archive;
-- retained a verified 18.14 MB Git bundle, a source patch, a 120-file source snapshot, and a 14.30 MiB legacy-materials capsule under `Recovery_Manifests`;
+- retained a verified 18.14 MB Git bundle, a source patch, and a 120-file source snapshot under `Recovery_Manifests`; transferred the verified 14.30 MiB legacy-materials capsule to the OneDrive materials `Backup` and removed its Research copy;
 - reduced `D:\Research\HGV_Code` to the current main checkout and recovery manifests only;
 - imported only the six reviewed structural commits from `mainline-unification`; candidate-search and candidate-promotion commits were not merged;
 - preserved the retired branch head at tag `archive-mainline-unification-20260830`, then removed the extra worktree and branch;

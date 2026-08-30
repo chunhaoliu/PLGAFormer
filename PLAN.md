@@ -150,3 +150,13 @@ Acceptance criteria:
 - Main and Ablation remain paper-eligible with no formal blockers.
 - Historical source remains recoverable without retaining obsolete datasets, checkpoints, environments, or result trees.
 - Research contains code and evidence only; manuscript materials remain under the OneDrive materials boundary.
+
+Completed validation:
+
+- removed 9.813 GiB in the manifest-protected first batch and 872.51 MiB from the remaining Archive;
+- retained a verified 18.14 MB Git bundle, a source patch, a 120-file source snapshot, and a 14.30 MiB legacy-materials capsule under `Recovery_Manifests`;
+- reduced `D:\Research\HGV_Code` to the current main checkout and recovery manifests only;
+- imported only the six reviewed structural commits from `mainline-unification`; candidate-search and candidate-promotion commits were not merged;
+- preserved the retired branch head at tag `archive-mainline-unification-20260830`, then removed the extra worktree and branch;
+- formal status and audit remain paper-eligible with 17 Main and 6 Ablation records, zero blockers, the frozen config hash, the frozen dataset hash, and 23 valid checkpoints;
+- full validation passed: 300 tests passed, 3 skipped, and 31 subtests passed.

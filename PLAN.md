@@ -128,3 +128,25 @@ The public baseline matrix uses pinned official TSLib source for Transformer, DL
 - Core tests pass in both complete-local and public-release modes.
 - Manuscript claims match the frozen evidence and state limitations explicitly.
 - The final Git diff is reviewable and the remote is not updated until the user approves the commits.
+
+## Strict Single-Mainline Consolidation (2026-08-30)
+
+Objective: reduce `D:\Research\HGV_Code` to the current `main` checkout plus compact recovery manifests, while preserving the frozen scientific contract and every artifact referenced by the active formal manifests.
+
+Execution order:
+
+1. Tag the clean current `main` and record its formal status.
+2. Convert the archived 2026-08-12 repository snapshot into a compact Git bundle, binary working-tree patch, and source-only recovery capsule.
+3. Record exact targets, byte sizes, and SHA-256 evidence before deletion.
+4. Remove approved obsolete repository snapshots, historical checkpoints/datasets, candidate-promotion staging, and reproducible root caches.
+5. Compare manuscript/submission material against the OneDrive materials workspace before removing it from Research.
+6. Reapply only the useful mainline-contract and entrypoint ideas from `mainline-unification`; do not merge historical candidate-search/promotion commits.
+7. Revalidate dataset/config/checkpoint hashes, formal status/audit, focused tests, and Git diff before removing the extra worktree and branch.
+
+Acceptance criteria:
+
+- `HGVTP_PLGAformer-main` is the only writable HGV code checkout and `main` is the only development branch.
+- The active v2.1 dataset and 23 manifest-referenced checkpoints remain byte-identical.
+- Main and Ablation remain paper-eligible with no formal blockers.
+- Historical source remains recoverable without retaining obsolete datasets, checkpoints, environments, or result trees.
+- Research contains code and evidence only; manuscript materials remain under the OneDrive materials boundary.

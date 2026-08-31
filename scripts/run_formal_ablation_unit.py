@@ -25,6 +25,7 @@ if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 
 from utils.formal_runtime import formal_runtime_defaults, validate_formal_runtime
+from utils.final_plgaformer import apply_paper_inference_policy
 from utils.mainline_contract import load_mainline_config
 
 
@@ -102,6 +103,13 @@ def _resolved_ablation_record_config(
         return resolved
     if "dropout" in resolved and hasattr(model, "dropout"):
         resolved["dropout"] = getattr(model, "dropout")
+    for field in (
+        "physics_prior_lock_steps",
+        "physics_prior_time_constant_s",
+        "physics_prior_decay_power",
+    ):
+        if hasattr(model, field):
+            resolved[field] = getattr(model, field)
     innovations = resolved.get("innovations")
     if isinstance(innovations, dict):
         for field in tuple(innovations):
@@ -906,6 +914,13 @@ def run_formal_ablation_units(args: argparse.Namespace) -> dict[str, Any]:
             checkpoint = formal_models_dir / f"{run_id}.pth"
             torch.save(trained_model.state_dict(), checkpoint)
             checkpoint_sha256 = sha256_file(checkpoint)
+            paper_inference_policy = None
+            if (
+                str(model_config.get("model_type", "")).lower() == "plgaformer"
+                and bool(getattr(trained_model, "use_prior_fusion", False))
+                and not args.selection_only
+            ):
+                paper_inference_policy = apply_paper_inference_policy(trained_model)
             if args.selection_only:
                 eval_results: dict[int, dict[str, float]] = {}
             else:
@@ -932,8 +947,10 @@ def run_formal_ablation_units(args: argparse.Namespace) -> dict[str, Any]:
                 metrics_csv = append_metric_rows(metrics_csv, rows)
             run_json = formal_dir / f"{run_id}.json"
             record_model_config = _resolved_ablation_record_config(
-                model, model_config
+                trained_model, model_config
             )
+            if paper_inference_policy is not None:
+                record_model_config["paper_inference_policy"] = paper_inference_policy
             payload = {
                 "schema_version": 2,
                 "formal_config_sha256": formal_config.config_sha256,
@@ -958,6 +975,8 @@ def run_formal_ablation_units(args: argparse.Namespace) -> dict[str, Any]:
                 "dataset_identity": dataset_identity,
                 "scaler_paths": {key: str(path) for key, path in scaler_paths.items()},
             }
+            if paper_inference_policy is not None:
+                payload["paper_inference_policy"] = paper_inference_policy
             run_json.write_text(json.dumps(payload, indent=2, ensure_ascii=False), encoding="utf-8")
             completed.append({"run_id": run_id, "json": str(run_json), "checkpoint": str(checkpoint)})
             print(f"[formal-ablation] wrote {run_json}")

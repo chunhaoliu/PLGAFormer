@@ -4,6 +4,44 @@ import torch
 
 
 class PLGAFormerInnovationTests(unittest.TestCase):
+    def test_explicit_paper_lock_is_inference_only_and_exact(self):
+        from models.plgaformer import PLGAFormerTransformer
+        from utils.final_plgaformer import apply_paper_inference_policy
+
+        model = PLGAFormerTransformer(
+            input_dim=6,
+            d_model=32,
+            nhead=4,
+            num_encoder_layers=1,
+            num_decoder_layers=1,
+            dim_feedforward=64,
+            dropout=0.0,
+            use_multi_head_output=True,
+        )
+        self.assertEqual(model.physics_prior_lock_steps, 0)
+        self.assertEqual(model.physics_prior_decay_power, 2.0)
+
+        policy = apply_paper_inference_policy(model)
+        self.assertEqual(policy["lock_steps"], 64)
+        self.assertEqual(model.physics_prior_lock_steps, 64)
+        self.assertEqual(model.physics_prior_time_constant_s, 450.0)
+        self.assertEqual(model.physics_prior_decay_power, 2.5)
+        snapshot = model.physics_gate_snapshot()
+        self.assertEqual(snapshot["physics_prior_lock_steps"], 64)
+        self.assertEqual(snapshot["physics_prior_time_constant_s"], 450.0)
+        self.assertEqual(snapshot["physics_prior_decay_power"], 2.5)
+
+        future_mask = torch.ones(1, 66, 1)
+        prior = torch.zeros(1, 66, 3)
+        output = torch.ones_like(prior)
+        decoder = torch.zeros(1, 66, model.d_model)
+        weight = model._scheduled_prior_weight(
+            prior, output, decoder, future_mask
+        )
+
+        self.assertTrue(torch.equal(weight[:, :64], torch.ones_like(weight[:, :64])))
+        self.assertTrue(torch.all(weight[:, 64:] < 1.0))
+
     def test_prior_type_selects_spherical_control(self):
         from models.baseline_models import SphericalKinematicBaseline
         from models.plgaformer import PLGAFormerTransformer

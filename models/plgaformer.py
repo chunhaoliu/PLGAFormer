@@ -500,8 +500,11 @@ class PLGAFormerTransformer(nn.Module):
                  sampling_interval_s=1.0, require_physical_scaler=False,
                  attention_prior_mask=(True, True, True),
                  # 兼容性参数
-                 physics_aware_level='full', enable_long_range=True, 
-                 glide_specific_features=True):
+                 physics_aware_level='full', enable_long_range=True,
+                 glide_specific_features=True,
+                 physics_prior_lock_steps=0,
+                 physics_prior_time_constant_s=450.0,
+                 physics_prior_decay_power=2.0):
         super().__init__()
         self._init_seed = int(torch.initial_seed())
         
@@ -539,8 +542,9 @@ class PLGAFormerTransformer(nn.Module):
         self.kinematic_velocity_clip = 1.0
         self.physics_prior_confidence_sharpness = 2.0
         self.physics_prior_disagreement_sharpness = 0.5
-        self.physics_prior_time_constant_s = 450.0
-        self.physics_prior_decay_power = 2.0
+        self.physics_prior_lock_steps = max(0, int(physics_prior_lock_steps))
+        self.physics_prior_time_constant_s = float(physics_prior_time_constant_s)
+        self.physics_prior_decay_power = float(physics_prior_decay_power)
         self.physics_fusion_logit_max = 0.5
         self.sampling_interval_s = float(sampling_interval_s)
         self.require_physical_scaler = bool(require_physical_scaler)
@@ -805,6 +809,12 @@ class PLGAFormerTransformer(nn.Module):
             "physics_fusion_logit_max": float(
                 self.physics_fusion_logit_max
             ) if self.use_multi_head_output and self.use_prior_fusion else 0.0,
+            "physics_prior_lock_steps": int(self.physics_prior_lock_steps)
+            if self.use_multi_head_output and self.use_prior_fusion else 0,
+            "physics_prior_time_constant_s": float(self.physics_prior_time_constant_s)
+            if self.use_multi_head_output and self.use_prior_fusion else 0.0,
+            "physics_prior_decay_power": float(self.physics_prior_decay_power)
+            if self.use_multi_head_output and self.use_prior_fusion else 0.0,
             "trajectory_delta_scale": float(
                 self.trajectory_delta_max_scale * torch.tanh(self.trajectory_delta_scale).detach().cpu()
             ) if self.use_multi_head_output and self.use_channel_residual else 0.0,
@@ -996,6 +1006,15 @@ class PLGAFormerTransformer(nn.Module):
             + learned_logit
             - float(self.physics_prior_disagreement_sharpness) * disagreement
         )
+        if int(self.physics_prior_lock_steps) > 0:
+            lock_mask = (future_steps > 0.0) & (
+                future_steps <= float(self.physics_prior_lock_steps)
+            )
+            prior_weight = torch.where(
+                lock_mask,
+                torch.ones_like(prior_weight),
+                prior_weight,
+            )
         return future_mask * prior_weight
 
     def _apply_physics_correction(

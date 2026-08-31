@@ -23,6 +23,14 @@ ACTIVE_PLGAFORMER_FLAGS = MappingProxyType(
         "prior_blend_mode": "adaptive",
     }
 )
+PAPER_INFERENCE_POLICY = MappingProxyType(
+    {
+        "name": "short_horizon_physics_prior_lock_tau450_power2.5",
+        "lock_steps": 64,
+        "time_constant_s": 450.0,
+        "decay_power": 2.5,
+    }
+)
 ACTIVE_TRAINABLE_MODEL_KEYS = (
     "baseline",
     "full",

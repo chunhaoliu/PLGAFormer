@@ -1,5 +1,50 @@
 # HGVTP-PLGAFormer Current Work Plan
 
+## Paper-Policy Reproducibility Repair (2026-08-31)
+
+Objective: restore the minimal active-code path required to reconstruct the
+promoted paper-facing inference policy from the retained formal checkpoints.
+The repair must not change the frozen dataset, split, scalers, checkpoints,
+training settings, formal configuration hash, or reported result values.
+
+Current diagnosis:
+
+- the promoted records bind `lock_steps=64`, `time_constant_s=450`, and
+  `decay_power=2.5` as an inference-only policy;
+- the retained `main` implementation reverted to a fixed 450 s / power-2.0
+  schedule and removed the lock constructor and forward-path logic;
+- compact evidence and checkpoint hashes therefore pass, but the current
+  source cannot reconstruct the paper-facing predictions.
+
+Planned changes:
+
+1. define one immutable paper-inference policy in the mainline contract;
+2. restore constructor-level lock, time-constant, and decay-power controls in
+   `PLGAFormerTransformer` without changing their training defaults;
+3. make final-checkpoint consumers reconstruct PLGAFormer with that policy;
+4. apply the policy only after training and before final test evaluation in
+   the formal Main and mechanism runners;
+5. persist the resolved inference fields in new records and add focused tests.
+
+Scientific risk and boundary:
+
+- this repair restores reproducibility; it does not validate the historical
+  policy-selection process;
+- earlier candidate development inspected test-subset diagnostics before the
+  final validation screen, so submission readiness remains blocked pending an
+  untouched confirmatory holdout decision;
+- existing formal records and manuscript numbers remain unchanged during this
+  repair.
+
+Acceptance criteria:
+
+- existing checkpoints load strictly with the repaired model;
+- the first 64 forecast steps use unit prior weight only under the explicit
+  paper policy, while constructor defaults retain the training behavior;
+- final-model consumers expose the exact 64 / 450 / 2.5 identity;
+- focused tests and read-only formal status/audit pass with unchanged dataset,
+  configuration, bundle, and checkpoint hashes.
+
 ## Objective
 
 Maintain one paper and code mainline for simulation-based long-horizon hypersonic glide vehicle trajectory prediction. The method combines a Transformer proposal with an online-identified rotating-Earth three-degree-of-freedom proposal through bounded adaptive fusion.
@@ -160,3 +205,44 @@ Completed validation:
 - preserved the retired branch head at tag `archive-mainline-unification-20260830`, then removed the extra worktree and branch;
 - formal status and audit remain paper-eligible with 17 Main and 6 Ablation records, zero blockers, the frozen config hash, the frozen dataset hash, and 23 valid checkpoints;
 - full validation passed: 300 tests passed, 3 skipped, and 31 subtests passed.
+# Confirmatory Holdout Evidence Closure
+
+## Objective and current data flow
+
+Create one untouched, simulation-only confirmatory holdout for the existing
+paper model. The active dataset contains 1,800 trajectories split 1,260/180/360
+before window construction; its generator cannot create a 360-trajectory
+all-holdout artifact because it always applies a 70/10/20 split.
+
+## Frozen change
+
+- Reuse the active simulator, state definition, physical acceptance criteria,
+  and leakage-safe window builder.
+- Generate exactly 360 complete trajectories, 60 in every registered joint
+  stratum, with IDs 1800--2159 and seed 20260831.
+- Preserve the active v2.1 data, configuration, checkpoints, scalers, and
+  PLGAFormer inference policy byte-for-byte.
+- Evaluate only PLGAFormer, Transformer, DLinear, PatchTST, and iTransformer
+  from the eligible Main Results bundle for seeds 42/123/456.
+- Never retrain, refit, filter after inspection, replace a seed, or tune after
+  the dataset manifest is frozen. Retain the result regardless of ranking.
+
+## Interfaces and artifacts
+
+- Contract: `docs/CONFIRMATORY_HOLDOUT_PROTOCOL.md`.
+- Generator: `scripts/generate_confirmatory_holdout.py`.
+- Dataset: `data_generation/data/processed/hgv_confirmatory_holdout.npz`.
+- Expected tensors: raw `[360,1000,6]`, input `[35280,256,6]`, target
+  `[35280,256,3]`.
+- Evaluation output will be isolated under `experiments/confirmatory_holdout/`
+  as evidence for the same mainline, not a model or protocol version branch.
+
+## Risks, validation, and acceptance
+
+- Freeze protocol-document and dataset SHA-256 before loading any model.
+- Verify exact balance, metadata, 35,280 windows, non-overlapping IDs, and
+  overwrite refusal.
+- Strict-load and hash-check all 15 checkpoints and existing scalers.
+- Reuse the formal scaling and ADE/FDE/RMSE implementation unchanged.
+- Accept only a complete 5-method x 3-seed result bundle with full provenance;
+  keep claims bounded to simulation-only confirmation.

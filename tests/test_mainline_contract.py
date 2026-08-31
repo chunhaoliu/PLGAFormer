@@ -16,6 +16,7 @@ from utils.mainline_contract import (
     ACTIVE_MODEL_KEY,
     ACTIVE_PLGAFORMER_FLAGS,
     ACTIVE_TRAINABLE_MODEL_KEYS,
+    PAPER_INFERENCE_POLICY,
     PROJECT_ROOT,
     load_mainline_config,
 )
@@ -50,6 +51,18 @@ EXPECTED_FLAGS = {
     "use_channel_residual": False,
     "prior_type": "rotating_3dof",
     "prior_blend_mode": "adaptive",
+}
+EXPECTED_PAPER_POLICY = {
+    "name": "short_horizon_physics_prior_lock_tau450_power2.5",
+    "lock_steps": 64,
+    "time_constant_s": 450.0,
+    "decay_power": 2.5,
+}
+EXPECTED_PAPER_KWARGS = {
+    **EXPECTED_FLAGS,
+    "physics_prior_lock_steps": 64,
+    "physics_prior_time_constant_s": 450.0,
+    "physics_prior_decay_power": 2.5,
 }
 
 
@@ -225,6 +238,7 @@ def test_active_mainline_contract_matches_formal_v3():
     )
     assert ACTIVE_MODEL_KEY == "full"
     assert dict(ACTIVE_PLGAFORMER_FLAGS) == EXPECTED_FLAGS
+    assert dict(PAPER_INFERENCE_POLICY) == EXPECTED_PAPER_POLICY
     assert ACTIVE_TRAINABLE_MODEL_KEYS == (
         "baseline",
         "full",
@@ -237,6 +251,8 @@ def test_active_mainline_contract_matches_formal_v3():
 def test_active_plgaformer_flags_are_immutable():
     with pytest.raises(TypeError):
         ACTIVE_PLGAFORMER_FLAGS["use_prior_fusion"] = False
+    with pytest.raises(TypeError):
+        PAPER_INFERENCE_POLICY["lock_steps"] = 0
 
 
 def test_default_dataset_path_uses_active_mainline_contract(monkeypatch):
@@ -281,6 +297,9 @@ def test_registered_plgaformer_uses_active_mainline_flags():
     for attribute, expected in ACTIVE_PLGAFORMER_FLAGS.items():
         assert getattr(model, attribute) == expected
     assert model.use_adaptive_fusion is True
+    assert model.physics_prior_lock_steps == 0
+    assert model.physics_prior_time_constant_s == 450.0
+    assert model.physics_prior_decay_power == 2.0
 
 
 def test_registered_plgaformer_applies_explicit_overrides_last():
@@ -301,11 +320,11 @@ def test_existing_final_model_helpers_reference_the_mainline_contract():
     kwargs = final_plgaformer_kwargs()
     assert FINAL_MODEL_FLAGS is ACTIVE_PLGAFORMER_FLAGS
     assert FINAL_MODEL_KEY == ACTIVE_MODEL_KEY
-    assert kwargs == EXPECTED_FLAGS
+    assert kwargs == EXPECTED_PAPER_KWARGS
     assert kwargs is not ACTIVE_PLGAFORMER_FLAGS
 
     kwargs["use_prior_fusion"] = False
-    assert final_plgaformer_kwargs() == EXPECTED_FLAGS
+    assert final_plgaformer_kwargs() == EXPECTED_PAPER_KWARGS
     assert dict(ACTIVE_PLGAFORMER_FLAGS) == EXPECTED_FLAGS
 
 

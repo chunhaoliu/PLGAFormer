@@ -147,7 +147,14 @@ class FormalSotaUnitTests(unittest.TestCase):
 
         actual = dict(ACTIVE_PLGAFORMER_FLAGS)
         actual["use_prior_fusion"] = False
-        model = SimpleNamespace(**actual, use_adaptive_fusion=False, dropout=0.25)
+        model = SimpleNamespace(
+            **actual,
+            use_adaptive_fusion=False,
+            dropout=0.25,
+            physics_prior_lock_steps=64,
+            physics_prior_time_constant_s=450.0,
+            physics_prior_decay_power=2.5,
+        )
 
         recorded = _resolved_plgaformer_record_config(
             model,
@@ -157,6 +164,9 @@ class FormalSotaUnitTests(unittest.TestCase):
         self.assertFalse(recorded["use_prior_fusion"])
         self.assertFalse(recorded["use_adaptive_fusion"])
         self.assertEqual(recorded["dropout"], 0.25)
+        self.assertEqual(recorded["physics_prior_lock_steps"], 64)
+        self.assertEqual(recorded["physics_prior_time_constant_s"], 450.0)
+        self.assertEqual(recorded["physics_prior_decay_power"], 2.5)
 
     def test_final_plgaformer_contract_rejects_actual_flag_drift(self):
         from scripts.run_formal_sota_unit import validate_final_plgaformer_contract

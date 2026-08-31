@@ -14,7 +14,11 @@ from utils.formal_evidence import (
     sha256_file,
     validate_evidence_bundle,
 )
-from utils.mainline_contract import ACTIVE_MODEL_KEY, ACTIVE_PLGAFORMER_FLAGS
+from utils.mainline_contract import (
+    ACTIVE_MODEL_KEY,
+    ACTIVE_PLGAFORMER_FLAGS,
+    PAPER_INFERENCE_POLICY,
+)
 
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
@@ -40,7 +44,40 @@ FINAL_SEEDS = (42, 123, 456)
 
 def final_plgaformer_kwargs() -> dict[str, Any]:
     """Return the resolved constructor flags for the paper-facing architecture."""
-    return dict(ACTIVE_PLGAFORMER_FLAGS)
+    kwargs = dict(ACTIVE_PLGAFORMER_FLAGS)
+    kwargs.update(
+        {
+            "physics_prior_lock_steps": int(PAPER_INFERENCE_POLICY["lock_steps"]),
+            "physics_prior_time_constant_s": float(
+                PAPER_INFERENCE_POLICY["time_constant_s"]
+            ),
+            "physics_prior_decay_power": float(
+                PAPER_INFERENCE_POLICY["decay_power"]
+            ),
+        }
+    )
+    return kwargs
+
+
+def apply_paper_inference_policy(model: Any) -> dict[str, Any]:
+    """Apply the immutable paper policy after training and before evaluation."""
+    required = (
+        "physics_prior_lock_steps",
+        "physics_prior_time_constant_s",
+        "physics_prior_decay_power",
+    )
+    missing = [field for field in required if not hasattr(model, field)]
+    if missing:
+        raise TypeError(
+            "Paper inference policy requires a PLGAFormer with fields: "
+            + ", ".join(missing)
+        )
+    model.physics_prior_lock_steps = int(PAPER_INFERENCE_POLICY["lock_steps"])
+    model.physics_prior_time_constant_s = float(
+        PAPER_INFERENCE_POLICY["time_constant_s"]
+    )
+    model.physics_prior_decay_power = float(PAPER_INFERENCE_POLICY["decay_power"])
+    return dict(PAPER_INFERENCE_POLICY)
 
 
 def _load_source_payload(record: dict[str, Any]) -> dict[str, Any]:
@@ -168,6 +205,7 @@ def resolve_final_plgaformer(
         "checkpoint_sha256": sha256_file(checkpoint),
         "model_config_sha256": candidates[0].get("model_config_sha256"),
         "constructor_flags": final_plgaformer_kwargs(),
+        "inference_policy": dict(PAPER_INFERENCE_POLICY),
     }
     return checkpoint, payload, audit
 
@@ -205,6 +243,7 @@ __all__ = [
     "FINAL_SEEDS",
     "FORMAL_MAIN_RESULTS_DIR",
     "MAIN_BUNDLE_PATH",
+    "apply_paper_inference_policy",
     "final_evidence_signature",
     "final_plgaformer_kwargs",
     "resolve_final_plgaformer",

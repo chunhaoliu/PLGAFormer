@@ -21,6 +21,7 @@ if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 
 from utils.formal_runtime import formal_runtime_defaults, validate_formal_runtime
+from utils.final_plgaformer import apply_paper_inference_policy
 from utils.mainline_contract import ACTIVE_PLGAFORMER_FLAGS, load_mainline_config
 
 
@@ -145,7 +146,14 @@ def _resolved_plgaformer_record_config(
 ) -> dict[str, Any]:
     """Persist constructor values resolved by the created PLGAFormer instance."""
     resolved = dict(requested_config)
-    for field in (*ACTIVE_PLGAFORMER_FLAGS, "use_adaptive_fusion", "dropout"):
+    for field in (
+        *ACTIVE_PLGAFORMER_FLAGS,
+        "use_adaptive_fusion",
+        "dropout",
+        "physics_prior_lock_steps",
+        "physics_prior_time_constant_s",
+        "physics_prior_decay_power",
+    ):
         if hasattr(model, field):
             resolved[field] = getattr(model, field)
     return resolved
@@ -656,6 +664,9 @@ def run_formal_sota_units(args: argparse.Namespace) -> dict[str, Any]:
             checkpoint = formal_models_dir / f"{run_id}.pth"
             torch.save(trained_model.state_dict(), checkpoint)
             checkpoint_sha256 = sha256_file(checkpoint)
+            paper_inference_policy = None
+            if model_key == "full" and not args.selection_only:
+                paper_inference_policy = apply_paper_inference_policy(trained_model)
             if args.selection_only:
                 eval_results: dict[int, dict[str, float]] = {}
             else:
@@ -682,7 +693,7 @@ def run_formal_sota_units(args: argparse.Namespace) -> dict[str, Any]:
                 metrics_csv = append_metric_rows(metrics_csv, rows)
             run_json = formal_dir / f"{run_id}.json"
             record_model_config = (
-                _resolved_plgaformer_record_config(model, model_config)
+                _resolved_plgaformer_record_config(trained_model, model_config)
                 if model_type == "plgaformer"
                 else dict(model_config)
             )
@@ -690,6 +701,8 @@ def run_formal_sota_units(args: argparse.Namespace) -> dict[str, Any]:
                 if model_type in public_types:
                     record_model_config["source"] = "tslib"
                 record_model_config["external_source_provenance"] = external_source_provenance
+            if paper_inference_policy is not None:
+                record_model_config["paper_inference_policy"] = paper_inference_policy
             payload = {
                 "schema_version": 2,
                 "formal_config_sha256": formal_config.config_sha256,
@@ -712,6 +725,8 @@ def run_formal_sota_units(args: argparse.Namespace) -> dict[str, Any]:
                 "dataset_identity": dataset_identity,
                 "scaler_paths": {key: str(path) for key, path in scaler_paths.items()},
             }
+            if paper_inference_policy is not None:
+                payload["paper_inference_policy"] = paper_inference_policy
             if external_source_provenance is not None:
                 payload["external_source_provenance"] = external_source_provenance
             run_json.write_text(json.dumps(payload, indent=2, ensure_ascii=False), encoding="utf-8")

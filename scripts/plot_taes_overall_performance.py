@@ -134,6 +134,32 @@ def read_evidence(
     return values, dict(sorted(excluded_models.items()))
 
 
+def read_confirmatory_evidence(
+    path: Path,
+) -> tuple[dict[tuple[str, int, str], tuple[float, float]], dict[str, int]]:
+    payload = json.loads(path.read_text(encoding="utf-8"))
+    aggregate = payload.get("aggregate", {})
+    key_map = {
+        "DLinear": "dlinear",
+        "Transformer": "baseline",
+        "PatchTST": "patchtst",
+        "iTransformer": "itransformer",
+        "PLGAFormer": "full",
+    }
+    values: dict[tuple[str, int, str], tuple[float, float]] = {}
+    for method, model_key in key_map.items():
+        for horizon in HORIZONS:
+            for metric in METRIC_FIELDS.values():
+                item = aggregate[model_key][str(horizon)][metric]
+                values[(method, horizon, metric)] = (
+                    float(item["mean"]) / 1000.0,
+                    float(item["std"]) / 1000.0,
+                )
+    if len(values) != len(METHOD_ORDER) * len(HORIZONS) * len(METRIC_FIELDS):
+        raise ValueError("Confirmatory evidence matrix is incomplete.")
+    return values, {}
+
+
 def render(values: dict[tuple[str, int, str], tuple[float, float]], output_dir: Path) -> None:
     output_dir.mkdir(parents=True, exist_ok=True)
     configure_matplotlib()
@@ -203,7 +229,18 @@ def main() -> None:
     parser.add_argument("--source", type=Path, required=True)
     parser.add_argument("--output-dir", type=Path, required=True)
     args = parser.parse_args()
-    values, excluded_models = read_evidence(args.source)
+    if args.source.suffix.lower() == ".json":
+        values, excluded_models = read_confirmatory_evidence(args.source)
+        uncertainty = "mean +/- population standard deviation across three frozen checkpoints"
+        transformation = "mean and population standard deviation divided by 1000; logarithmic y axes"
+        exclusion_reason = "none; compact confirmatory evidence contains only the five learning methods"
+    else:
+        values, excluded_models = read_evidence(args.source)
+        uncertainty = "mean +/- sample standard deviation across three seeds"
+        transformation = "mean_m and sample_std_m divided by 1000; logarithmic y axes"
+        exclusion_reason = (
+            "analytical models are retained in the source table but are outside the learning-based ranking claim"
+        )
     render(values, args.output_dir)
     qa = {
         "figure": "fig_overall_performance",
@@ -213,11 +250,11 @@ def main() -> None:
         "horizons_s": HORIZONS,
         "metrics": list(METRIC_FIELDS),
         "units": "kilometers",
-        "uncertainty": "mean +/- sample standard deviation across three seeds",
-        "transformation": "mean_m and sample_std_m divided by 1000; logarithmic y axes",
+        "uncertainty": uncertainty,
+        "transformation": transformation,
         "excluded_rows": sum(excluded_models.values()),
         "excluded_source_models": excluded_models,
-        "exclusion_reason": "analytical models are retained in the source table but are outside the learning-based ranking claim",
+        "exclusion_reason": exclusion_reason,
         "statistical_tests": "none",
     }
     (args.output_dir / "fig_overall_performance_qa.json").write_text(

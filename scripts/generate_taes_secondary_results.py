@@ -123,14 +123,18 @@ def _bundle_ablation_lookup(bundle: dict) -> dict[tuple[str, str, int, str], dic
             continue
         phase = "phase4_final_mechanism_controls" if model_key in {"spherical_prior", "schedule_only"} else "main_results_bundle"
         item = normalized.get("eval_results", {}).get("256", normalized.get("eval_results", {}).get(256, {}))
-        for metric, aliases in {"ade": ("ade", "trajectory_window_ade"), "fde": ("fde", "trajectory_window_fde")}.items():
+        for metric, aliases in {
+            "ade": ("ade", "trajectory_window_ade"),
+            "fde": ("fde", "trajectory_window_fde"),
+            "rmse_cart_m": ("rmse_cart_m",),
+        }.items():
             value = next((item.get(alias) for alias in aliases if item.get(alias) is not None), None)
             if value is None:
                 raise RuntimeError(f"Ablation source lacks {metric} at 256 s: {entry.get('source_path')}")
             values.setdefault((phase, model_key, metric), []).append(float(value))
     lookup = {}
     for phase, model_key, _ in ABLATION_ROWS:
-        for metric in ("ade", "fde"):
+        for metric in ("ade", "fde", "rmse_cart_m"):
             row_values = values.get((phase, model_key, metric), [])
             if len(row_values) != 3:
                 raise RuntimeError(f"Formal-v3 ablation result is not three-seed complete: {phase}:{model_key}:{metric}")
@@ -175,44 +179,99 @@ def load_capacity_control() -> dict[str, dict[str, float]]:
     return lookup
 
 
+def _ablation_pm_cell(mean_m: float, std_m: float, wrap: str | None = None) -> str:
+    cell = (
+        rf"\resultnum{{{float(mean_m) / 1000:.3f}}}$\pm$"
+        rf"\resultnum{{{float(std_m) / 1000:.3f}}}"
+    )
+    if wrap == "bf":
+        return rf"\textbf{{{cell}}}"
+    if wrap == "ul":
+        return rf"\underline{{{cell}}}"
+    return cell
+
+
+def _unique_rank_wraps(values: list[float]) -> list[str | None]:
+    wraps: list[str | None] = [None] * len(values)
+    if not values:
+        return wraps
+    best = min(values)
+    best_idx = [idx for idx, value in enumerate(values) if math.isclose(value, best, rel_tol=0.0, abs_tol=1e-12)]
+    if len(best_idx) == 1:
+        wraps[best_idx[0]] = "bf"
+        remaining = [values[idx] for idx in range(len(values)) if idx not in best_idx]
+        if remaining:
+            second = min(remaining)
+            second_idx = [
+                idx
+                for idx, value in enumerate(values)
+                if idx not in best_idx and math.isclose(value, second, rel_tol=0.0, abs_tol=1e-12)
+            ]
+            if len(second_idx) == 1:
+                wraps[second_idx[0]] = "ul"
+    return wraps
+
+
 def render_ablation_table(
     lookup: dict[tuple[str, str, int, str], dict],
     capacity_control: dict[str, dict[str, float]] | None = None,
 ) -> str:
+    rows: list[tuple[str, str, dict[str, dict[str, float]]]] = []
+    metric_keys = ("ade", "fde", "rmse_cart_m")
+    if capacity_control is not None:
+        rows.append(
+            (
+                "PLGAFormer learned-only backbone",
+                "learned_only",
+                {metric: capacity_control[metric] for metric in metric_keys},
+            )
+        )
+    for phase, model_key, label in ABLATION_ROWS:
+        rows.append(
+            (
+                label,
+                model_key,
+                {
+                    metric: lookup[(phase, model_key, 256, metric)]
+                    for metric in metric_keys
+                },
+            )
+        )
+    wraps = {
+        metric: _unique_rank_wraps([float(stats[metric]["mean"]) for *_, stats in rows])
+        for metric in metric_keys
+    }
+
     lines = [
         r"\begin{table*}[!t]",
         r"\centering",
-        r"\caption{Formal 256 s mechanism and learned-capacity controls under the same "
-        r"data, optimization, and ECEF objective. Values are mean$\pm$sample standard "
-        r"deviation across three seeds in kilometers.}",
+        r"\caption{Ablation of the analytical prior and fusion rule at a 256 s horizon on "
+        r"the development test partition. Values are mean$\pm$sample standard deviation "
+        r"across three seeds, in kilometers. Best results are bold; second-best results "
+        r"are underlined. This table is not pooled with Table~\ref{tab:main_results}.}",
         r"\label{tab:ablation}",
-        r"\scriptsize",
-        r"\begin{tabular}{lcc}",
+        r"\fontsize{9}{11}\selectfont",
+        r"\setlength{\tabcolsep}{4pt}",
+        r"\begin{tabular*}{\textwidth}{@{\extracolsep{\fill}}lccc@{}}",
         r"\toprule",
-        r"Configuration & ADE & FDE \\",
+        r"Variant & ADE (km) & FDE (km) & RMSE (km) \\",
         r"\midrule",
     ]
-    if capacity_control is not None:
-        cells = [
-            f"{capacity_control[metric]['mean'] / 1000:.3f}$\\pm$"
-            f"{capacity_control[metric]['std'] / 1000:.3f}"
-            for metric in ("ade", "fde")
-        ]
-        lines.append("PLGAFormer learned-only backbone & " + " & ".join(cells) + r" \\")
-        lines.append(r"\midrule")
-    previous_phase = None
-    for phase, model_key, label in ABLATION_ROWS:
-        if previous_phase is not None and phase != previous_phase:
+    previous_group = None
+    for index, (label, model_key, stats) in enumerate(rows):
+        group = "full" if model_key in {"full", "prior_only"} else model_key
+        if previous_group == "learned_only" or (
+            previous_group not in {None, "full"} and group == "full"
+        ):
             lines.append(r"\midrule")
-        cells = []
-        for metric in ("ade", "fde"):
-            row = lookup[(phase, model_key, 256, metric)]
-            cells.append(f"{float(row['mean']) / 1000:.3f}$\\pm${float(row['std']) / 1000:.3f}")
-        if model_key in {"full", "prior_only"}:
-            label = rf"\textbf{{{label}}}"
-        lines.append(label + " & " + " & ".join(cells) + r" \\")
-        previous_phase = phase
-    lines.extend([r"\bottomrule", r"\end{tabular}", r"\end{table*}"])
+        display = rf"\textbf{{{label}}}" if model_key in {"full", "prior_only"} else label
+        cells = [display] + [
+            _ablation_pm_cell(stats[metric]["mean"], stats[metric]["std"], wraps[metric][index])
+            for metric in metric_keys
+        ]
+        lines.append(" & ".join(cells) + r" \\")
+        previous_group = group
+    lines.extend([r"\bottomrule", r"\end{tabular*}", r"\end{table*}"])
     return "\n".join(lines) + "\n"
 
 
@@ -329,39 +388,49 @@ def validate_robustness(
     return results
 
 
+CONDITION_ORDER = ("nominal", "aero_shift", "ballistic_shift")
+CONDITION_LABELS = {
+    "nominal": "Nominal",
+    "aero_shift": r"$C_L-10\%$, $C_D+10\%$",
+    "ballistic_shift": r"$m+15\%$, $S-10\%$",
+}
+
+
+def _km_pair(mean_m: float, std_m: float, *, bold: bool = False) -> str:
+    text = (
+        rf"\resultnum{{{mean_m / 1000.0:.3f}}}$\pm$\resultnum{{{std_m / 1000.0:.3f}}}"
+    )
+    return rf"\textbf{{{text}}}" if bold else text
+
+
 def render_robustness_table(results: dict) -> str:
     if results.get("__schema__") == "formal_v3_dynamics_shift":
-        display_names = {
-            "transformer": "Transformer",
-            "plgaformer": r"\textbf{PLGAFormer}",
-            "rotating_3dof": "Rotating-Earth 3-DOF",
-        }
-        condition_labels = {
-            "nominal": "Nominal",
-            "aero_shift": "$C_L-10\\%$, $C_D+10\\%$",
-            "ballistic_shift": "$m+15\\%$, $S-10\\%$",
-        }
         lines = [
             r"\begin{table*}[!t]",
             r"\centering",
-            r"\caption{Frozen-model errors under configured HGV dynamics shifts.}",
+            r"\caption{Frozen-model errors under the specified dynamics shifts at 256 s. Values are mean$\pm$sample standard deviation across three seeds, in kilometers. Each condition uses one central window per trajectory; the nominal row is the matched-subset reference and is not the all-window mean in Table~\ref{tab:main_results}. Best results in each row are bold.}",
             r"\label{tab:robustness}",
-            r"\scriptsize",
-            r"\begin{tabular}{llcc}",
+            r"\fontsize{9}{11}\selectfont",
+            r"\setlength{\tabcolsep}{4pt}",
+            r"\begin{tabular*}{\textwidth}{@{\extracolsep{\fill}}lcccc@{}}",
             r"\toprule",
-            r"Condition & Model & ADE & FDE \\",
+            r"Condition & \multicolumn{2}{c}{ADE (km)} & \multicolumn{2}{c}{FDE (km)} \\",
+            r"\cmidrule(lr){2-3}\cmidrule(lr){4-5}",
+            r" & Transformer & PLGAFormer & Transformer & PLGAFormer \\",
             r"\midrule",
         ]
-        for condition in results["conditions"]:
-            for model_type in PAPER_ROBUSTNESS_MODELS:
-                row = results["results"][condition][model_type]
-                lines.append(
-                    f"{condition_labels.get(condition, condition)} & {display_names[model_type]} & "
-                    f"{float(row['ade_m']) / 1000:.3f}$\\pm${float(row['ade_std_m']) / 1000:.3f} & "
-                    f"{float(row['fde_m']) / 1000:.3f}$\\pm${float(row['fde_std_m']) / 1000:.3f} "
-                    + r"\\"
-                )
-        lines.extend([r"\bottomrule", r"\end{tabular}", r"\end{table*}"])
+        for condition in CONDITION_ORDER:
+            row_t = results["results"][condition]["transformer"]
+            row_p = results["results"][condition]["plgaformer"]
+            lines.append(
+                f"{CONDITION_LABELS[condition]} & "
+                f"{_km_pair(float(row_t['ade_m']), float(row_t['ade_std_m']))} & "
+                f"{_km_pair(float(row_p['ade_m']), float(row_p['ade_std_m']), bold=True)} & "
+                f"{_km_pair(float(row_t['fde_m']), float(row_t['fde_std_m']))} & "
+                f"{_km_pair(float(row_p['fde_m']), float(row_p['fde_std_m']), bold=True)} "
+                + r"\\"
+            )
+        lines.extend([r"\bottomrule", r"\end{tabular*}", r"\end{table*}"])
         return "\n".join(lines) + "\n"
     conditions = [
         ("noise", 0.0, "Clean"),

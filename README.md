@@ -33,6 +33,24 @@ The immutable evidence contract remains `configs/formal_v3.json`; its filename
 is retained because existing records are hash-bound to that internal identity.
 Do not regenerate or replace the frozen dataset for ordinary formal runs.
 
+### Confirmatory holdout
+
+The paper-facing learning-method comparison uses an additional confirmatory
+holdout defined by `docs/CONFIRMATORY_HOLDOUT_PROTOCOL.md`:
+
+- protocol: `hgv_multiregime_confirmatory_holdout`
+- complete trajectories: 360, IDs 1800--2159
+- balance: 60 trajectories in each of the six joint motion strata
+- generator seed: `20260831`
+- windows: 35,280 at a five-step evaluation stride
+- models and checkpoints: the five registered learning methods at seeds
+  42/123/456, without retraining, scaler refitting, or policy adjustment
+
+The generated manifest binds the protocol-document SHA-256 and dataset
+SHA-256. The compact audit is published at
+`PublicRelease/evidence/confirmatory_holdout.json`; generated arrays and
+checkpoints are intentionally excluded from Git.
+
 ## Active models and mechanism controls
 
 The exact active registry is `transformer`, `kinematic`,
@@ -66,6 +84,9 @@ python run.py formal audit --json
 python run.py formal robustness --dry-run
 python run.py formal efficiency --dry-run
 python run.py formal paper --dry-run --json
+python scripts/generate_confirmatory_holdout.py --help
+python scripts/evaluate_confirmatory_holdout.py --preflight-only
+python scripts/evaluate_confirmatory_holdout.py --audit-only
 ```
 
 `main --help` and `mechanism --help` delegate to their downstream frozen
@@ -91,8 +112,8 @@ The protected active records and checkpoints are under:
 Compact public evidence is under `PublicRelease/evidence`. Local datasets,
 checkpoints, logs, candidate artifacts, and detailed histories are separate
 reproducibility material and are not manuscript claims by themselves.
-Historical material is preserved reversibly under
-`D:\Research\HGV_Code\Archive\HGVTP_PLGAformer-main`.
+Historical material is preserved outside the public repository under a
+manifest-protected local archive.
 Inactive numbered launchers, candidate-search sources, predecessor model
 integrations, and their tests are removed from the active tree after being
 copied to the external archive with hash manifests. They are not public

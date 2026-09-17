@@ -252,12 +252,12 @@ class HGVPhysicsLoss(nn.Module):
         return total_loss
 
 # ==============================================================================
-# 创新点 A：物理感知注意力 (Physics-aware Attention)
+# Historical optional branch: physics-aware attention
 # ==============================================================================
 
 class PhysicsAwareAttention(nn.Module):
     """
-    HGV 物理感知多头注意力机制（创新点 A）
+    Historical HGV physics-aware multi-head attention used in controlled ablations.
 
     在标准 self-attention 基础上注入三类物理先验偏置，使注意力权重
     不仅由数据驱动，还受 HGV 飞行力学先验约束：
@@ -474,21 +474,19 @@ class PositionalEncoding(nn.Module):
 
 class PLGAFormerTransformer(nn.Module):
     """
-    PLGAFormer: Physics-aware Long-range Glide vehicle Attention Former
+    Configurable PLGAFormer research model.
 
-    核心创新点：
-    A. 物理感知注意力编码器 (Physics-aware Attention Encoder)
-       在 self-attention 中注入时间衰减 / 飞行阶段一致性 / 几何邻近性三类物理偏置。
-    B. 门控物理校正器 (Gated Adaptive Physics Corrector)
-       解码器输出上施加可学习门控残差物理校正。
-    C. 多头轨迹解码器 (Multi-Head Trajectory Decoder)
-       位置专用头 + 门控融合的多头输出投影。
-
-    消融开关：use_sparse_attention (A)、use_physics_corrector (B)、use_multi_head_output (C)。
+    The class retains optional historical attention, corrector, and channel-
+    residual branches for controlled ablations and checkpoint compatibility.
+    Their presence in this class does not make them part of the paper-facing
+    architecture. The active formal configuration is defined only by
+    ``utils.mainline_contract.ACTIVE_PLGAFORMER_FLAGS``; it uses the standard
+    Transformer backbone with rotating-Earth prior fusion and disables the
+    historical attention, corrector, and channel-residual branches.
     """
     def __init__(self, input_dim=None, d_model=None, nhead=None, num_encoder_layers=None, 
                  num_decoder_layers=None, dim_feedforward=None, dropout=None,
-                 # 消融实验参数 - 三个创新点的开关
+                 # Historical/optional ablation switches
                  use_sparse_attention=False, use_physics_corrector=False,
                  use_multi_head_output=True, use_adaptive_fusion=True,
                  use_prior_fusion=True, use_channel_residual=False,
@@ -522,10 +520,11 @@ class PLGAFormerTransformer(nn.Module):
         self.dropout = dropout if dropout is not None else model_config['dropout']
         self.output_dim = output_dim
         
-        # 三个创新点的开关
-        self.use_sparse_attention = use_sparse_attention        # 创新点A
-        self.use_physics_corrector = use_physics_corrector      # 创新点B  
-        self.use_multi_head_output = use_multi_head_output      # 创新点C
+        # Optional research branches; the paper-facing values come from the
+        # immutable mainline contract rather than these constructor defaults.
+        self.use_sparse_attention = use_sparse_attention
+        self.use_physics_corrector = use_physics_corrector
+        self.use_multi_head_output = use_multi_head_output
         self.use_adaptive_fusion = use_adaptive_fusion
         self.use_prior_fusion = bool(use_prior_fusion)
         self.use_channel_residual = bool(use_channel_residual)
@@ -582,8 +581,8 @@ class PLGAFormerTransformer(nn.Module):
         self.pos_encoder = PositionalEncoding(self.d_model, self.dropout)
         
         # ==================== 编码器 ====================
-        # 标准 Transformer 编码器始终存在。创新点 A 只作为有界物理先验残差
-        # 叠加在同一主干上，保证消融时可以严格退化到 baseline。
+        # The standard Transformer encoder is the common backbone. The optional
+        # historical attention branch is enabled only in controlled ablations.
         encoder_layer = nn.TransformerEncoderLayer(
             self.d_model, self.nhead, self.dim_feedforward, self.dropout,
             batch_first=True, activation='gelu', norm_first=True
@@ -591,7 +590,7 @@ class PLGAFormerTransformer(nn.Module):
         self.transformer_encoder = nn.TransformerEncoder(encoder_layer, self.num_encoder_layers)
 
         if self.use_sparse_attention:
-            # 创新点 A：物理感知注意力编码器
+            # Historical optional physics-aware attention encoder.
             physics_layers = [
                 PhysicsAwareEncoderLayer(
                     self.d_model,
@@ -611,7 +610,7 @@ class PLGAFormerTransformer(nn.Module):
         )
         self.transformer_decoder = nn.TransformerDecoder(decoder_layer, self.num_decoder_layers)
         
-        # ==================== 创新点B: 门控物理校正器 ====================
+        # ==================== Historical optional gated physics corrector ====================
         if self.use_physics_corrector:
             # 解码状态决定当前时刻对运动学先验的信任程度。
             self.smoothness_gate = nn.Sequential(
@@ -627,7 +626,7 @@ class PLGAFormerTransformer(nn.Module):
             self.physics_context_scale = nn.Parameter(torch.tensor(0.0))
             self.physics_context_max_scale = 0.05
             
-        # ==================== 创新点C: 多头轨迹解码器 ====================
+        # ==================== Output projection and optional fusion branches ====================
         self.output_projection = nn.Linear(self.d_model, self.output_dim)
         if self.use_multi_head_output:
             self.trajectory_delta_head = nn.Sequential(
@@ -716,7 +715,7 @@ class PLGAFormerTransformer(nn.Module):
                 nn.init.constant_(module.bias, 0)
                 nn.init.constant_(module.weight, 1.0)
 
-        # 创新点 A：物理感知注意力——偏置缩放初始化为小值，训练中逐步打开
+        # Historical attention branch: initialize prior-bias scales conservatively.
         if self.use_sparse_attention:
             for std_layer, phys_layer in zip(self.transformer_encoder.layers, self.physics_encoder.layers):
                 self._copy_standard_encoder_layer(std_layer, phys_layer)
@@ -1062,8 +1061,7 @@ class PLGAFormerTransformer(nn.Module):
         # 2. 编码器
         standard_encoder_output = self.transformer_encoder(src_embedded)
         if self.use_sparse_attention:
-            # 创新点 A：物理感知注意力作为标准编码器上的有界残差，
-            # 训练初期可退化为 Transformer baseline，避免整体替换带来的不稳定。
+            # Historical optional physics-aware encoder used by ablation configs.
             encoder_output = self.physics_encoder(src_embedded, raw_input=source_physical)
         else:
             encoder_output = standard_encoder_output
@@ -1071,7 +1069,7 @@ class PLGAFormerTransformer(nn.Module):
         # 3. 解码器
         decoder_output = self.transformer_decoder(tgt_embedded, encoder_output, tgt_mask=tgt_mask)
         
-        # 4. 创新点C：多头输出
+        # 4. Neural output projection and optional prior/channel fusion
         if self.use_multi_head_output:
             base_output = self.output_projection(decoder_output)
             if self.use_prior_fusion:
@@ -1102,7 +1100,7 @@ class PLGAFormerTransformer(nn.Module):
         else:
             output = self.output_projection(decoder_output)
 
-        # 5. 创新点B：输出空间门控运动学先验残差
+        # 5. Historical optional output-space prior residual
         if self.use_physics_corrector:
             if kinematic_prior is None or future_mask is None:
                 kinematic_prior, future_mask = self._build_kinematic_prior(
